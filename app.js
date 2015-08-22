@@ -33,15 +33,15 @@ app.use('/usuario/', usuarios);
  */
 if (app.get('env') === 'development') {
     // This will change in production since we'll be using the dist folder
-    app.use(express.static(path.join(__dirname, '../client')));
+    app.use(express.static(path.join(__dirname, '../comet-client')));
     // This covers serving up the index page
-    app.use(express.static(path.join(__dirname, '../client/.tmp')));
-    app.use(express.static(path.join(__dirname, '../client/app')));
-    
+    app.use(express.static(path.join(__dirname, '../comet-client/.tmp')));
+    app.use(express.static(path.join(__dirname, '../comet-client/app')));
+
     // Handle 404
     app.use(function(req, res) {
         res.status(404);
-        res.sendfile(path.join(__dirname, '../client/app/') + '404.html');
+        res.sendfile(path.join(__dirname, '../comet-client/app/') + '404.html');
     });
 
     // Error Handling
@@ -49,8 +49,8 @@ if (app.get('env') === 'development') {
         res.status(err.status || 500);
         if (req.xhr) {
             res.json(err);
-        } 
-        else {        
+        }
+        else {
             res.render('error', {
                 message: err.message,
                 error: err
@@ -66,21 +66,21 @@ if (app.get('env') === 'production') {
 
     // changes it to use the optimized version for production
     app.use(express.static(path.join(__dirname, '/dist')));
-    
+
     // Handle 404
     app.use(function(req, res) {
         res.status(404);
         res.sendfile(path.join(__dirname, '/dist/') + '404.html');
     });
-    
+
     // production error handler
     // no stacktraces leaked to user
     app.use(function(err, req, res, next) {
         res.status(err.status || 500);
         if (req.xhr) {
             res.json(err);
-        } 
-        else {  
+        }
+        else {
             res.render('error', {
                 message: err.message,
                 error: {}
