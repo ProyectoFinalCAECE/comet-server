@@ -1,12 +1,12 @@
 {
   "development": {
-    "username": "mariano",
-    "password": "",
-    "database": "flapper",
+    "username": "postgres",
+    "password": "123456789",
+    "database": "comet",
     "host": "127.0.0.1",
     "dialect": "postgres",
     "define": {
-      "updatedAt": "fechaModificacion",    
+      "updatedAt": "fechaModificacion",
       "createdAt": "fechaAlta"
     }
   },
@@ -17,7 +17,7 @@
     "host": "127.0.0.1",
     "dialect": "postgres",
     "define": {
-      "updatedAt": "fechaModificacion",    
+      "updatedAt": "fechaModificacion",
       "createdAt": "fechaAlta"
     }
   },
@@ -28,9 +28,8 @@
     "host": "127.0.0.1",
     "dialect": "postgres",
     "define": {
-      "updatedAt": "fechaModificacion",    
+      "updatedAt": "fechaModificacion",
       "createdAt": "fechaAlta"
     }
   }
 }
-
