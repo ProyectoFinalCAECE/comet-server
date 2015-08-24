@@ -6,30 +6,30 @@
     "host": "127.0.0.1",
     "dialect": "postgres",
     "define": {
-      "updatedAt": "fechaModificacion",
-      "createdAt": "fechaAlta"
+      "updatedAt": "updatedAt",
+      "createdAt": "createdAt"
     }
   },
   "test": {
-    "username": "mariano",
+    "username": "postgres",
     "password": "",
-    "database": "flapper",
+    "database": "comet",
     "host": "127.0.0.1",
     "dialect": "postgres",
     "define": {
-      "updatedAt": "fechaModificacion",
-      "createdAt": "fechaAlta"
+      "updatedAt": "updatedAt",
+      "createdAt": "createdAt"
     }
   },
   "production": {
-    "username": "mariano",
+    "username": "postgres",
     "password": "",
-    "database": "flapper",
+    "database": "comet",
     "host": "127.0.0.1",
     "dialect": "postgres",
     "define": {
-      "updatedAt": "fechaModificacion",
-      "createdAt": "fechaAlta"
+      "updatedAt": "updatedAt",
+      "createdAt": "createdAt"
     }
   }
 }

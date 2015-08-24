@@ -2,32 +2,32 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var models  = require('../models');
 
-// login utilizando Passport - Local Strategy
-// toma el valor de los campos directamente del request
+// login using Passport - Local Strategy
+// reads request's parameters values
 passport.use(new LocalStrategy({
     usernameField: 'email',
     passwordField: 'password'
   },
   function(email, password, done) {
-    
-    // busco en la BD si existe el mail
-    models.Usuario.findOne({ where: { email: email} }).then( function(usuario) {
-      
-      // no existe el usuario
-      if (!usuario) {
-        return done(null, false, { message: 'Usuario no encontrado.' });
+
+    // search for an User with provided email at db
+    models.User.findOne({ where: { email: email} }).then( function(user) {
+
+      // User doesn't exist
+      if (!user) {
+        return done(null, false, { message: 'User not found.' });
       }
-      
-      // el password es incorrecto
-      if (!usuario.validarPassword(password)) {
-        return done(null, false, { message: 'Password incorrecto.' });
+
+      // Wrong password
+      if (!user.validatePassword(password)) {
+        return done(null, false, { message: 'Wrong password.' });
       }
-      
-      // usuario autenticado
-      return done(null, usuario);
-      
+
+      // Authenticated User
+      return done(null, user);
+
     }).catch(function(err) {
-        console.log('error en login con passport:' + err);
+        console.log('error at passport login:' + err);
         return done(err);
     });
   }
