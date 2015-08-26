@@ -17,6 +17,14 @@ var router  = express.Router();
 // saves the unencrypted token in the 'payload' field of request
 var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 
+/*
+* Create User Account
+*
+* @email
+* @password
+* @firstName
+* @lastName
+*/
 router.post('/', function(req, res, next) {
 
     // validate input parameters
@@ -57,6 +65,14 @@ router.post('/', function(req, res, next) {
     });
 });
 
+/*
+* Update User Account
+*
+* @id
+* @alias
+* @firstName
+* @lastName
+*/
 router.put('/:id', function(req, res, next) {
 
     // check if there's already an User with provided id at the db
@@ -88,6 +104,12 @@ router.put('/:id', function(req, res, next) {
     });
 });
 
+/*
+* Create User session
+*
+* @email
+* @password
+*/
 router.post('/login', function(req, res, next) {
 
     // validate input parameters
@@ -106,11 +128,23 @@ router.post('/login', function(req, res, next) {
         if (user) {
             // authenticated User
             return res.json({ token : user.generateJWT() });
+            //res.cookie('token', user.generateJWT());
+            //return res.json({ user : user });
         }
         else {
             return res.status(401).json(info);
         }
     })(req, res, next);
+});
+
+/*
+* Destroy current User session
+*
+*/
+router.post('/logout', function(req, res){
+  //res.clearCookie('token');
+  req.logout();
+  res.redirect('/');
 });
 
 module.exports = router;
