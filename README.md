@@ -2,6 +2,8 @@
 
 ## Installation
 
+Run `sudo apt-get install imagemagick`
+
 Run `npm install` to install dependencies.
 
 ## Build & development

@@ -21,6 +21,10 @@ var users  = require('./routes/users');
 
 var app = express();
 
+var directory = '/avatar_images';
+
+
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -34,6 +38,7 @@ app.use(cookieParser());
 app.use('/', routes);
 app.use('/user/', users);
 
+app.use(express.static(directory));
 /**
  * Development Settings
  */

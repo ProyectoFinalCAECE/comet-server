@@ -11,6 +11,13 @@ var passport = require('passport');
 var jwt = require('express-jwt');
 var express = require('express');
 var router  = express.Router();
+var avatar = require('avatar-generator')({
+                                          //Optional settings. Default settings in 'settings.js'
+                                          order:'background face clothes head hair eye mouth'.split(' '), //order in which sprites should be combined
+                                          images:'./node_modules/avatar-generator/img', // path to sprites
+                                          convert:'convert' //Path to imagemagick convert
+                                          });
+var fs = require('fs');
 
 // should we take this to a UserService.js ?
 
@@ -50,6 +57,12 @@ router.post('/', function(req, res, next) {
         });
         user.alias = user.firstName.toLowerCase() + user.lastName.toLowerCase();
         user.setPassword(req.body.password);
+
+        var fstream = fs.createWriteStream('./avatar_images/'+ user.alias +'avatar.png');
+
+        avatar(user.alias, 'male', 400).stream().pipe(fstream);
+
+        // user.profilePicture = './avatar_images/'+ user.alias +'avatar.png';
 
         // save User
         user.save()
