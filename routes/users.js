@@ -57,6 +57,37 @@ router.post('/', function(req, res, next) {
     });
 });
 
+router.put('/:id', function(req, res, next) {
+
+    // check if there's already an User with provided id at the db
+    models.User.findById(req.params.id).then(function(user) {
+      if (!user) {
+          return res.status(404).json({ message: 'Cant\'t find user with provided id.'});
+      }else{
+        if(req.body.firstName){
+          user.firstName = req.body.firstName
+        }
+        if(req.body.lastName){
+          user.lastName = req.body.lastName
+        }
+        if(req.body.alias){
+          user.alias = req.body.alias
+        }
+        // save modified User
+        user.save()
+            .then(function(userSaved) {
+                // User saved successfully
+                return res.json({
+                    token: userSaved.generateJWT()
+                });
+            }).catch(function(err) {
+                // error while saving
+                return next (err);
+            });
+      }
+    });
+});
+
 router.post('/login', function(req, res, next) {
 
     // validate input parameters
