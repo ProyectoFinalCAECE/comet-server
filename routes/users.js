@@ -66,6 +66,31 @@ router.post('/', function(req, res, next) {
 });
 
 /*
+* Get current logged User full Account information
+*
+*/
+router.get('/', auth, function(req, res, next) {
+
+    // look for current user's account
+    models.User.findById(parseInt(req.payload._id)).then(function(user) {
+        if (!user) {
+            return res.status(401).json({ message: 'there\'s no User with provided id.' });
+        }
+
+        return res.json({
+            user: {
+              id: user.id,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              alias: user.alias,
+              email: user.email,
+              profilePicture: user.profilePicture
+            }
+        });
+    });
+});
+
+/*
 * Update User Account
 *
 * @id
