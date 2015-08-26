@@ -73,7 +73,7 @@ router.post('/', function(req, res, next) {
 * @firstName
 * @lastName
 */
-router.put('/:id', function(req, res, next) {
+router.put('/:id', auth, function(req, res, next) {
 
     // check if there's already an User with provided id at the db
     models.User.findById(req.params.id).then(function(user) {
@@ -128,8 +128,6 @@ router.post('/login', function(req, res, next) {
         if (user) {
             // authenticated User
             return res.json({ token : user.generateJWT() });
-            //res.cookie('token', user.generateJWT());
-            //return res.json({ user : user });
         }
         else {
             return res.status(401).json(info);
@@ -142,7 +140,6 @@ router.post('/login', function(req, res, next) {
 *
 */
 router.post('/logout', function(req, res){
-  //res.clearCookie('token');
   req.logout();
   res.redirect('/');
 });
