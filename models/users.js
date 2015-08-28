@@ -61,11 +61,13 @@ module.exports = function(sequelize, DataTypes) {
         //setting alias
         this.alias = this.firstName.toLowerCase() + this.lastName.toLowerCase();
 
+        var random = Math.random();
+
         //creating avatar
-        avatar(this.alias, 'male', 400).stream().pipe(fs.createWriteStream('./avatar_images/'+ this.alias +'avatar.png'));
+        avatar(this.alias, 'male', 400).stream().pipe(fs.createWriteStream('./avatar_images/'+ random + this.alias +'avatar.png'));
 
         //assigning avatar
-        this.profilePicture = '/static/' + this.alias + 'avatar.png';
+        this.profilePicture = '/static/'+ random + this.alias + 'avatar.png';
 
       }
     }
