@@ -12,6 +12,7 @@ var jwt = require('express-jwt');
 var express = require('express');
 var router  = express.Router();
 
+var mailerService = require('../services/mailer');
 // should we take this to a UserService.js ?
 
 // saves the unencrypted token in the 'payload' field of request
@@ -56,6 +57,9 @@ router.post('/', function(req, res, next) {
         user.save()
             .then(function(userCreated) {
                 // User created successfully
+                mailerService.sendWelcomeMail(user.email);
+                mailerService.sendAccountConfirmationMail(user.email);
+
                 return res.json({
                     token: userCreated.generateJWT()
                 });

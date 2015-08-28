@@ -27,7 +27,8 @@
     "sequelize": "^3.3.2",
     "sequelize-cli": "^1.7.4",
     "serve-favicon": "~2.3.0",
-    "avatar-generator":"1.0.6"
+    "avatar-generator":"1.0.6",
+    "nodemailer":"1.4.0"
   },
   "devDependencies": {
     "bluebird": "^2.9.33",
