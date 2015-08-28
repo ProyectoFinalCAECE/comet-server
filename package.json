@@ -26,7 +26,8 @@
     "pg-hstore": "^2.3.2",
     "sequelize": "^3.3.2",
     "sequelize-cli": "^1.7.4",
-    "serve-favicon": "~2.3.0"
+    "serve-favicon": "~2.3.0",
+    "avatar-generator":"1.0.6"
   },
   "devDependencies": {
     "bluebird": "^2.9.33",

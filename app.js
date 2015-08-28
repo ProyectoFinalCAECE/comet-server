@@ -34,6 +34,8 @@ app.use(cookieParser());
 app.use('/', routes);
 app.use('/user/', users);
 
+app.use('/static', express.static('avatar_images'));
+
 /**
  * Development Settings
  */
