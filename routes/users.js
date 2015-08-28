@@ -10,6 +10,7 @@ var models  = require('../models');
 var passport = require('passport');
 var jwt = require('express-jwt');
 var express = require('express');
+var sequelize = require("sequelize");
 var router  = express.Router();
 var avatar = require('avatar-generator')({
                                           //Optional settings. Default settings in 'settings.js'
@@ -39,14 +40,14 @@ router.post('/', function(req, res, next) {
         !req.body.password ||
         !req.body.firstName ||
         !req.body.lastName) {
-        return res.status(400).json({ message: 'Please provide required fields.'});
+        return res.status(400).json({ errors: { all: 'Please provide required fields.'}});
     }
 
     // check if there's already an User with provided email at the db
     models.User.findOne({ where: { email: req.body.email } }).then(function(userExists) {
         if (userExists) {
             console.log('there\'s an User with provided email:' + req.body.email);
-            return res.status(403).json({ message: 'there\'s an User with provided email.' });
+            return res.status(403).json({ errors: { email: 'Ya existe un usuario con ese email' }});
         }
 
         // create new User instance
@@ -71,8 +72,12 @@ router.post('/', function(req, res, next) {
                 return res.json({
                     token: userCreated.generateJWT()
                 });
+            }).catch(sequelize.ValidationError, function(err) {
+                  // responds with validation errors
+                return res.status(403).json(err);
             }).catch(function(err) {
                 // error while saving
+                console.log("error saving user:" + err);
                 return next (err);
             });
     });
