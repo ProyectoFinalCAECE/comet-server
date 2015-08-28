@@ -62,7 +62,7 @@ router.post('/', function(req, res, next) {
 
         avatar(user.alias, 'male', 400).stream().pipe(fstream);
 
-        // user.profilePicture = './avatar_images/'+ user.alias +'avatar.png';
+        user.profilePicture = '/static/' + user.alias + 'avatar.png';
 
         // save User
         user.save()
