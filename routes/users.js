@@ -57,8 +57,8 @@ router.post('/', function(req, res, next) {
         user.save()
             .then(function(userCreated) {
                 // User created successfully
-                mailerService.sendWelcomeMail(user.email);
-                mailerService.sendAccountConfirmationMail(user.email);
+                //mailerService.sendWelcomeMail(user.email);
+                //mailerService.sendAccountConfirmationMail(user.email);
 
                 return res.json({
                     token: userCreated.generateJWT()
@@ -138,6 +138,34 @@ router.put('/:id', auth, function(req, res, next) {
 });
 
 /*
+* Delete current logged User Account
+*
+*/
+router.delete('/', auth, function(req, res, next) {
+      // look for user account
+      models.User.findById(req.payload._id).then(function(user) {
+        if (!user) {
+            return res.status(404).json({ message: 'Cant\'t find user with provided id.'});
+        } else {
+
+        user.active = false;
+
+        // save deleted User
+        user.save()
+            .then(function(userSaved) {
+                // User saved successfully
+                //mailerService.sendGoodbyeMail(user.email);
+                req.logout();
+                res.redirect('/');
+            }).catch(function(err) {
+                // error while saving
+                return next (err);
+            });
+        }
+      });
+});
+
+/*
 * Create User session
 *
 * @email
@@ -159,8 +187,12 @@ router.post('/login', function(req, res, next) {
         }
 
         if (user) {
+          if(user.active){
             // authenticated User
             return res.json({ token : user.generateJWT() });
+          } else {
+            return res.status(404).json({ message: 'Cant\'t find user with provided credentials.'});
+          }
         }
         else {
             return res.status(401).json(info);
