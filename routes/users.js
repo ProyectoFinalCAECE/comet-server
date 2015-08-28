@@ -57,8 +57,8 @@ router.post('/', function(req, res, next) {
         user.save()
             .then(function(userCreated) {
                 // User created successfully
-                mailerService.sendWelcomeMail(user.email);
-                mailerService.sendAccountConfirmationMail(user.email);
+                //mailerService.sendWelcomeMail(user.email);
+                //mailerService.sendAccountConfirmationMail(user.email);
 
                 return res.json({
                     token: userCreated.generateJWT()
