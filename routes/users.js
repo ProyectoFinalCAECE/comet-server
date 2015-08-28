@@ -10,15 +10,7 @@ var models  = require('../models');
 var passport = require('passport');
 var jwt = require('express-jwt');
 var express = require('express');
-var sequelize = require("sequelize");
 var router  = express.Router();
-var avatar = require('avatar-generator')({
-                                          //Optional settings. Default settings in 'settings.js'
-                                          order:'background face clothes head hair eye mouth'.split(' '), //order in which sprites should be combined
-                                          images:'./node_modules/avatar-generator/img', // path to sprites
-                                          convert:'convert' //Path to imagemagick convert
-                                          });
-var fs = require('fs');
 
 // should we take this to a UserService.js ?
 
@@ -56,14 +48,9 @@ router.post('/', function(req, res, next) {
             firstName: req.body.firstName,
             lastName: req.body.lastName,
         });
-        user.alias = user.firstName.toLowerCase() + user.lastName.toLowerCase();
-        user.setPassword(req.body.password);
 
-        var fstream = fs.createWriteStream('./avatar_images/'+ user.alias +'avatar.png');
-
-        avatar(user.alias, 'male', 400).stream().pipe(fstream);
-
-        user.profilePicture = '/static/' + user.alias + 'avatar.png';
+        //populating other user record fields
+        user.populateUserRecord(req.body.password);
 
         // save User
         user.save()
@@ -72,12 +59,8 @@ router.post('/', function(req, res, next) {
                 return res.json({
                     token: userCreated.generateJWT()
                 });
-            }).catch(sequelize.ValidationError, function(err) {
-                  // responds with validation errors
-                return res.status(403).json(err);
             }).catch(function(err) {
                 // error while saving
-                console.log("error saving user:" + err);
                 return next (err);
             });
     });

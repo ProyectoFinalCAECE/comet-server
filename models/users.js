@@ -8,6 +8,13 @@
 
 var crypto = require('crypto');
 var jwt = require('jsonwebtoken');
+var avatar = require('avatar-generator')({
+                                          //Optional settings. Default settings in 'settings.js'
+                                          order:'background face clothes head hair eye mouth'.split(' '), //order in which sprites should be combined
+                                          images:'./node_modules/avatar-generator/img', // path to sprites
+                                          convert:'convert' //Path to imagemagick convert
+                                          });
+var fs = require('fs');
 
 module.exports = function(sequelize, DataTypes) {
   var User = sequelize.define("User", {
@@ -45,6 +52,21 @@ module.exports = function(sequelize, DataTypes) {
             email: this.email,
             alias: this.alias,
             exp: parseInt(expiration.getTime() / 1000)}, 'mySecretPassword');
+      },
+      populateUserRecord: function(password)
+      {
+        //setting password
+        this.setPassword(password);
+
+        //setting alias
+        this.alias = this.firstName.toLowerCase() + this.lastName.toLowerCase();
+
+        //creating avatar
+        avatar(this.alias, 'male', 400).stream().pipe(fs.createWriteStream('./avatar_images/'+ this.alias +'avatar.png'));
+
+        //assigning avatar
+        this.profilePicture = '/static/' + this.alias + 'avatar.png';
+
       }
     }
   });
