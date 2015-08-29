@@ -11,6 +11,7 @@ var passport = require('passport');
 var jwt = require('express-jwt');
 var express = require('express');
 var router  = express.Router();
+var accountService  = require('../services/accountService');
 
 var mailerService = require('../services/mailer');
 // should we take this to a UserService.js ?
@@ -58,7 +59,7 @@ router.post('/', function(req, res, next) {
             .then(function(userCreated) {
                 // User created successfully
                 //mailerService.sendWelcomeMail(user.email);
-                //mailerService.sendAccountConfirmationMail(user.email);
+                //mailerService.sendAccountConfirmationMail(user.email, accountService.generateConfirmationToken(userCreated.id));
 
                 return res.json({
                     token: userCreated.generateJWT()
@@ -89,7 +90,8 @@ router.get('/', auth, function(req, res, next) {
               lastName: user.lastName,
               alias: user.alias,
               email: user.email,
-              profilePicture: user.profilePicture
+              profilePicture: user.profilePicture,
+              confirmed: user.confirmed
             }
         });
     });
@@ -198,6 +200,18 @@ router.post('/login', function(req, res, next) {
             return res.status(401).json({ errors: info });
         }
     })(req, res, next);
+});
+
+/*
+* Allows User Account confirmation
+* @token
+*/
+router.post('/confirm', function(req, res, next) {
+  if(!req.body.token){
+    return res.status(400).json({ errors: { all: 'Please provide required fields.'}});
+  } else {
+    accountService.confirmAccount(res, req.body.token);
+  }
 });
 
 /*
