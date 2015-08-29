@@ -15,12 +15,12 @@ passport.use(new LocalStrategy({
 
       // User doesn't exist
       if (!user) {
-        return done(null, false, { message: 'User not found.' });
+        return done(null, false, { email: 'Email no encontrado.' });
       }
 
       // Wrong password
       if (!user.validatePassword(password)) {
-        return done(null, false, { message: 'Wrong password.' });
+        return done(null, false, { password: 'Contraseña incorrecta.' });
       }
 
       // Authenticated User
