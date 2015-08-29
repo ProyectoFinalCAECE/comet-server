@@ -18,6 +18,7 @@ require('./config/passport');
 
 var routes = require('./routes/index');
 var users  = require('./routes/users');
+var accounts  = require('./routes/accounts');
 
 var app = express();
 
@@ -33,6 +34,7 @@ app.use(cookieParser());
 // routes
 app.use('/', routes);
 app.use('/user/', users);
+app.use('/account/', accounts);
 
 app.use('/static', express.static('avatar_images'));
 

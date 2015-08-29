@@ -28,8 +28,8 @@ module.exports.sendGoodbyeMail = function(receiver) {
 * Sends password recovery mail with expirable token
 *
 */
-module.exports.sendPasswordRecoveryMail = function(receiver) {
-      genericMailer(receiver, 'Comet Password Recovery', 'So you lost your password..', '');
+module.exports.sendPasswordRecoveryMail = function(receiver, token) {
+      genericMailer(receiver, 'Comet Password Recovery', 'Please click on the next link to recover your Comet password: http://localhost:4000/#/account/recover?token=' + token, '');
 }
 
 /*
