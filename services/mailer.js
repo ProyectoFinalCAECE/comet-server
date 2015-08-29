@@ -36,8 +36,8 @@ module.exports.sendPasswordRecoveryMail = function(receiver) {
 * Sends account confirmation email with expirable token
 *
 */
-module.exports.sendAccountConfirmationMail = function(receiver) {
-      genericMailer(receiver, 'Comment Account Confirmation', 'Please click on the next link to confirm your Comet account: <link>', '');
+module.exports.sendAccountConfirmationMail = function(receiver, token) {
+      genericMailer(receiver, 'Comet Account Confirmation', 'Please click on the next link to confirm your Comet account: http://localhost:4000/#/account/confirm?token=' + token, '');
 }
 
 /*

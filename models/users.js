@@ -26,8 +26,8 @@ module.exports = function(sequelize, DataTypes) {
     firstName: { type: DataTypes.STRING },
     alias: { type: DataTypes.STRING },
     profilePicture: { type: DataTypes.STRING, allowNull: true },
-    confirmed:  { type: DataTypes.BOOLEAN, defaultValue: false },
-    isAdministrator:  { type: DataTypes.BOOLEAN, defaultValue: false },
+    confirmed: { type: DataTypes.BOOLEAN, defaultValue: false },
+    isAdministrator: { type: DataTypes.BOOLEAN, defaultValue: false },
     active: { type: DataTypes.BOOLEAN, defaultValue: true },
     severedAt: { type: DataTypes.DATE, allowNull: true }
   }, {
@@ -69,6 +69,11 @@ module.exports = function(sequelize, DataTypes) {
         //assigning avatar
         this.profilePicture = '/static/'+ random + this.alias + 'avatar.png';
 
+      },
+      confirmAccount: function()
+      {
+          this.confirmed = true;
+          this.save();
       }
     }
   });
