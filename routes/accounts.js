@@ -15,7 +15,7 @@ var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 var passport = require('passport');
 
 /*
-* Create User session
+* Logs in an User with provided credentials and returns a session token.
 *
 * @email
 * @password
@@ -46,7 +46,7 @@ router.post('/login', function(req, res, next) {
 });
 
 /*
-* Destroy current User's session
+* Destroy currently logged User's session
 *
 */
 router.post('/logout', function(req, res){
@@ -55,7 +55,7 @@ router.post('/logout', function(req, res){
 });
 
 /*
-* Allows User Account confirmation
+* Allows User Account confirmation with token previously sent via email
 *
 * @token
 *
@@ -69,13 +69,13 @@ router.post('/confirm', function(req, res, next) {
 });
 
 /*
-* Resends account confirmation link via email
+* Resends User's Account confirmation link via email.
 * Requires authentication header.
 *
 * @token
 *
 */
-router.post('/confirmtoken', auth, function(req, res, next) {
+router.post('/confirm/token', auth, function(req, res, next) {
   // look for user account
   models.User.findById(req.payload._id).then(function(user) {
     if (!user) {
@@ -88,7 +88,7 @@ router.post('/confirmtoken', auth, function(req, res, next) {
 });
 
 /*
-* Sends password recovery token to user's email, if account is confirmed.
+* Sends password recovery token to User's email account, if account exists and is confirmed.
 *
 * @email
 *
@@ -131,7 +131,7 @@ router.post('/password/recover', function(req, res){
 });
 
 /*
-* Sets new password for current logged user.
+* Sets new password for currently logged user, if old password is correct.
 * Requires authentication header.
 *
 * @oldpassword

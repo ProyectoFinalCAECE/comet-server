@@ -70,7 +70,7 @@ router.post('/', function(req, res, next) {
 });
 
 /*
-* Get current logged User's full Account information.
+* Get currently logged User's full Account information.
 * Requires authentication header.
 *
 */
@@ -96,7 +96,7 @@ router.get('/', auth, function(req, res, next) {
 });
 
 /*
-* Update current logged User's Account.
+* Update currently logged User's Account.
 * Requires authentication header.
 *
 * @alias
@@ -137,7 +137,7 @@ router.put('/', auth, function(req, res, next) {
 });
 
 /*
-* Delete current logged User's Account.
+* Delete currently logged User's Account.
 * Requires authentication header.
 *
 */
