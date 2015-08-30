@@ -7,7 +7,6 @@
  */
 
 var models  = require('../models');
-var passport = require('passport');
 var jwt = require('express-jwt');
 var express = require('express');
 var router  = express.Router();
@@ -71,7 +70,7 @@ router.post('/', function(req, res, next) {
 });
 
 /*
-* Get current logged User's full Account information.
+* Get currently logged User's full Account information.
 * Requires authentication header.
 *
 */
@@ -97,7 +96,7 @@ router.get('/', auth, function(req, res, next) {
 });
 
 /*
-* Update current logged User's Account.
+* Update currently logged User's Account.
 * Requires authentication header.
 *
 * @alias
@@ -138,7 +137,7 @@ router.put('/', auth, function(req, res, next) {
 });
 
 /*
-* Delete current logged User's Account.
+* Delete currently logged User's Account.
 * Requires authentication header.
 *
 */
@@ -164,60 +163,6 @@ router.delete('/', auth, function(req, res, next) {
             });
         }
       });
-});
-
-/*
-* Create User session
-*
-* @email
-* @password
-*
-*/
-router.post('/login', function(req, res, next) {
-  // validate input parameters
-  if (!req.body.email || !req.body.password){
-    return res.status(400).json({ message: 'Por favor ingrese los parametros requeridos.' });
-  }
-
-  // login using passport
-  passport.authenticate('local', function (err, user, info) {
-    if (err) {
-      console.log(err);
-      return next (err);
-    }
-
-    if (user) {
-      // authenticated User
-      return res.json({
-                      token : user.generateJWT()
-                      });
-    } else {
-      return res.status(401).json({ errors: info });
-    }
-  })(req, res, next);
-});
-
-/*
-* Allows User Account confirmation
-*
-* @token
-*
-*/
-router.post('/confirm', function(req, res, next) {
-  if(!req.body.token){
-    return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
-  } else {
-    accountService.confirmAccount(res, req.body.token);
-  }
-});
-
-/*
-* Destroy current User's session
-*
-*/
-router.post('/logout', function(req, res){
-  req.logout();
-  res.redirect('/');
 });
 
 module.exports = router;
