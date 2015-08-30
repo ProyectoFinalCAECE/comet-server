@@ -105,10 +105,9 @@ router.get('/', auth, function(req, res, next) {
 * @firstName
 * @lastName
 */
-router.put('/:id', auth, function(req, res, next) {
-    if(req.params.id == req.payload._id ){
+router.put('/', auth, function(req, res, next) {
       // check if there's already an User with provided id at the db
-      models.User.findById(req.params.id).then(function(user) {
+      models.User.findById(req.payload._id).then(function(user) {
         if (!user) {
             return res.status(404).json({ message: 'Cant\'t find user with provided id.'});
         }else{
@@ -126,6 +125,7 @@ router.put('/:id', auth, function(req, res, next) {
               .then(function(userSaved) {
                   // User saved successfully
                   return res.json({
+                      //token is renewed in case alias was modified
                       token: userSaved.generateJWT()
                   });
               }).catch(function(err) {
@@ -134,9 +134,6 @@ router.put('/:id', auth, function(req, res, next) {
               });
         }
       });
-    }else{
-      return res.status(401).json({ message: 'Not allowed to perform this action.'});
-    }
 });
 
 /*
