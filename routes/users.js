@@ -34,13 +34,12 @@ router.post('/', function(req, res, next) {
         !req.body.password ||
         !req.body.firstName ||
         !req.body.lastName) {
-        return res.status(400).json({ errors: { all: 'Please provide required fields.'}});
+        return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
     }
 
     // check if there's already an User with provided email at the db
     models.User.findOne({ where: { email: req.body.email } }).then(function(userExists) {
         if (userExists) {
-            console.log('there\'s an User with provided email:' + req.body.email);
             return res.status(403).json({ errors: { email: 'Ya existe un usuario con ese email' }});
         }
 
@@ -80,7 +79,7 @@ router.get('/', auth, function(req, res, next) {
     // look for current user's account
     models.User.findById(parseInt(req.payload._id)).then(function(user) {
         if (!user) {
-            return res.status(401).json({ message: 'there\'s no User with provided id.' });
+            return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
         }
 
         return res.json({
@@ -109,7 +108,7 @@ router.put('/', auth, function(req, res, next) {
       // check if there's already an User with provided id at the db
       models.User.findById(req.payload._id).then(function(user) {
         if (!user) {
-            return res.status(404).json({ message: 'Cant\'t find user with provided id.'});
+            return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
         }else{
           if(req.body.firstName){
             user.firstName = req.body.firstName
@@ -144,7 +143,7 @@ router.delete('/', auth, function(req, res, next) {
       // look for user account
       models.User.findById(req.payload._id).then(function(user) {
         if (!user) {
-            return res.status(404).json({ message: 'Cant\'t find user with provided id.'});
+            return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
         } else {
 
         user.closeAccount();
@@ -174,7 +173,7 @@ router.post('/login', function(req, res, next) {
 
     // validate input parameters
     if (!req.body.email || !req.body.password){
-        return res.status(400).json({ message: 'Please provide required fields.' });
+        return res.status(400).json({ message: 'Por favor ingrese los parametros requeridos.' });
     }
 
     // login using passport
@@ -201,7 +200,7 @@ router.post('/login', function(req, res, next) {
 */
 router.post('/confirm', function(req, res, next) {
   if(!req.body.token){
-    return res.status(400).json({ errors: { all: 'Please provide required fields.'}});
+    return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
   } else {
     accountService.confirmAccount(res, req.body.token);
   }

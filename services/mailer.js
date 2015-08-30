@@ -13,7 +13,7 @@ var config = require('../config/mailer.json');
 * Sends welcome mail
 */
 module.exports.sendWelcomeMail = function(receiver) {
-      genericMailer(receiver, 'Welcome to your new Comet account!', 'We expect you enjoy working with us!', '');
+      genericMailer(receiver, 'Bienvenido a tu nueva cuenta Comet!', 'Esperamos que disfrutes trabajar con nosotros!', '');
 }
 
 /*
@@ -21,7 +21,7 @@ module.exports.sendWelcomeMail = function(receiver) {
 *
 */
 module.exports.sendGoodbyeMail = function(receiver) {
-      genericMailer(receiver, 'Goodbye :(', 'We\'re really sorry to see you go :(', '');
+      genericMailer(receiver, 'Nos vemos :(', 'Lamentamos verte ir :(', '');
 }
 
 /*
@@ -29,7 +29,7 @@ module.exports.sendGoodbyeMail = function(receiver) {
 *
 */
 module.exports.sendPasswordRecoveryMail = function(receiver, token) {
-      genericMailer(receiver, 'Comet Password Recovery', 'Please click on the next link to recover your Comet password: http://localhost:4000/#/account/recover?token=' + token, '');
+      genericMailer(receiver, 'Recuperacion de Contraseña en Comet', 'Por favor ingresa al siguiente link para recuperar tu contraseña: http://localhost:4000/#/account/recover?token=' + token, '');
 }
 
 /*
@@ -37,7 +37,7 @@ module.exports.sendPasswordRecoveryMail = function(receiver, token) {
 *
 */
 module.exports.sendAccountConfirmationMail = function(receiver, token) {
-      genericMailer(receiver, 'Comet Account Confirmation', 'Please click on the next link to confirm your Comet account: http://localhost:4000/#/account/confirm?token=' + token, '');
+      genericMailer(receiver, 'Confirmacion de cuenta Comet', 'Por favor ingresa al siguiente link para confirmar tu cuenta: http://localhost:4000/#/account/confirm?token=' + token, '');
 }
 
 /*
@@ -55,7 +55,7 @@ function genericMailer(receiver, subject, text, html){
     });
 
     var mailOptions = {
-        from: 'Comet Team ✔ <'+config.user+'>', // sender address
+        from: 'Equipo Comet ✔ <'+config.user+'>', // sender address
         to: receiver, // list of receivers
         subject: subject, // Subject line
         text: text, // plaintext body

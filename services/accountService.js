@@ -45,14 +45,14 @@ module.exports.confirmAccount = function(res, token) {
           // look for current user's account
           models.User.findById(parseInt(decoded._id)).then(function(user) {
               if (!user) {
-                  return res.status(404).json({ errors: { all: 'there\'s no User with provided id.'}});
+                  return res.status(404).json({ errors: { all: 'No se encontro usuario asociado al token provisto.'}});
               }
               user.confirmAccount();
               user.save();
           });
           return res.status(200).json({});
         }else{
-          return res.status(403).json({ errors: { all: 'Provided token was not designed for this purpose'}});
+          return res.status(403).json({ errors: { all: 'El token provisto no fue diseñado para este proposito.'}});
         }
     });
 }
@@ -90,14 +90,14 @@ module.exports.recoverPassword = function(res, token, newpassword){
       // look for current user's account
       models.User.findById(parseInt(decoded._id)).then(function(user) {
           if (!user) {
-              return res.status(404).json({ errors: { all: 'there\'s no User with provided id.'}});
+              return res.status(404).json({ errors: { all: 'No se encontro usuario asociado al token provisto.'}});
           }
           user.setPassword(newpassword);
           user.save();
       });
       return res.status(200).json({});
     }else{
-      return res.status(403).json({ errors: { all: 'Provided token was not designed for this purpose'}});
+      return res.status(403).json({ errors: { all: 'El token provisto no fue diseñado para este proposito.'}});
     }
   });
 }

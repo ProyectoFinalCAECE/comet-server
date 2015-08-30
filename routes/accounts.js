@@ -19,18 +19,18 @@ var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 */
 router.post('/password/token', function(req, res) {
   if(!req.body.email){
-    return res.status(400).json({ errors: { all: 'Please provide required fields.'}});
+    return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
   }
   models.User.findOne({ where: { email: req.body.email } }).then(function(user) {
       if(!user) {
-          return res.status(404).json({ errors: { email: 'Can\t find user with provided email.' }});
+          return res.status(404).json({ errors: { email: 'No se encontro usuario con el email provisto.' }});
       }
 
       if(user.confirmed) {
         mailerService.sendPasswordRecoveryMail(user.email, accountService.generatePasswordRecoveryToken(user.id));
         return res.status(200).json({});
       }else{
-        return res.status(403).json({ errors: { email: 'User account not confirmed so password can\'t be restored.' }});
+        return res.status(403).json({ errors: { email: 'La contraseña no podra actualizarse hasta que la cuenta no sea confirmada.' }});
       }
   });
 });
@@ -43,7 +43,7 @@ router.post('/password/token', function(req, res) {
 router.post('/password/recover', function(req, res){
 
   if(!req.body.token || !req.body.newpassword){
-    return res.status(400).json({ errors: { all: 'Please provide required fields.'}});
+    return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
   } else {
     accountService.recoverPassword(res, req.body.token, req.body.newpassword);
   }
@@ -58,12 +58,12 @@ router.post('/password/recover', function(req, res){
 router.post('/password/renew', auth, function(req, res){
 
   if(!req.body.oldpassword || !req.body.newpassword){
-    return res.status(400).json({ errors: { all: 'Please provide required fields.'}});
+    return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
   } else {
     // look for current user's account
     models.User.findById(parseInt(req.payload._id)).then(function(user) {
         if (!user) {
-            return res.status(401).json({ message: 'there\'s no User with provided token.' });
+            return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
         }
 
         if(user.validatePassword(req.body.oldpassword)){
@@ -71,7 +71,7 @@ router.post('/password/renew', auth, function(req, res){
           user.save();
           return res.status(200).json({});
         } else {
-          return res.status(403).json({ errors: { all: 'Provided parameters are incorrect.'}});
+          return res.status(403).json({ errors: { all: 'Los parametros ingresados son incorrectos.'}});
         }
 
     });
