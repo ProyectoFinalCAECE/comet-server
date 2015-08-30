@@ -36,7 +36,7 @@ module.exports.generateConfirmationToken = function(user_id) {
 * @token
 *
 */
-module.exports.confirmAccount = function(res, token)
+module.exports.confirmAccount = function(res, token){
   //verifying jwt
   jwt.verify(token, 'mySecretPassword', function(err, decoded) {
     if (err) {
