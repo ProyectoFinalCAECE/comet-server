@@ -212,6 +212,24 @@ router.post('/confirm', function(req, res, next) {
 });
 
 /*
+* Resends account confirmation link via email
+* Requires authentication header.
+*
+* @token
+*
+*/
+router.post('/confirmtoken', auth, function(req, res, next) {
+  // look for user account
+  models.User.findById(req.payload._id).then(function(user) {
+    if (!user) {
+      return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
+    } else {
+      mailerService.sendAccountConfirmationMail(user.email, accountService.generateConfirmationToken(user.id));
+      return res.status(200).json({});
+    }
+  });
+});
+/*
 * Destroy current User's session
 *
 */
