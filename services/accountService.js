@@ -19,6 +19,7 @@ module.exports.generateConfirmationToken = function(user_id) {
 
     return jwt.sign({
                       _id: user_id,
+                      action: 'confirm',
                       exp: parseInt(expiration.getTime() / 1000)
                     }
                     , 'mySecretPassword');
@@ -40,14 +41,18 @@ module.exports.confirmAccount = function(res, token) {
           */
         }
 
-        // look for current user's account
-        models.User.findById(parseInt(decoded._id)).then(function(user) {
-            if (!user) {
-                return res.status(404).json({ errors: { all: 'there\'s no User with provided id.'}});
-            }
-            user.confirmAccount();
-        });
-        return res.status(200).json({});
+        if(decoded.action == 'confirm'){
+          // look for current user's account
+          models.User.findById(parseInt(decoded._id)).then(function(user) {
+              if (!user) {
+                  return res.status(404).json({ errors: { all: 'there\'s no User with provided id.'}});
+              }
+              user.confirmAccount();
+          });
+          return res.status(200).json({});
+        }else{
+          return res.status(403).json({ errors: { all: 'Provided token was not designed for this purpose'}});
+        }
     });
 }
 
