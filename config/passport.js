@@ -18,6 +18,10 @@ passport.use(new LocalStrategy({
         return done(null, false, { email: 'Email no encontrado.' });
       }
 
+      if (!user.active) {
+        return done(null, false, { email: 'Cuenta cerrada.' });
+      }
+
       // Wrong password
       if (!user.validatePassword(password)) {
         return done(null, false, { password: 'Contraseña incorrecta.' });

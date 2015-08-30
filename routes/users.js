@@ -147,7 +147,7 @@ router.delete('/', auth, function(req, res, next) {
             return res.status(404).json({ message: 'Cant\'t find user with provided id.'});
         } else {
 
-        user.active = false;
+        user.closeAccount();
 
         // save deleted User
         user.save()
@@ -186,12 +186,8 @@ router.post('/login', function(req, res, next) {
         }
 
         if (user) {
-          if(user.active){
             // authenticated User
             return res.json({ token : user.generateJWT() });
-          } else {
-            return res.status(404).json({ message: 'Cant\'t find user with provided credentials.'});
-          }
         }
         else {
             return res.status(401).json({ errors: info });

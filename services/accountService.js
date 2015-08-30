@@ -48,6 +48,7 @@ module.exports.confirmAccount = function(res, token) {
                   return res.status(404).json({ errors: { all: 'there\'s no User with provided id.'}});
               }
               user.confirmAccount();
+              user.save();
           });
           return res.status(200).json({});
         }else{
