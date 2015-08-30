@@ -18,6 +18,7 @@ passport.use(new LocalStrategy({
         return done(null, false, { email: 'Email no encontrado.' });
       }
 
+      // User is not able to login
       if (!user.active) {
         return done(null, false, { email: 'Cuenta cerrada.' });
       }

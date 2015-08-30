@@ -14,6 +14,12 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('passport');
 
+/**
+
+ * Custom dependencies
+
+ */
+
 require('./config/passport');
 
 var routes = require('./routes/index');
@@ -36,6 +42,7 @@ app.use('/', routes);
 app.use('/user/', users);
 app.use('/account/', accounts);
 
+//static route to serve account profile images
 app.use('/static', express.static('avatar_images'));
 
 /**

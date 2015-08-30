@@ -20,49 +20,49 @@ var mailerService = require('../services/mailer');
 var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 
 /*
-* Create User Account
+* Create new User Account.
 *
 * @email
 * @password
 * @firstName
 * @lastName
+*
 */
 router.post('/', function(req, res, next) {
-
-    // validate input parameters
-    if (!req.body.email ||
-        !req.body.password ||
-        !req.body.firstName ||
-        !req.body.lastName) {
+  // validate input parameters
+  if (!req.body.email ||
+      !req.body.password ||
+      !req.body.firstName ||
+      !req.body.lastName) {
         return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
+  }
+
+  //check if there's already an User with provided email at the db
+  models.User.findOne({ where: { email: req.body.email } }).then(function(userExists) {
+    if (userExists) {
+      return res.status(403).json({ errors: { email: 'Ya existe un usuario con ese email' }});
     }
 
-    // check if there's already an User with provided email at the db
-    models.User.findOne({ where: { email: req.body.email } }).then(function(userExists) {
-        if (userExists) {
-            return res.status(403).json({ errors: { email: 'Ya existe un usuario con ese email' }});
-        }
+    // create new User instance
+    var user = models.User.build({
+      email: req.body.email,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+    });
 
-        // create new User instance
-        var user = models.User.build({
-            email: req.body.email,
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-        });
+    //populating other user record fields
+    user.populateUserRecord(req.body.password);
 
-        //populating other user record fields
-        user.populateUserRecord(req.body.password);
-
-        // save User
-        user.save()
+    // save User
+    user.save()
             .then(function(userCreated) {
-                // User created successfully
-                //mailerService.sendWelcomeMail(user.email);
-                //mailerService.sendAccountConfirmationMail(user.email, accountService.generateConfirmationToken(userCreated.id));
+              // User created successfully
+              //mailerService.sendWelcomeMail(user.email);
+              //mailerService.sendAccountConfirmationMail(user.email, accountService.generateConfirmationToken(userCreated.id));
 
-                return res.json({
-                    token: userCreated.generateJWT()
-                });
+              return res.json({
+                token: userCreated.generateJWT()
+              });
             }).catch(function(err) {
                 // error while saving
                 return next (err);
@@ -71,93 +71,96 @@ router.post('/', function(req, res, next) {
 });
 
 /*
-* Get current logged User full Account information
+* Get current logged User's full Account information.
+* Requires authentication header.
 *
 */
 router.get('/', auth, function(req, res, next) {
+  // look for current user's account
+  models.User.findById(parseInt(req.payload._id)).then(function(user) {
+    if (!user) {
+      return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
+    }
 
-    // look for current user's account
-    models.User.findById(parseInt(req.payload._id)).then(function(user) {
-        if (!user) {
-            return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
-        }
-
-        return res.json({
-            user: {
-              id: user.id,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              alias: user.alias,
-              email: user.email,
-              profilePicture: user.profilePicture,
-              confirmed: user.confirmed
-            }
-        });
-    });
+    return res.json({
+                    user: {
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    alias: user.alias,
+                    email: user.email,
+                    profilePicture: user.profilePicture,
+                    confirmed: user.confirmed
+                    }
+                  });
+  });
 });
 
 /*
-* Update User Account
+* Update current logged User's Account.
+* Requires authentication header.
 *
-* @id
 * @alias
 * @firstName
 * @lastName
+*
 */
 router.put('/', auth, function(req, res, next) {
-      // check if there's already an User with provided id at the db
-      models.User.findById(req.payload._id).then(function(user) {
-        if (!user) {
-            return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
-        }else{
-          if(req.body.firstName){
-            user.firstName = req.body.firstName
-          }
-          if(req.body.lastName){
-            user.lastName = req.body.lastName
-          }
-          if(req.body.alias){
-            user.alias = req.body.alias
-          }
-          // save modified User
-          user.save()
+  // check if there's already an User with provided id at the db
+  models.User.findById(req.payload._id).then(function(user) {
+    if (!user) {
+      return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
+    } else {
+      if(req.body.firstName){
+        user.firstName = req.body.firstName
+      }
+      if(req.body.lastName){
+        user.lastName = req.body.lastName
+      }
+      if(req.body.alias){
+        user.alias = req.body.alias
+      }
+
+      // save modified User
+      user.save()
               .then(function(userSaved) {
-                  // User saved successfully
-                  return res.json({
-                      //token is renewed in case alias was modified
-                      token: userSaved.generateJWT()
-                  });
+                // User saved successfully
+                return res.json({
+                  //token is renewed in case alias was modified
+                  token: userSaved.generateJWT()
+                });
               }).catch(function(err) {
                   // error while saving
                   return next (err);
               });
-        }
-      });
+    }
+  });
 });
 
 /*
-* Delete current logged User Account
+* Delete current logged User's Account.
+* Requires authentication header.
 *
 */
 router.delete('/', auth, function(req, res, next) {
-      // look for user account
-      models.User.findById(req.payload._id).then(function(user) {
-        if (!user) {
-            return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
-        } else {
+  // look for user account
+  models.User.findById(req.payload._id).then(function(user) {
+    if (!user) {
+      return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
+    } else {
+      //Closes account
+      user.closeAccount();
 
-        user.closeAccount();
-
-        // save deleted User
-        user.save()
+      // save deleted User
+      user.save()
             .then(function(userSaved) {
-                // User saved successfully
-                //mailerService.sendGoodbyeMail(user.email);
-                req.logout();
-                res.redirect('/');
+              // User saved successfully
+              //mailerService.sendGoodbyeMail(user.email);
+              req.logout();
+              res.redirect('/');
             }).catch(function(err) {
-                // error while saving
-                return next (err);
+              // error while saving
+              return next (err);
             });
         }
       });
@@ -168,35 +171,37 @@ router.delete('/', auth, function(req, res, next) {
 *
 * @email
 * @password
+*
 */
 router.post('/login', function(req, res, next) {
+  // validate input parameters
+  if (!req.body.email || !req.body.password){
+    return res.status(400).json({ message: 'Por favor ingrese los parametros requeridos.' });
+  }
 
-    // validate input parameters
-    if (!req.body.email || !req.body.password){
-        return res.status(400).json({ message: 'Por favor ingrese los parametros requeridos.' });
+  // login using passport
+  passport.authenticate('local', function (err, user, info) {
+    if (err) {
+      console.log(err);
+      return next (err);
     }
 
-    // login using passport
-    passport.authenticate('local', function (err, user, info) {
-
-        if (err) {
-            console.log(err);
-            return next (err);
-        }
-
-        if (user) {
-            // authenticated User
-            return res.json({ token : user.generateJWT() });
-        }
-        else {
-            return res.status(401).json({ errors: info });
-        }
-    })(req, res, next);
+    if (user) {
+      // authenticated User
+      return res.json({
+                      token : user.generateJWT()
+                      });
+    } else {
+      return res.status(401).json({ errors: info });
+    }
+  })(req, res, next);
 });
 
 /*
 * Allows User Account confirmation
+*
 * @token
+*
 */
 router.post('/confirm', function(req, res, next) {
   if(!req.body.token){
@@ -207,7 +212,7 @@ router.post('/confirm', function(req, res, next) {
 });
 
 /*
-* Destroy current User session
+* Destroy current User's session
 *
 */
 router.post('/logout', function(req, res){
