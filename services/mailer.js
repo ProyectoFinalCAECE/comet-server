@@ -10,38 +10,71 @@ var nodemailer = require('nodemailer');
 var config = require('../config/mailer.json');
 
 /*
-* Sends welcome mail
+* Sends Welcome mail to provided email account.
+*
+* @receiver
+*
 */
 module.exports.sendWelcomeMail = function(receiver) {
-      genericMailer(receiver, 'Welcome to your new Comet account!', 'We expect you enjoy working with us!', '');
+  genericMailer(receiver,
+                'Bienvenido a tu nueva cuenta Comet!',
+                'Esperamos que disfrutes trabajar con nosotros!',
+                ''
+              );
 }
 
 /*
-* Sends goodbye mail
+* Sends goodbye mail to provided email account.
+*
+* @receiver
 *
 */
 module.exports.sendGoodbyeMail = function(receiver) {
-      genericMailer(receiver, 'Goodbye :(', 'We\'re really sorry to see you go :(', '');
+  genericMailer(receiver,
+                'Nos vemos :(',
+                'Lamentamos verte ir :(',
+                ''
+              );
 }
 
 /*
-* Sends password recovery mail with expirable token
+* Sends password recovery email with expirable token to provided email account.
+*
+* @receiver
+* @token
 *
 */
 module.exports.sendPasswordRecoveryMail = function(receiver, token) {
-      genericMailer(receiver, 'Comet Password Recovery', 'Please click on the next link to recover your Comet password: http://localhost:4000/#/account/recover?token=' + token, '');
+  genericMailer(receiver,
+                'Recuperacion de Contraseña en Comet',
+                'Por favor ingresa al siguiente link para recuperar tu contraseña: http://localhost:4000/#/account/recover?token=' + token,
+                ''
+              );
 }
 
 /*
-* Sends account confirmation email with expirable token
+* Sends account confirmation email with expirable token to provided email account.
+*
+* @receiver
+* @token
 *
 */
 module.exports.sendAccountConfirmationMail = function(receiver, token) {
-      genericMailer(receiver, 'Comet Account Confirmation', 'Please click on the next link to confirm your Comet account: http://localhost:4000/#/account/confirm?token=' + token, '');
+  genericMailer(receiver,
+                'Confirmacion de cuenta Comet',
+                'Por favor ingresa al siguiente link para confirmar tu cuenta: http://localhost:4000/#/account/confirm?token=' + token,
+                ''
+              );
 }
 
 /*
-* Sends mail basing on the options retrieved from the config file.
+* Sends mail basing on the options retrieved from the config file (config/mailer.json) and the provided parameters.
+* Uses Gmail as email proxy.
+*
+* @receiver
+* @subject
+* @text
+* @html
 *
 */
 function genericMailer(receiver, subject, text, html){
@@ -55,7 +88,7 @@ function genericMailer(receiver, subject, text, html){
     });
 
     var mailOptions = {
-        from: 'Comet Team ✔ <'+config.user+'>', // sender address
+        from: 'Equipo Comet ✔ <'+config.user+'>', // sender address
         to: receiver, // list of receivers
         subject: subject, // Subject line
         text: text, // plaintext body

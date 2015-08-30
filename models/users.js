@@ -72,8 +72,11 @@ module.exports = function(sequelize, DataTypes) {
       },
       confirmAccount: function()
       {
-          this.confirmed = true;
-          this.save();
+        this.confirmed = true;
+      },
+      closeAccount: function()
+      {
+        this.active = false;
       }
     }
   });
