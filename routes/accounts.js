@@ -19,7 +19,7 @@ var router  = express.Router();
 * Sends password recovery token to user's email, if confirmed.
 * @email
 */
-router.post('/sendPasswordRecoveryToken', function(req, res) {
+router.post('/password/token', function(req, res) {
   if(!req.body.email){
     return res.status(400).json({ errors: { all: 'Please provide required fields.'}});
   }
@@ -42,7 +42,7 @@ router.post('/sendPasswordRecoveryToken', function(req, res) {
 * @newpassword
 * @token
 */
-router.post('/recoverPassword', function(req, res){
+router.post('/password/recover', function(req, res){
 
   if(!req.body.token || !req.body.newpassword){
     return res.status(400).json({ errors: { all: 'Please provide required fields.'}});
