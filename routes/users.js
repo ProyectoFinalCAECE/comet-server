@@ -56,8 +56,8 @@ router.post('/', function(req, res, next) {
     user.save()
             .then(function(userCreated) {
               // User created successfully
-              //mailerService.sendWelcomeMail(user.email);
-              //mailerService.sendAccountConfirmationMail(user.email, accountService.generateConfirmationToken(userCreated.id));
+              mailerService.sendWelcomeMail(user.email);
+              mailerService.sendAccountConfirmationMail(user.email, accountService.generateConfirmationToken(userCreated.id));
 
               return res.json({
                 token: userCreated.generateJWT()
@@ -154,7 +154,7 @@ router.delete('/', auth, function(req, res, next) {
       user.save()
             .then(function(userSaved) {
               // User saved successfully
-              //mailerService.sendGoodbyeMail(user.email);
+              mailerService.sendGoodbyeMail(user.email);
               req.logout();
               res.redirect('/');
             }).catch(function(err) {
