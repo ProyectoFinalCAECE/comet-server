@@ -7,7 +7,8 @@
  */
 
 var nodemailer = require('nodemailer');
-var config = require('../config/mailer.json');
+var mailer_config = require('../config/mailer.json');
+var site_config = require('../config/site_config.json');
 
 /*
 * Sends Welcome mail to provided email account.
@@ -68,7 +69,7 @@ module.exports.sendAccountConfirmationMail = function(receiver, token) {
 }
 
 /*
-* Sends mail basing on the options retrieved from the config file (config/mailer.json) and the provided parameters.
+* Sends mail basing on the options retrieved from the mailer_config file (config/mailer.json) and the provided parameters.
 * Uses Gmail as email proxy.
 *
 * @receiver
@@ -82,23 +83,27 @@ function genericMailer(receiver, subject, text, html){
     var transporter = nodemailer.createTransport({
         service: 'Gmail',
         auth: {
-            user: config.user,
-            pass: config.password
+            user: mailer_config.user,
+            pass: mailer_config.password
         }
     });
 
     var mailOptions = {
-        from: 'Equipo Comet ✔ <'+config.user+'>', // sender address
+        from: 'Equipo Comet ✔ <'+mailer_config.user+'>', // sender address
         to: receiver, // list of receivers
         subject: subject, // Subject line
         text: text, // plaintext body
         html: html // html body
     };
 
-    transporter.sendMail(mailOptions, function(error, info){
-      if(error){
-          return console.log(error);
-      }
-      console.log('Message sent: ' + info.response);
-    });
+    if(site_config.enable_emails == "true"){
+      transporter.sendMail(mailOptions, function(error, info){
+        if(error){
+            return console.log(error);
+        }
+        console.log('Message sent: ' + info.response);
+      });
+    } else {
+      console.log('Mails not enabled by config file.');
+    }
 }
