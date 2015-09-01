@@ -32,8 +32,11 @@ router.post('/', function(req, res, next) {
   if (!req.body.email ||
       !req.body.password ||
       !req.body.firstName ||
-      !req.body.lastName) {
+      !req.body.lastName)  {
         return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
+  }
+  if(!models.User.isValidPassword(req.body.password)){
+    return res.status(400).json({ errors: { password: 'El formato de la contraseña provista no es valido.'}});
   }
 
   //check if there's already an User with provided email at the db
@@ -111,13 +114,13 @@ router.put('/', auth, function(req, res, next) {
       return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
     } else {
       if(req.body.firstName){
-        user.firstName = req.body.firstName
+        user.firstName = req.body.firstName;
       }
       if(req.body.lastName){
-        user.lastName = req.body.lastName
+        user.lastName = req.body.lastName;
       }
       if(req.body.alias){
-        user.alias = req.body.alias
+        user.alias = req.body.alias;
       }
 
       // save modified User
