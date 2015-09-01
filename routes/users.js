@@ -114,13 +114,13 @@ router.put('/', auth, function(req, res, next) {
       return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
     } else {
       if(req.body.firstName){
-        user.firstName = req.body.firstName
+        user.firstName = req.body.firstName;
       }
       if(req.body.lastName){
-        user.lastName = req.body.lastName
+        user.lastName = req.body.lastName;
       }
       if(req.body.alias){
-        user.alias = req.body.alias
+        user.alias = req.body.alias;
       }
 
       // save modified User

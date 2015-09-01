@@ -125,9 +125,14 @@ router.post('/password/recover', function(req, res){
 
   if(!req.body.token || !req.body.newpassword){
     return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
-  } else {
-    accountService.recoverPassword(res, req.body.token, req.body.newpassword);
   }
+
+  if(!models.User.isValidPassword(req.body.password)){
+    return res.status(400).json({ errors: { password: 'El formato de la contraseña provista no es valido.'}});
+  }
+
+  accountService.recoverPassword(res, req.body.token, req.body.newpassword);
+
 });
 
 /*
@@ -143,24 +148,28 @@ router.post('/password/renew', auth, function(req, res){
 
   if(!req.body.oldpassword || !req.body.newpassword){
     return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
-  } else {
-    // look for current user's account
-    models.User.findById(parseInt(req.payload._id)).then(function(user) {
-      if (!user) {
-        return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
-      }
-
-      //If old password is valid
-      if(user.validatePassword(req.body.oldpassword)){
-        //Sets new password
-        user.setPassword(req.body.newpassword);
-        user.save();
-        return res.status(200).json({});
-      } else {
-        return res.status(403).json({ errors: { all: 'Los parametros ingresados son incorrectos.'}});
-      }
-    });
   }
+
+  if(!models.User.isValidPassword(req.body.password)){
+    return res.status(400).json({ errors: { password: 'El formato de la contraseña provista no es valido.'}});
+  }
+
+  // look for current user's account
+  models.User.findById(parseInt(req.payload._id)).then(function(user) {
+    if (!user) {
+      return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
+    }
+
+    //If old password is valid
+    if(user.validatePassword(req.body.oldpassword)){
+      //Sets new password
+      user.setPassword(req.body.newpassword);
+      user.save();
+      return res.status(200).json({});
+    } else {
+      return res.status(403).json({ errors: { all: 'Los parametros ingresados son incorrectos.'}});
+    }
+  });
 });
 
 module.exports = router;
