@@ -15,6 +15,11 @@ var avatar = require('avatar-generator')({
                                           convert:'convert' //Path to imagemagick convert
                                           });
 var fs = require('fs');
+var Regex = require("regex");
+
+var regex = new Regex(/(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z])/);
+var min_length = 6;
+var max_length = 40;
 
 module.exports = function(sequelize, DataTypes) {
   var User = sequelize.define("User", {
@@ -78,8 +83,17 @@ module.exports = function(sequelize, DataTypes) {
       {
         this.active = false;
       }
+    },
+      classMethods:{
+        isValidPassword: function(password){
+          return true;
+          /*return ((password.length >= min_length) &&
+              (password.length <= max_length) &&
+              (regex.test(String(password))))*/
+        }
+      }
     }
-  });
+  );
 
   return User;
 };
