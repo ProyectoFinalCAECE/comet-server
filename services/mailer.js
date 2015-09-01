@@ -78,7 +78,7 @@ module.exports.sendGoodbyeMail = function(receiver) {
 module.exports.sendPasswordRecoveryMail = function(receiver, token) {
   var password_recovery_mailer_template = new EmailTemplate(password_recovery_mailer_template_dir);
 
-  var locals = {message:{link: 'http://localhost:4000/#/account/recover?token=' + token}};
+  var locals = {message:{link: 'http://localhost:4000/#/account/recover?token=' + token + '&email=' + receiver}};
 
   password_recovery_mailer_template.render(locals, function (err, results) {
     if (err) {
