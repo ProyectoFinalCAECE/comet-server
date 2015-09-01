@@ -10,10 +10,13 @@ var nodemailer = require('nodemailer');
 var mailer_config = require('../config/mailer.json');
 var site_config = require('../config/site_config.json');
 
-var EmailTemplate = require('email-templates').EmailTemplate
-var path = require('path')
+var EmailTemplate = require('email-templates').EmailTemplate;
+var path = require('path');
 
-var templateDir = path.join(__dirname, '..', '/views/templates/account_confirm_email');
+var account_confirmation_mailer_template_dir = path.join(__dirname, '..', '/views/templates/account_confirm_email');
+var welcome_mailer_template_dir = path.join(__dirname, '..', '/views/templates/welcome_email');
+var goodbye_mailer_template_dir = path.join(__dirname, '..', '/views/templates/goodbye_email');
+var password_recovery_mailer_template_dir = path.join(__dirname, '..', '/views/templates/password_recovery_email');
 
 /*
 * Sends Welcome mail to provided email account.
@@ -22,11 +25,22 @@ var templateDir = path.join(__dirname, '..', '/views/templates/account_confirm_e
 *
 */
 module.exports.sendWelcomeMail = function(receiver) {
-  genericMailer(receiver,
-                'Bienvenido a tu nueva cuenta Comet!',
-                'Esperamos que disfrutes trabajar con nosotros!',
-                ''
-              );
+  var welcome_mailer_template = new EmailTemplate(welcome_mailer_template_dir);
+
+  var locals = {};
+
+  welcome_mailer_template.render(locals, function (err, results) {
+    if (err) {
+      console.log(err);
+      return err;
+    }
+
+    genericMailer(receiver,
+                  'Bienvenido a tu nueva cuenta Comet!',
+                  results.text,
+                  results.html
+                );
+    });
 }
 
 /*
@@ -36,11 +50,22 @@ module.exports.sendWelcomeMail = function(receiver) {
 *
 */
 module.exports.sendGoodbyeMail = function(receiver) {
-  genericMailer(receiver,
-                'Nos vemos :(',
-                'Lamentamos verte ir :(',
-                ''
-              );
+  var goodbye_mailer_template = new EmailTemplate(goodbye_mailer_template_dir);
+
+  var locals = {};
+
+  goodbye_mailer_template.render(locals, function (err, results) {
+    if (err) {
+      console.log(err);
+      return err;
+    }
+
+    genericMailer(receiver,
+                  'Nos vemos :(',
+                  results.text,
+                  results.html
+                );
+    });
 }
 
 /*
@@ -51,11 +76,22 @@ module.exports.sendGoodbyeMail = function(receiver) {
 *
 */
 module.exports.sendPasswordRecoveryMail = function(receiver, token) {
-  genericMailer(receiver,
-                'Recuperacion de Contraseña en Comet',
-                'Por favor ingresa al siguiente link para recuperar tu contraseña: http://localhost:4000/#/account/recover?token=' + token,
-                ''
-              );
+  var password_recovery_mailer_template = new EmailTemplate(password_recovery_mailer_template_dir);
+
+  var locals = {message:{link: 'http://localhost:4000/#/account/recover?token=' + token}};
+
+  password_recovery_mailer_template.render(locals, function (err, results) {
+    if (err) {
+      console.log(err);
+      return err;
+    }
+
+    genericMailer(receiver,
+                  'Recuperacion de Contraseña en Comet',
+                  results.text,
+                  results.html
+                );
+    });
 }
 
 /*
@@ -66,11 +102,22 @@ module.exports.sendPasswordRecoveryMail = function(receiver, token) {
 *
 */
 module.exports.sendAccountConfirmationMail = function(receiver, token) {
-  genericMailer(receiver,
-                'Confirmacion de cuenta Comet',
-                'Por favor ingresa al siguiente link para confirmar tu cuenta: http://localhost:4000/#/account/confirm?token=' + token,
-                ''
-              );
+  var account_confirmation_mailer_template = new EmailTemplate(account_confirmation_mailer_template_dir);
+
+  var locals = {message:{link: 'http://localhost:4000/#/account/confirm?token=' + token}};
+
+  account_confirmation_mailer_template.render(locals, function (err, results) {
+    if (err) {
+      console.log(err);
+      return err;
+    }
+
+    genericMailer(receiver,
+                  'Confirmacion de cuenta Comet',
+                  results.text,
+                  results.html
+                );
+  });
 }
 
 /*
@@ -94,65 +141,20 @@ function genericMailer(receiver, subject, text, html){
     });
 
     if(site_config.enable_emails == "true"){
-
-    var newsletter = new EmailTemplate(templateDir);
-    var user = {name: 'Joe', pasta: 'spaghetti'};
-
-    newsletter.render(user, function (err, results) {
-      // result.html
-      // result.text
-      if (err) {
-        console.log(err);
-        return err;
-      }
-      var mailOptions = {
-          from: 'Equipo Comet ✔ <'+mailer_config.user+'>', // sender address
-          to: receiver, // list of receivers
-          subject: subject, // Subject line
-          text: result.text, // plaintext body
-          html: result.html // html body
-      };
-      transporter.sendMail(mailOptions, function(error, info){
-        if(error){
-          return console.log(error);
-        }
-        console.log('Message sent: ' + info.response);
-      });
-    })
-    } else {
-      console.log('Mails not enabled by config file.');
-    }
-
-  /*  if(site_config.enable_emails == "true"){
-      var account_confirm_email_template = new EmailTemplate(account_confirm_email_dir);
-      var user = {name: 'Joe', pasta: 'spaghetti'};
-      account_confirm_email_template.render(user, function (err, results) {
-
-        if(err){
-          console.log('render error: ' + err);
-          return err;
-        } else {
-          console.log(result.html)
-        }
-
-        // result.html
-        // result.text
         var mailOptions = {
             from: 'Equipo Comet ✔ <'+mailer_config.user+'>', // sender address
             to: receiver, // list of receivers
             subject: subject, // Subject line
             text: text, // plaintext body
-            html: account_confirm_email_template // html body
+            html: html // html body
         };
-
         transporter.sendMail(mailOptions, function(error, info){
           if(error){
             return console.log(error);
           }
           console.log('Message sent: ' + info.response);
         });
-      })
     } else {
       console.log('Mails not enabled by config file.');
-    }*/
+    }
 }
