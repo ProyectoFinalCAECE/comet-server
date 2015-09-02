@@ -17,6 +17,7 @@ var account_confirmation_mailer_template_dir = path.join(__dirname, '..', '/view
 var welcome_mailer_template_dir = path.join(__dirname, '..', '/views/templates/welcome_email');
 var goodbye_mailer_template_dir = path.join(__dirname, '..', '/views/templates/goodbye_email');
 var password_recovery_mailer_template_dir = path.join(__dirname, '..', '/views/templates/password_recovery_email');
+var account_recovery_mailer_template_dir = path.join(__dirname, '..', '/views/templates/account_recovery_email');
 
 /*
 * Sends Welcome mail to provided email account.
@@ -114,6 +115,32 @@ module.exports.sendAccountConfirmationMail = function(receiver, token) {
 
     genericMailer(receiver,
                   'Confirmacion de cuenta Comet',
+                  results.text,
+                  results.html
+                );
+  });
+}
+
+/*
+* Sends account recovery email with expirable token to provided email account.
+*
+* @receiver
+* @token
+*
+*/
+module.exports.sendAccountRecoveryMail = function(receiver, token) {
+  var account_recovery_mailer_template = new EmailTemplate(account_recovery_mailer_template_dir);
+
+  var locals = {message:{link: 'http://localhost:4000/#/account/reopen?token=' + token}};
+
+  account_recovery_mailer_template.render(locals, function (err, results) {
+    if (err) {
+      console.log(err);
+      return err;
+    }
+
+    genericMailer(receiver,
+                  'Recuperacion de cuenta Comet',
                   results.text,
                   results.html
                 );
