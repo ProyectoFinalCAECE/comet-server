@@ -58,12 +58,20 @@ module.exports.confirmAccount = function(res, token){
           return res.status(404).json({ errors: { all: 'No se encontro usuario asociado al token provisto.'}});
         }
 
-        //confirming user account
-        user.confirmAccount();
-        user.save();
+        user.getTokens({ where: ['value = ?', token] }).then(function(tokens){
+          if (!(tokens === undefined || tokens.length === 0)) {
+            return res.status(403).json({ errors: { all: 'El token provisto ya ha sido consumido.'}});
+          }
 
+           //saving token to avoid reusing it
+           user.createToken({value: token});
+           //confirming user account
+           user.confirmAccount();
+           user.save();
+           return res.status(200).json({});
+        });
       });
-      return res.status(200).json({});
+
     } else {
       return res.status(403).json({ errors: { all: 'El token provisto no fue diseñado para este proposito.'}});
     }
@@ -85,8 +93,8 @@ module.exports.generatePasswordRecoveryToken = function(user_id) {
                     _id: user_id,
                     action: 'recover',
                     exp: parseInt(now.getTime() / 1000)
-                  }
-                  , 'mySecretPassword');
+                  },
+                  'mySecretPassword');
 }
 
 /*
@@ -118,11 +126,19 @@ module.exports.recoverPassword = function(res, token, newpassword){
           return res.status(404).json({ errors: { all: 'No se encontro usuario asociado al token provisto.'}});
         }
 
-        //setting new password
-        user.setPassword(newpassword);
-        user.save();
+        user.getTokens({ where: ['value = ?', token] }).then(function(tokens){
+          if (!(tokens === undefined || tokens.length === 0)) {
+            return res.status(403).json({ errors: { all: 'El token provisto ya ha sido consumido.'}});
+          }
+
+           //saving token to avoid reusing it
+           user.createToken({value: token});
+           //setting new password
+           user.setPassword(newpassword);
+           user.save();
+           return res.status(200).json({});
+        });
       });
-      return res.status(200).json({});
     } else {
       return res.status(403).json({ errors: { all: 'El token provisto no fue diseñado para este proposito.'}});
     }
