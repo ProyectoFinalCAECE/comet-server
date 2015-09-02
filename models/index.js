@@ -34,4 +34,11 @@ Object.keys(db).forEach(function(modelName) {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
+var models = require('sequelize-import')(__dirname, sequelize, {
+    exclude: ['index.js']
+});
+
+//Defining relationships
+models.users.hasMany(models.tokens, {as: 'Tokens'});
+
 module.exports = db;
