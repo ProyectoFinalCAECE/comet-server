@@ -30,7 +30,8 @@
     "avatar-generator":"1.0.6",
     "nodemailer":"1.4.0",
     "email-templates":"2.0.1",
-    "xregexp":"2.0.0"
+    "xregexp":"2.0.0",
+    "sequelize-import":"1.2.1"
   },
   "devDependencies": {
     "bluebird": "^2.9.33",

@@ -56,12 +56,15 @@ module.exports.confirmAccount = function(res, token){
       models.User.findById(parseInt(decoded._id)).then(function(user) {
         if (!user) {
           return res.status(404).json({ errors: { all: 'No se encontro usuario asociado al token provisto.'}});
+
         }
-
-        //confirming user account
-        user.confirmAccount();
-        user.save();
-
+        if(user.getTokens()){
+          //confirming user account
+          user.confirmAccount();
+          user.save();
+        } else {
+          return res.status(403).json({ errors: { all: 'El token provisto ya ha sido consumido.'}});
+        }
       });
       return res.status(200).json({});
     } else {
