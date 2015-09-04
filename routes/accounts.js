@@ -24,7 +24,7 @@ var passport = require('passport');
 router.post('/login', function(req, res, next) {
   // validate input parameters
   if (!req.body.email || !req.body.password){
-    return res.status(400).json({ message: 'Por favor ingrese los parametros requeridos.' });
+    return res.status(400).json({ message: 'Por favor coloca tu dirección de correo y contraseña' });
   }
 
   // login using passport
@@ -96,20 +96,20 @@ router.post('/confirm/token', auth, function(req, res, next) {
 router.post('/password/token', function(req, res) {
 
   if(!req.body.email){
-    return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
+    return res.status(400).json({ errors: { all: 'Por favor ingresa la dirección de correo.'}});
   }
 
   models.User.findOne({ where: { email: req.body.email } }).then(function(user) {
 
       if(!user) {
-          return res.status(404).json({ errors: { email: 'No se encontro usuario con el email provisto.' }});
+          return res.status(404).json({ errors: { email: 'No se encontró ningún usuario con el correo indicado.' }});
       }
 
       if(user.confirmed) {
         mailerService.sendPasswordRecoveryMail(user.email, accountService.generatePasswordRecoveryToken(user.id));
         return res.status(200).json({});
       } else {
-        return res.status(403).json({ errors: { email: 'La contraseña no podra actualizarse hasta que la cuenta no sea confirmada.' }});
+        return res.status(403).json({ errors: { email: 'La contraseña no podrá actualizarse hasta que la cuenta no sea confirmada.' }});
       }
   });
 });
@@ -167,7 +167,7 @@ router.post('/password/renew', auth, function(req, res){
       user.save();
       return res.status(200).json({});
     } else {
-      return res.status(403).json({ errors: { all: 'Los parametros ingresados son incorrectos.'}});
+      return res.status(403).json({ errors: { all: 'La contraseña ingresada es incorrecta.'}});
     }
   });
 });
