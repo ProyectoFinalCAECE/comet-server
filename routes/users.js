@@ -33,16 +33,16 @@ router.post('/', function(req, res, next) {
       !req.body.password ||
       !req.body.firstName ||
       !req.body.lastName)  {
-        return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
+        return res.status(400).json({ errors: { all: 'Por completa todos tus datos para continuar.'}});
   }
   if(!models.User.isValidPassword(req.body.password)){
-    return res.status(400).json({ errors: { password: 'El formato de la contraseña provista no es valido.'}});
+    return res.status(400).json({ errors: { password: 'El formato de la contraseña provista no es válido.'}});
   }
 
   //check if there's already an User with provided email at the db
   models.User.findOne({ where: { email: req.body.email } }).then(function(userExists) {
     if (userExists) {
-      return res.status(403).json({ errors: { email: 'Ya existe un usuario con ese email' }});
+      return res.status(403).json({ errors: { email: 'Ya existe un usuario con esta dirección de correo.' }});
     }
 
     // create new User instance
