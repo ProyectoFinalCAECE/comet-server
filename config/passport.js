@@ -15,12 +15,12 @@ passport.use(new LocalStrategy({
 
       // User doesn't exist
       if (!user) {
-        return done(null, false, { email: 'Email no encontrado.' });
+        return done(null, false, { email: 'Dirección de correo no encontrada.' });
       }
 
       // User is not able to login
       if (!user.active) {
-        return done(null, false, { email: 'Cuenta cerrada.' });
+        return done(null, false, { email: 'Esta cuenta se encuentra cerrada.' });
       }
 
       // Wrong password
