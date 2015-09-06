@@ -29,14 +29,19 @@ var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 */
 router.post('/', function(req, res, next) {
   // validate input parameters
+
   if (!req.body.email ||
       !req.body.password ||
       !req.body.firstName ||
       !req.body.lastName)  {
-        return res.status(400).json({ errors: { all: 'Por completa todos tus datos para continuar.'}});
+        return res.status(400).json({ errors: { all: 'Por favor completa todos tus datos para continuar.'}});
   }
   if(!models.User.isValidPassword(req.body.password)){
     return res.status(400).json({ errors: { password: 'El formato de la contraseña provista no es válido.'}});
+  }
+
+  if (req.body.email.length > 255){
+    return res.status(400).json({ errors: { email: 'El correo ingresado supera el tamaño máximo.'}});
   }
 
   //check if there's already an User with provided email at the db
