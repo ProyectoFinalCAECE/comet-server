@@ -180,7 +180,7 @@ router.post('/password/recover', function(req, res){
     return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
   }
 
-  if(!models.User.isValidPassword(req.body.password)){
+  if(!models.User.isValidPassword(req.body.newpassword)){
     return res.status(400).json({ errors: { password: 'El formato de la contraseña provista no es valido.'}});
   }
 
@@ -203,7 +203,7 @@ router.post('/password/renew', auth, function(req, res){
     return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
   }
 
-  if(!models.User.isValidPassword(req.body.password)){
+  if(!models.User.isValidPassword(req.body.newpassword)){
     return res.status(400).json({ errors: { password: 'El formato de la contraseña provista no es valido.'}});
   }
 
