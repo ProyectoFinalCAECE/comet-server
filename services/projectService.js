@@ -7,7 +7,7 @@
  */
 
 var projectMailerService = require('../services/mailers/projectMailer');
-
+var models  = require('../models');
 
 /*
 * Create new Project and send invitations if members provided.
@@ -17,32 +17,35 @@ var projectMailerService = require('../services/mailers/projectMailer');
 * @owner
 *
 */
-module.exports.createProject = function(req) {
-  // create new Project instance
-  var project = models.Project.build({
-    name: req.body.name,
-    description: req.body.description,
-    owner: parseInt(req.payload._id)
+module.exports.createProject = function(req, res) {
+  models.User.findById(parseInt(req.payload._id)).then(function(user) {
+    if(!user){
+      return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
+    }
+
+    // create new Project instance
+    var project = models.Project.build({
+      name: req.body.name,
+      description: req.body.description
+    });
+
+    project.save().then(function(projectCreated) {
+      user.addProject(project, { isOwner: true });
+
+      user.save().then(function(projectCreated) {
+        // Project created successfully
+        if(req.body.members){
+          //projectMailerService.sendInvitationMails(req.body.members);
+        }
+
+        return projectCreated;
+      }).catch(function(err) {
+          // error while saving
+          return (err);
+      });
+    });
   });
-
-
-
-
-
-  // save Project
-  project.save()
-          .then(function(projectCreated) {
-            // Project created successfully
-            if(req.body.members){
-              projectMailerService.sendInvitationMails(req.body.members);
-            }
-
-            return projectCreated;
-          }).catch(function(err) {
-              // error while saving
-              return next (err);
-          });
-}
+};
 
 /*
 * Get Project information

@@ -15,22 +15,9 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     instanceMethods: {
     },
-      classMethods:{/*
-        associate: function(models) {
-          ProjectUser.belongsTo(models.User, {
-            onDelete: "CASCADE",
-            foreignKey: {
-              allowNull: false
-            }
-          });
-          ProjectUser.belongsTo(models.Project, {
-            onDelete: "CASCADE",
-            foreignKey: {
-              allowNull: false
-            }
-          });
-        }
-      */}
+      classMethods:{
+
+      }
     }
   );
 

@@ -14,10 +14,11 @@
 * @members - optional
 *
 */
-module.exports.validCreate = function(req, res) {
+module.exports.validCreate = function(req, res, next) {
   // validate input parameters
   if (!req.body.name ||
       !req.body.description)  {
         return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
   }
+  next();
 }

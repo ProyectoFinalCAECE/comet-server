@@ -26,13 +26,10 @@ var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 *
 */
 router.post('/', auth, projectValidator.validCreate, function(req, res) {
-  projectService.createProject(req).then(function(projectCreated) {
-    // Project created successfully
+
+  var projectCreated = projectService.createProject(req, res);
+  if (!(projectCreated instanceof Error))
     return res.status(200).json(projectCreated);
-  }).catch(function(err) {
-    // error while saving
-    return next (err);
-  });
 });
 
 /*
