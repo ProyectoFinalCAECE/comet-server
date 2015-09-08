@@ -69,6 +69,59 @@ router.post('/confirm', function(req, res, next) {
 });
 
 /*
+* User gets an email with a token to reopen its account.
+*
+* @email
+*
+*/
+router.post('/reopen/token', function(req, res) {
+
+  if(!req.body.email){
+    return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
+  }
+
+  models.User.findOne({ where: { email: req.body.email } }).then(function(user) {
+
+      if(!user) {
+          return res.status(404).json({ errors: { email: 'No se encontro usuario con el email provisto.' }});
+      }
+
+      //if user is active nothing is done.
+      if(user.active) {
+        return res.status(403).json({ errors: { all: 'La cuenta solicitada se encuentra actualmente activa.' }});
+      } else {
+        //if user is not active but has a severedAt date, it means account was closed by an admin.
+        if(user.severedAt !== null){
+          return res.status(403).json({ errors: { all: 'La cuenta solicitada fue cerrada por un Administrador. Por favor pongase en contacto con un Administrador del sistema.' }});
+        } else {
+          mailerService.sendAccountRecoveryMail(user.email, accountService.generateAccountRecoveryToken(user.id));
+          return res.status(200).json({});
+        }
+      }
+  });
+});
+
+/*
+* Re-opens closed User Account and sets new password to it, if provided token is valid.
+*
+* @newpassword
+* @token
+*/
+router.post('/reopen', function(req, res) {
+
+  if(!req.body.token || !req.body.newpassword){
+    return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
+  }
+
+  if(!models.User.isValidPassword(req.body.newpassword)){
+    return res.status(400).json({ errors: { password: 'El formato de la contraseña provista no es valido.'}});
+  }
+
+  accountService.reopenAccount(res, req.body.token, req.body.newpassword);
+});
+
+
+/*
 * Resends User's Account confirmation link via email.
 * Requires authentication header.
 *

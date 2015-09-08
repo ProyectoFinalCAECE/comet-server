@@ -79,6 +79,13 @@ module.exports = function(sequelize, DataTypes) {
       closeAccount: function()
       {
         this.active = false;
+      },
+      reopenAccount: function(password)
+      {
+        this.active = true;
+
+        //setting password
+        this.setPassword(password);
       }
     },
       classMethods:{
