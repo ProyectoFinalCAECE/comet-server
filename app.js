@@ -25,6 +25,7 @@ require('./config/passport');
 var routes = require('./routes/index');
 var users  = require('./routes/users');
 var accounts  = require('./routes/accounts');
+var projects  = require('./routes/projects');
 
 var app = express();
 
@@ -41,6 +42,7 @@ app.use(cookieParser());
 app.use('/', routes);
 app.use('/user/', users);
 app.use('/account/', accounts);
+app.use('/project/', projects);
 
 //static route to serve account profile images
 app.use('/static', express.static('avatar_images'));
