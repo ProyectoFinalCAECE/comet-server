@@ -24,7 +24,7 @@ var passport = require('passport');
 router.post('/login', function(req, res, next) {
   // validate input parameters
   if (!req.body.email || !req.body.password){
-    return res.status(400).json({ message: 'Por favor coloca tu dirección de correo y contraseña' });
+    return res.status(400).json({ all: 'Por favor coloca tu dirección de correo y contraseña' });
   }
 
   // login using passport
@@ -210,7 +210,7 @@ router.post('/password/renew', auth, function(req, res){
   // look for current user's account
   models.User.findById(parseInt(req.payload._id)).then(function(user) {
     if (!user) {
-      return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
+      return res.status(401).json({ all: 'No se encontro usuario asociado al token provisto.' });
     }
 
     //If old password is valid

@@ -86,7 +86,7 @@ router.get('/', auth, function(req, res, next) {
   // look for current user's account
   models.User.findById(parseInt(req.payload._id)).then(function(user) {
     if (!user) {
-      return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
+      return res.status(401).json({ all: 'No se encontro usuario asociado al token provisto.' });
     }
 
     return res.json({
