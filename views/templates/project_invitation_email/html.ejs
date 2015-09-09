@@ -19,18 +19,19 @@
                               </tr>
                               <tr>
                                  <td class="content-block">
-                                    <h3>Invitación a Proyecto {Nombre Proyecto}</h3>
+                                    <h3>Invitación a Proyecto <%= project.name %></h3>
                                  </td>
                               </tr>
                               <tr>
                                  <td class="content-block">
-                                    Bienvenido a tu nuevo proyecto bla bla
+                                    <%= project.owner %> te ha invitado a formar parte de su proyecto.
+                                    Para aceptar la invitación debe hacer click en el siguiente botón:
                                  </td>
                               </tr>
                               <tr>
-                                 <td class="content-block aligncenter">
-
-                                 </td>
+                                <td class="content-block aligncenter">
+                                   <a href="<%= project.link %>" class="btn-primary">Aceptar Invitación</a>
+                                </td>
                               </tr>
                            </table>
                         </td>

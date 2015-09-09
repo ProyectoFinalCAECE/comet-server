@@ -7,7 +7,9 @@
  */
 var path = require('path');
 var mailGateway = require('../mailers/mailGateway');
-var project_invitation_mailer_template_dir = path.join(__dirname, '..', '/views/templates/project_invitation_email');
+var project_invitation_mailer_template_dir = path.join(__dirname, '../..', '/views/templates/project_invitation_email');
+var site_config = require('../../config/site_config.json');
+var EmailTemplate = require('email-templates').EmailTemplate;
 
  /*
  * Sends Invitation to Project mail to provided email accounts.
@@ -15,10 +17,13 @@ var project_invitation_mailer_template_dir = path.join(__dirname, '..', '/views/
  * @receivers
  *
  */
- module.exports.sendInvitationMails = function(receivers) {
+ module.exports.sendInvitationEmail = function(receiver, projectName, projectOwner, token) {
+
    var project_invitation_mailer_template = new EmailTemplate(project_invitation_mailer_template_dir);
 
-   var locals = {};
+   var link = site_config.base + '/#/project/invitations/accept?token=' + token;
+
+   var locals = {project:{name: projectName, owner: projectOwner, link: link}};
 
    project_invitation_mailer_template.render(locals, function (err, results) {
      if (err) {
