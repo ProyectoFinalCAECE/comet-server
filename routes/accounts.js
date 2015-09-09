@@ -24,7 +24,7 @@ var passport = require('passport');
 router.post('/login', function(req, res, next) {
   // validate input parameters
   if (!req.body.email || !req.body.password){
-    return res.status(400).json({ all: 'Por favor coloca tu dirección de correo y contraseña' });
+    return res.status(400).json({ errors: { all: 'Por favor coloca tu dirección de correo y contraseña' }});
   }
 
   // login using passport
