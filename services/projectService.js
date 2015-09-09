@@ -8,6 +8,8 @@
 
 var projectMailerService = require('../services/mailers/projectMailer');
 var models  = require('../models');
+var validator = require('validator');
+var jwt = require('jsonwebtoken');
 
 /*
 * Create new Project and send invitations if members provided.
@@ -34,9 +36,10 @@ module.exports.createProject = function(req, res) {
         user.addProject(project, { isOwner: true });
         user.save().then(function(user) {
           // Project created successfully
-          if(req.body.members){
-            //projectMailerService.sendInvitationMails(req.body.members);
-          }
+
+          //sending invitations
+          sendInvitations(req.body.members, project.name, project.id, user.alias);
+
           return res.json({
                           project: {
                             id: project.id,
@@ -46,13 +49,7 @@ module.exports.createProject = function(req, res) {
                             isOwner: true
                           }
                         });
-        }).catch(function(err) {
-            // error while saving
-            return res.status(404).json({ errors: { all: err } });
         });
-      }).catch(function(err) {
-          // error while saving
-          return res.status(404).json({ errors: { all: err } });
       });
     } else {
       return res.status(403).json({ errors: { all: 'El usuario debe confirmar su cuenta para llevar adelante la acción solicitada.'}});
@@ -71,7 +68,7 @@ module.exports.getProject = function(req, res, user) {
     if (projects === undefined || projects.length === 0) {
       return res.status(404).json({ errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}});
     }
-    
+
     if(projects[0].ProjectUser.active == false){
       return res.status(403).json({ errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}});
     } else {
@@ -87,3 +84,49 @@ module.exports.getProject = function(req, res, user) {
     }
   });
 };
+
+/*
+* Generates an expirable project invitation token for provided email.
+*
+* @email_address
+* @project_id
+*
+*/
+function generateProjectInvitationToken(email_address, project_id){
+  // expirates in 1 day
+  var now = new Date();
+  now.setDate(now.getDate() + 1);
+
+  return jwt.sign({
+                    project_id: project_id,
+                    email_address: email_address,
+                    action: 'accept_project',
+                    exp: parseInt(now.getTime() / 1000)
+                  },
+                  'mySecretPassword');
+}
+
+/*
+*
+* Sends emails to provided email addresses
+*
+* @addresses
+*
+*/
+function sendInvitations(addresses, project_name, project_id, owner_name){
+  if(addresses){
+    var x;
+    for (x in addresses) {
+      if(validator.isEmail(addresses[x].address)){
+        projectMailerService.sendInvitationEmail(addresses[x].address,
+                                                  project_name,
+                                                  owner_name,
+                                                  generateProjectInvitationToken(addresses[x].address,
+                                                                                  project_id)
+                                                );
+      } else {
+        console.log('discarding: ' + addresses[x].address);
+      }
+    }
+  }
+}
