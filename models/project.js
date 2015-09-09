@@ -25,29 +25,6 @@ module.exports = function(sequelize, DataTypes) {
       {
         this.state = 'B';
         this.severedAt = new Date();
-      },
-      isOwner: function(user)
-      {
-        //this.owner == user.id;
-      },
-      isMember: function(user)
-      {
-        //this.getUsers({ where: ['id = ?', user.id] }).then(function(users){
-          //if (users === undefined || users.length === 0)
-          //  return false;
-
-          //return true;
-        //});
-      },
-      populateProjectRecord: function(name, description){
-          //setting name
-          this.name = name;
-
-          //setting description
-          this.description = description;
-      },
-      canSee: function(user){
-        //return (this.isOwner(user) || this.isMember(user));
       }
     },
       classMethods:{
