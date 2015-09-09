@@ -20,7 +20,7 @@ passport.use(new LocalStrategy({
 
       // User is not able to login
       if (!user.active) {
-        return done(null, false, { email: 'Esta cuenta se encuentra cerrada.' });
+        return done(null, false, { closed: 'Esta cuenta se encuentra cerrada.' });
       }
 
       // Wrong password
