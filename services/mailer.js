@@ -131,7 +131,7 @@ module.exports.sendAccountConfirmationMail = function(receiver, token) {
 module.exports.sendAccountRecoveryMail = function(receiver, token) {
   var account_recovery_mailer_template = new EmailTemplate(account_recovery_mailer_template_dir);
 
-  var locals = {message:{link: 'http://localhost:4000/#/account/reopen?token=' + token}};
+  var locals = {message:{link: 'http://localhost:4000/#/account/reopen-return?token=' + token + '&email=' + receiver}};
 
   account_recovery_mailer_template.render(locals, function (err, results) {
     if (err) {
