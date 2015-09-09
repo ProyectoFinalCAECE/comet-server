@@ -23,59 +23,67 @@ module.exports.createProject = function(req, res) {
       return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
     }
 
-    // create new Project instance
-    var project = models.Project.build({
-      name: req.body.name,
-      description: req.body.description
-    });
+    if(user.confirmed){
+      // create new Project instance
+      var project = models.Project.build({
+        name: req.body.name,
+        description: req.body.description
+      });
 
-    project.save().then(function(projectCreated) {
-      user.addProject(project, { isOwner: true });
-
-      user.save().then(function(projectCreated) {
-        // Project created successfully
-        if(req.body.members){
-          //projectMailerService.sendInvitationMails(req.body.members);
-        }
-
-        return projectCreated;
+      project.save().then(function(projectCreated) {
+        user.addProject(project, { isOwner: true });
+        user.save().then(function(user) {
+          // Project created successfully
+          if(req.body.members){
+            //projectMailerService.sendInvitationMails(req.body.members);
+          }
+          return res.json({
+                          project: {
+                            id: project.id,
+                            name: project.name,
+                            description: project.description,
+                            createdAt: project.createdAt,
+                            isOwner: true
+                          }
+                        });
+        }).catch(function(err) {
+            // error while saving
+            return res.status(404).json({ errors: { all: err } });
+        });
       }).catch(function(err) {
           // error while saving
-          return (err);
+          return res.status(404).json({ errors: { all: err } });
       });
-    });
+    } else {
+      return res.status(403).json({ errors: { all: 'El usuario debe confirmar su cuenta para llevar adelante la acción solicitada.'}});
+    }
   });
 };
 
 /*
 * Get Project information
 *
-* @project_id
-* @requester_id
+* @id
 *
 */
-module.exports.getProject = function(project_id, user) {
-  models.Project.findById(parseInt(project_id)).then(function(project) {
-    if (!project) {
-      console.log("Error capo 2");
-  //    return NEW ERROR PROJECT NOT FOUND//res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
+module.exports.getProject = function(req, res, user) {
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', req.params.id, "B"] }).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      return res.status(404).json({ errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}});
     }
-
-    if(project.canSee(user)){
+    
+    if(projects[0].ProjectUser.active == false){
+      return res.status(403).json({ errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}});
+    } else {
       return res.json({
                       project: {
-                      id: project.id,
-                      name: project.name,
-                      description: project.description,
-                      alias: user.alias,
-                      email: user.email,
-                      profilePicture: user.profilePicture,
-                      confirmed: user.confirmed
+                        id: projects[0].id,
+                        name: projects[0].name,
+                        description: projects[0].description,
+                        createdAt: projects[0].createdAt,
+                        isOwner: projects[0].ProjectUser.isOwner
                       }
                     });
-    } else {
-      console.log("Error capo");
-      //      CANT SEE ERROR
     }
-  })
-}
+  });
+};

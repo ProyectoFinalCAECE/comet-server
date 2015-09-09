@@ -26,10 +26,7 @@ var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 *
 */
 router.post('/', auth, projectValidator.validCreate, function(req, res) {
-
-  var projectCreated = projectService.createProject(req, res);
-  if (!(projectCreated instanceof Error))
-    return res.status(200).json(projectCreated);
+  projectService.createProject(req, res);
 });
 
 /*
@@ -37,19 +34,13 @@ router.post('/', auth, projectValidator.validCreate, function(req, res) {
 * Requires authentication header.
 *
 */
-router.get('/:id', auth, function(req, res, next) {
+router.get('/:id', auth, projectValidator.validGet, function(req, res) {
   // look for current user's account
   models.User.findById(parseInt(req.payload._id)).then(function(user) {
     if (!user) {
       return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
     }
-
-    projectService.getProject(req.body.id, user).then(function(project) {
-      return res.status(200).json(project);
-    }).catch(function(err) {
-      // error while retrieving
-      return next (err);
-    });
+    projectService.getProject(req, res, user);
   });
 });
 

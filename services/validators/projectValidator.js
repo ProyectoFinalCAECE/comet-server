@@ -18,7 +18,21 @@ module.exports.validCreate = function(req, res, next) {
   // validate input parameters
   if (!req.body.name ||
       !req.body.description)  {
-        return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
+        return res.status(400).json({ errors: { all: 'Por favor ingrese los parámetros requeridos.'}});
+  }
+  next();
+}
+
+/*
+*
+* Checks if provided parameters get a Project are valid or returns an appropiate response.
+* @id
+*
+*/
+module.exports.validGet = function(req, res, next) {
+  // validate input parameters
+  if (!req.params.id)  {
+        return res.status(400).json({ errors: { all: 'Por favor ingrese los parámetros requeridos.'}});
   }
   next();
 }
