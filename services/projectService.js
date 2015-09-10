@@ -73,13 +73,11 @@ module.exports.getProject = function(req, res, user) {
       return res.status(403).json({ errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}});
     } else {
       return res.json({
-                      project: {
                         id: projects[0].id,
                         name: projects[0].name,
                         description: projects[0].description,
                         createdAt: projects[0].createdAt,
                         isOwner: projects[0].ProjectUser.isOwner
-                      }
                     });
     }
   });
