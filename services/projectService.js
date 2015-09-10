@@ -60,7 +60,9 @@ module.exports.createProject = function(req, res) {
 /*
 * Get Project information
 *
-* @id
+* @user
+* @req
+* @res
 *
 */
 module.exports.getProject = function(req, res, user) {
@@ -84,6 +86,36 @@ module.exports.getProject = function(req, res, user) {
     }
   });
 };
+
+/*
+* Get all User Project's information
+*
+* @user
+* @req
+* @res
+*
+*/
+module.exports.getProjects = function(req, res, user) {
+  user.getProjects({ where: ['"Project"."state" != ?', "B"], order: [['createdAt', 'DESC']] }).then(function(projects){
+  var projects_to_be_returned = [];
+  //creating response
+  var x;
+  for (x in projects) {
+    //filtering projects user is not assigned anymore
+      if(projects[x].ProjectUser.active == true){
+        projects_to_be_returned.push({
+          id: projects[x].id,
+          name: projects[x].name,
+          description: projects[x].description,
+          createdAt: projects[x].createdAt,
+          isOwner: projects[x].ProjectUser.isOwner
+        });
+      }
+  }
+  return res.json(projects_to_be_returned);
+  });
+};
+
 
 /*
 * Generates an expirable project invitation token for provided email.
