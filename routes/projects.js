@@ -60,6 +60,23 @@ router.get('/', auth, function(req, res) {
 });
 
 /*
+*
+* Sends invitations to be part of a project to provided email accounts.
+* Requires authentication header.
+* @id
+* @addresses
+*
+*/
+router.post('/:id/invitations', auth, projectValidator.validNewMembers, function(req, res){
+  //look for current user's account
+  models.User.findById(parseInt(req.payload._id)).then(function(user) {
+    if (!user) {
+      return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
+    }
+    projectService.sendInvitationsBulk(req, res, user);
+  });
+});
+/*
 * Update a Project of currently logged User ownership.
 * Requires authentication header.
 *

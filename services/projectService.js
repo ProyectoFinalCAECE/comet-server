@@ -116,6 +116,47 @@ module.exports.getProjects = function(req, res, user) {
   });
 };
 
+module.exports.sendInvitationsBulk = function(req, res, user){
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ?  AND "Project"."state" != ?', req.params.id, 'B'] }).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      return res.status(404).json({ errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}});
+    }
+
+    //currently logged user is owner of the project
+    if(projects[0].ProjectUser.isOwner == true ){
+      //currently logged user is active on the project
+        if(projects[0].ProjectUser.active == true){
+
+          //look for already existent members
+          projects[0].getUsers({attributes: ['email']}).then(function(members){
+            var members_mails = [];
+            var x;
+            for (x in members) {
+              members_mails.push(members[x].email);
+            }
+
+            var new_members = [];
+            var y;
+
+            //filter emails of already existent memebers
+            for (y in req.body.addresses) {
+              if(members_mails.indexOf(req.body.addresses[y].address) == -1){
+                new_members.push(req.body.addresses[y]);
+              }
+            }
+
+            //sending invitations
+            sendInvitations(new_members, projects[0].name, projects[0].id, user.alias);
+            return res.status(200).json({});
+          });
+        } else {
+          return res.status(403).json({ errors: { all: 'El usuario no puede realizar la acción solicitada.'}});
+        }
+    } else {
+      return res.status(403).json({ errors: { all: 'El usuario no puede realizar la acción solicitada.'}});
+    }
+  });
+};
 
 /*
 * Generates an expirable project invitation token for provided email.
