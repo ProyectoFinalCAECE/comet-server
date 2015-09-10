@@ -45,6 +45,21 @@ router.get('/:id', auth, projectValidator.validGet, function(req, res) {
 });
 
 /*
+* Get all User Project's information.
+* Requires authentication header.
+*
+*/
+router.get('/', auth, function(req, res) {
+  // look for current user's account
+  models.User.findById(parseInt(req.payload._id)).then(function(user) {
+    if (!user) {
+      return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
+    }
+    projectService.getProjects(req, res, user);
+  });
+});
+
+/*
 * Update a Project of currently logged User ownership.
 * Requires authentication header.
 *
