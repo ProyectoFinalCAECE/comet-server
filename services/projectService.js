@@ -41,14 +41,12 @@ module.exports.createProject = function(req, res) {
           sendInvitations(req.body.members, project.name, project.id, user.alias);
 
           return res.json({
-                          project: {
                             id: project.id,
                             name: project.name,
                             description: project.description,
                             createdAt: project.createdAt,
                             isOwner: true
-                          }
-                        });
+                          });
         });
       });
     } else {
