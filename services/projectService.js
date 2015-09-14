@@ -46,7 +46,13 @@ module.exports.createProject = function(req, res) {
                             description: project.description,
                             createdAt: project.createdAt,
                             isOwner: true,
-                            state: project.state
+                            state: project.state,
+                            members:  [{
+                                        id: user.id,
+                                        email: user.email,
+                                        profilePicture: user.profilePicture,
+                                        alias: user.alias
+                                      }]
                           });
         });
       });
@@ -70,17 +76,24 @@ module.exports.getProject = function(req, res, user) {
       return res.status(404).json({ errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}});
     }
 
-    if(projects[0].ProjectUser.active == false){
+    if(projects[0].ProjectUser.active === false){
       return res.status(403).json({ errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}});
     } else {
+
+      //look for members
+      projects[0].getUsers().then(function(users){
+
       return res.json({
                         id: projects[0].id,
                         name: projects[0].name,
                         description: projects[0].description,
                         createdAt: projects[0].createdAt,
                         isOwner: projects[0].ProjectUser.isOwner,
-                        state: projects[0].state
+                        state: projects[0].state,
+                        members: getProjectMemebers(users)
                     });
+
+      });
     }
   });
 };
@@ -94,24 +107,28 @@ module.exports.getProject = function(req, res, user) {
 *
 */
 module.exports.getProjects = function(req, res, user) {
-  user.getProjects({ where: ['"Project"."state" != ?', "B"], order: [['createdAt', 'DESC']] }).then(function(projects){
   var projects_to_be_returned = [];
-  //creating response
-  var x;
-  for (x in projects) {
-    //filtering projects user is not assigned anymore
-      if(projects[x].ProjectUser.active == true){
-        projects_to_be_returned.push({
-          id: projects[x].id,
-          name: projects[x].name,
-          description: projects[x].description,
-          createdAt: projects[x].createdAt,
-          isOwner: projects[x].ProjectUser.isOwner,
-          state: projects[x].state
-        });
+  user.getProjects({ where: ['"Project"."state" != ?', "B"], order: [['createdAt', 'DESC']] ,  include: [{ model: models.User}]}).then(function(projects){
+    //creating response
+    var x;
+    for (x in projects) {
+      //filtering projects user is not assigned anymore
+
+      if(projects[x].ProjectUser.active === true) {
+          projects_to_be_returned.push({
+            id: projects[x].id,
+            name: projects[x].name,
+            description: projects[x].description,
+            createdAt: projects[x].createdAt,
+            isOwner: projects[x].ProjectUser.isOwner,
+            state: projects[x].state,
+            members: getProjectMemebers(projects[x].Users)
+          });
       }
-  }
-  return res.json(projects_to_be_returned);
+    }
+
+    return res.json(projects_to_be_returned);
+
   });
 };
 
@@ -201,4 +218,25 @@ function sendInvitations(addresses, project_name, project_id, owner_name){
       }
     }
   }
+}
+
+/*
+* Given a set of Users of a Project, returns those which are active in a certain format.
+* @users
+*
+*/
+function getProjectMemebers(users){
+  var users_to_be_returned = [];
+  var y;
+  for (y in users) {
+    if(users[y].ProjectUser.active === true){
+      users_to_be_returned.push({
+                                id: users[y].id,
+                                email: users[y].email,
+                                profilePicture: users[y].profilePicture,
+                                alias: users[y].alias
+                              });
+    }
+  }
+  return users_to_be_returned;
 }
