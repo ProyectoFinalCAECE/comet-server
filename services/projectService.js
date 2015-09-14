@@ -45,7 +45,8 @@ module.exports.createProject = function(req, res) {
                             name: project.name,
                             description: project.description,
                             createdAt: project.createdAt,
-                            isOwner: true
+                            isOwner: true,
+                            state: project.state
                           });
         });
       });
@@ -77,7 +78,8 @@ module.exports.getProject = function(req, res, user) {
                         name: projects[0].name,
                         description: projects[0].description,
                         createdAt: projects[0].createdAt,
-                        isOwner: projects[0].ProjectUser.isOwner
+                        isOwner: projects[0].ProjectUser.isOwner,
+                        state: projects[0].state
                     });
     }
   });
@@ -104,7 +106,8 @@ module.exports.getProjects = function(req, res, user) {
           name: projects[x].name,
           description: projects[x].description,
           createdAt: projects[x].createdAt,
-          isOwner: projects[x].ProjectUser.isOwner
+          isOwner: projects[x].ProjectUser.isOwner,
+          state: projects[x].state
         });
       }
   }
