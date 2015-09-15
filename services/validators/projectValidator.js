@@ -51,3 +51,18 @@ module.exports.validNewMembers = function(req, res, next){
   }
   next();
 }
+
+/*
+*
+* Checks if provided parameters to accept project invitations are valid or returns an appropiate response.
+*
+*
+*
+*/
+module.exports.validAcceptInvitation = function(req, res, next){
+  // validate input parameters
+  if (!req.body.token)  {
+    return res.status(400).json({ errors: { all: 'Por favor ingrese los parámetros requeridos.'}});
+  }
+  next();
+}
