@@ -9,6 +9,7 @@
 var models  = require('../models');
 var jwt = require('express-jwt');
 var express = require('express');
+var validator = require("email-validator");
 var router  = express.Router();
 var accountService  = require('../services/accountService');
 
@@ -30,18 +31,25 @@ var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 router.post('/', function(req, res, next) {
   // validate input parameters
 
-  if (!req.body.email ||
-      !req.body.password ||
-      !req.body.firstName ||
-      !req.body.lastName)  {
-        return res.status(400).json({ errors: { all: 'Por favor completa todos tus datos para continuar.'}});
+  if (!req.body.firstName) {
+    return res.status(400).json({errors: { firstName: 'Por favor completa tu nombre.' }});
   }
-  if(!models.User.isValidPassword(req.body.password)){
+
+  if (!req.body.lastName) {
+    return res.status(400).json({errors: { lastName: 'Por favor completa tu apellido.' }});
+  }
+
+  //No se si validate ya chequea el tamaño maximo. Por las dudas lo corroboro.
+  if (!validator.validate(req.body.email) || req.body.email.length > 255){
+    return res.status(400).json({ errors: { email: 'El correo ingresado es inválido.'}});
+  }
+
+  if (!models.User.isValidPassword(req.body.password)){
     return res.status(400).json({ errors: { password: 'El formato de la contraseña provista no es válido.'}});
   }
 
-  if (req.body.email.length > 255){
-    return res.status(400).json({ errors: { email: 'El correo ingresado supera el tamaño máximo.'}});
+  if (req.body.password != req.body.confirmPassword){
+    return res.status(400).json({ errors: { confirmPassword: 'Las contraseñas no coinciden.'}});
   }
 
   //check if there's already an User with provided email at the db
