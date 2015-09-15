@@ -52,7 +52,8 @@ module.exports.createProject = function(req, res) {
                                         email: user.email,
                                         profilePicture: user.profilePicture,
                                         alias: user.alias
-                                      }]
+                                      }],
+                            integrations: []
                           });
         });
       });
@@ -90,7 +91,8 @@ module.exports.getProject = function(req, res, user) {
                         createdAt: projects[0].createdAt,
                         isOwner: projects[0].ProjectUser.isOwner,
                         state: projects[0].state,
-                        members: getProjectMemebers(users)
+                        members: getProjectMemebers(users),
+                        integrations: []
                     });
 
       });
@@ -122,7 +124,8 @@ module.exports.getProjects = function(req, res, user) {
             createdAt: projects[x].createdAt,
             isOwner: projects[x].ProjectUser.isOwner,
             state: projects[x].state,
-            members: getProjectMemebers(projects[x].Users)
+            members: getProjectMemebers(projects[x].Users),
+            integrations: []
           });
       }
     }
