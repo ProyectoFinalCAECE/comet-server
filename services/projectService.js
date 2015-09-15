@@ -211,8 +211,6 @@ module.exports.acceptProjectInvitation = function(req, res, user, token){
     //evaluating token action
     if(decoded.action === 'accept_project'){
       //validate that provided token is intended for currently logged user.
-      console.log('user.email is: ' +user.email);
-      console.log('decoded is: ' + decoded.email_address);
       if (user.email === decoded.email_address){
 
         user.getTokens({ where: ['value = ?', token] }).then(function(tokens){
@@ -247,8 +245,7 @@ module.exports.acceptProjectInvitation = function(req, res, user, token){
               //saving token to avoid reusing it
               user.createToken({value: token});
 
-              user.addProject(project, { isOwner: false });
-              user.save().then(function(user) {
+              user.addProject(project, { isOwner: false }).then(function(user) {
                 // Project created successfully
 
                 //look for members
