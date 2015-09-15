@@ -135,6 +135,14 @@ module.exports.getProjects = function(req, res, user) {
   });
 };
 
+/*
+*
+* Sends Project's invitations to provided list of email addresses.
+* @user
+* @req
+* @res
+*
+*/
 module.exports.sendInvitationsBulk = function(req, res, user){
   user.getProjects({ where: ['"ProjectUser"."ProjectId" = ?  AND "Project"."state" != ?', req.params.id, 'B'] }).then(function(projects){
     if (projects === undefined || projects.length === 0) {
@@ -176,6 +184,99 @@ module.exports.sendInvitationsBulk = function(req, res, user){
     }
   });
 };
+
+/*
+*
+* Validate if provided token is associated to currently loged user, and links User to Project.
+* @user
+* @req
+* @res
+* @token
+*
+*/
+module.exports.acceptProjectInvitation = function(req, res, user, token){
+  //verifying jwt
+  jwt.verify(token, 'mySecretPassword', function(err, decoded) {
+    if (err) {
+      return res.status(400).json({error:{name: err.name, message: err.message}});
+      /*
+        err = {
+          name: 'TokenExpiredError',
+          message: 'jwt expired',
+          expiredAt: 1408621000
+        }
+      */
+    }
+
+    //evaluating token action
+    if(decoded.action === 'accept_project'){
+      //validate that provided token is intended for currently logged user.
+      if (user.email === decoded.email_address){
+
+        user.getTokens({ where: ['value = ?', token] }).then(function(tokens){
+          if (!(tokens === undefined || tokens.length === 0)) {
+            return res.status(403).json({ errors: { all: 'El token provisto ya ha sido consumido.'}});
+          }
+
+          //retrieving token's project
+          models.Project.findById(decoded.project_id).then(function(project){
+            //validate that provided project in token exists
+            if (!project) {
+              return res.status(404).json({ errors: { all: 'No se encontró Proyecto asociado al token provisto.'}});
+            }
+            //validate that provided token belongs to active project
+            if(project.state == 'C' || project.state == 'B'){
+              return res.status(404).json({ errors: { all: 'El Proyecto asociado al token provisto no está activo.'}});
+            }
+
+
+          //look for already existent members
+          project.getUsers({attributes: ['id']}).then(function(members){
+
+            var members_ids = [];
+            var x;
+            for (x in members) {
+              members_ids.push(members[x].id);
+            }
+
+            //checking if currently logged user already belongs to Project
+            if(members_ids.indexOf(user.id) == -1){
+
+              //saving token to avoid reusing it
+              user.createToken({value: token});
+
+              user.addProject(project, { isOwner: false }).then(function(user) {
+                // Project created successfully
+
+                //look for members
+                project.getUsers().then(function(users){
+                  return res.json({
+                                    id: project.id,
+                                    name: project.name,
+                                    description: project.description,
+                                    createdAt: project.createdAt,
+                                    isOwner: false,
+                                    state: project.state,
+                                    members: getProjectMemebers(users),
+                                    integrations: []
+                                });
+                });
+              });
+            } else {
+              return res.status(403).json({ errors: { all: 'El Usuario ya pertenece al Proyecto.'}});
+            }
+          });
+          });
+        });
+
+      } else {
+        return res.status(403).json({ errors: { all: 'El token provisto no es válido para el Usuario logeado.'}});
+      }
+    } else {
+      return res.status(403).json({ errors: { all: 'El token provisto no fue diseñado para éste propósito.'}});
+    }
+  });
+}
 
 /*
 * Generates an expirable project invitation token for provided email.

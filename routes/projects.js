@@ -76,6 +76,25 @@ router.post('/:id/invitations', auth, projectValidator.validNewMembers, function
     projectService.sendInvitationsBulk(req, res, user);
   });
 });
+
+/*
+*
+* Allows currently logged User to accept an invitation to a Project
+* Requires authentication header.
+* @token
+*
+*/
+router.post('/:id/invitations/accept', auth, projectValidator.validAcceptInvitation, function(req, res){
+  //look for current user's account
+  models.User.findById(parseInt(req.payload._id)).then(function(user) {
+    if (!user) {
+      return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
+    }
+    projectService.acceptProjectInvitation(req, res, user, req.body.token);
+  });
+});
+
+
 /*
 * Update a Project of currently logged User ownership.
 * Requires authentication header.
