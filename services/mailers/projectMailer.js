@@ -21,7 +21,7 @@ var EmailTemplate = require('email-templates').EmailTemplate;
 
    var project_invitation_mailer_template = new EmailTemplate(project_invitation_mailer_template_dir);
 
-   var link = site_config.base + '/#/project/invitations/accept?token=' + token;
+   var link = site_config.base + '/#/projects/invitations/accept?token=' + token;
 
    var locals = {project:{name: projectName, owner: projectOwner, link: link}};
 
