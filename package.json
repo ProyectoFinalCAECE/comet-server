@@ -31,7 +31,8 @@
     "nodemailer":"1.4.0",
     "email-templates":"2.0.1",
     "xregexp":"2.0.0",
-    "validator":"4.0.5"
+    "validator":"4.0.5",
+    "email-validator":"1.0.3"
   },
   "devDependencies": {
     "bluebird": "^2.9.33",
