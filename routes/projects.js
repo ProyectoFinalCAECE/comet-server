@@ -139,28 +139,14 @@ router.post('/:id/invitations/accept', auth, projectValidator.validAcceptInvitat
 * Requires authentication header.
 *
 */
-/*router.delete('/:id', auth, function(req, res, next) {
+router.delete('/:id', auth, function(req, res, next) {
   // look for user account
   models.User.findById(req.payload._id).then(function(user) {
     if (!user) {
       return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
-    } else {
-      //Closes account
-      user.closeAccount();
-
-      // save deleted User
-      user.save()
-            .then(function(userSaved) {
-              // User saved successfully
-              mailerService.sendGoodbyeMail(user.email);
-              req.logout();
-              res.redirect('/');
-            }).catch(function(err) {
-              // error while saving
-              return next (err);
-            });
-        }
-      });
-});*/
+    }
+    projectService.deleteProject(req, res, user);
+  });
+});
 
 module.exports = router;
