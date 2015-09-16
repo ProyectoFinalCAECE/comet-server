@@ -149,4 +149,19 @@ router.delete('/:id', auth, function(req, res, next) {
   });
 });
 
+/*
+* Closes a Project of currently logged User ownership.
+* Requires authentication header.
+*
+*/
+router.delete('/:id/close', auth, function(req, res, next) {
+  // look for user account
+  models.User.findById(req.payload._id).then(function(user) {
+    if (!user) {
+      return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
+    }
+    projectService.closeProject(req, res, user);
+  });
+});
+
 module.exports = router;

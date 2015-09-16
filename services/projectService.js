@@ -280,7 +280,7 @@ module.exports.acceptProjectInvitation = function(req, res, user, token){
 
 /*
 *
-* Close Project is currently logged user is the owner.
+* Block Project if currently logged user is the owner.
 * @user
 * @req
 * @res
@@ -312,6 +312,42 @@ module.exports.deleteProject = function(req, res, user){
     }
   });
 }
+
+/*
+*
+* Close Project if currently logged user is the owner.
+* @user
+* @req
+* @res
+*
+*/
+module.exports.closeProject = function(req, res, user){
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ? AND "ProjectUser"."UserId" = ?' , req.params.id, 'B', user.id] }).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      return res.status(404).json({ errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}});
+    }
+
+    //currently logged user is owner of the project
+    if(projects[0].ProjectUser.isOwner === true ){
+      //currently logged user is active on the project
+        if(projects[0].ProjectUser.active === true){
+
+        //deletes project
+        projects[0].close();
+
+        // save deleted User
+        projects[0].save().then(function(projectSaved) {
+          return res.status(200).json({});
+        });
+      } else {
+        return res.status(403).json({ errors: { all: 'El usuario no puede realizar la acción solicitada.'}});
+      }
+    } else {
+      return res.status(403).json({ errors: { all: 'El usuario no puede realizar la acción solicitada.'}});
+    }
+  });
+}
+
 
 
 /*
