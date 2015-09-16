@@ -332,10 +332,10 @@ module.exports.closeProject = function(req, res, user){
       //currently logged user is active on the project
         if(projects[0].ProjectUser.active === true){
 
-        //deletes project
+        //deletes Project
         projects[0].close();
 
-        // save deleted User
+        // save closed Project
         projects[0].save().then(function(projectSaved) {
           return res.status(200).json({});
         });
@@ -348,7 +348,48 @@ module.exports.closeProject = function(req, res, user){
   });
 }
 
+/*
+*
+* Remove Project member if currently logged user is the owner.
+* @user
+* @req
+* @res
+*
+*/
+module.exports.removeMember = function(req, res, user){
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?' , req.params.project_id, 'B'] }).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      return res.status(404).json({ errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}});
+    }
 
+    if(parseInt(user.id) !== parseInt(req.params.member_id)){
+      //currently logged user is owner of the project
+      if(projects[0].ProjectUser.isOwner === true ){
+        //currently logged user is active on the project
+          if(projects[0].ProjectUser.active === true){
+
+            projects[0].getUsers({where: ['"ProjectUser"."UserId" = ?', req.params.member_id]}).then(function(members){
+              if (members === undefined || members.length === 0) {
+                return res.status(404).json({ errors: { all: 'No se puede encontrar ningun miembro de proyecto con el id provisto.'}});
+              }
+              //removes membership
+              members[0].ProjectUser.active = false;
+
+              members[0].ProjectUser.save().then(function(memberSaved) {
+                return res.status(200).json({});
+              });
+            });
+        } else {
+          return res.status(403).json({ errors: { all: 'El usuario no puede realizar la acción solicitada.'}});
+        }
+      } else {
+        return res.status(403).json({ errors: { all: 'El usuario no puede realizar la acción solicitada.'}});
+      }
+    }else{
+      return res.status(403).json({ errors: { all: 'El usuario no puede eliminarse a si mismo del proyecto.'}});
+    }
+  });
+}
 
 /*
 * Generates an expirable project invitation token for provided email.
