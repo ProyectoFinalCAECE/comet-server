@@ -164,4 +164,20 @@ router.delete('/:id/close', auth, function(req, res, next) {
   });
 });
 
+/*
+*
+* Allows currently logged User to remove a Project member
+* Requires authentication header.
+*
+*/
+router.delete('/:project_id/members/:member_id', auth, function(req, res){
+  //look for current user's account
+  models.User.findById(parseInt(req.payload._id)).then(function(user) {
+    if (!user) {
+      return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
+    }
+    projectService.removeMember(req, res, user);
+  });
+});
+
 module.exports = router;
