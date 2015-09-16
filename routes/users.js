@@ -31,11 +31,11 @@ var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 router.post('/', function(req, res, next) {
   // validate input parameters
 
-  if (!req.body.firstName) {
+  if (!req.body.firstName || req.body.firstName.length > 255) {
     return res.status(400).json({errors: { firstName: 'Por favor completa tu nombre.' }});
   }
 
-  if (!req.body.lastName) {
+  if (!req.body.lastName  || req.body.lastName.length > 255) {
     return res.status(400).json({errors: { lastName: 'Por favor completa tu apellido.' }});
   }
 

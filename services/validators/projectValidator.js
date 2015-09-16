@@ -16,9 +16,12 @@
 */
 module.exports.validCreate = function(req, res, next) {
   // validate input parameters
-  if (!req.body.name ||
-      !req.body.description)  {
-        return res.status(400).json({ errors: { all: 'Por favor ingrese los parámetros requeridos.'}});
+  if (!req.body.name) {
+    return res.status(400).json({ errors: { name: 'Por favor ingresa el nombre de tu proyecto.'}});
+  }
+
+  if (!req.body.description) {
+    return res.status(400).json({ errors: { description: 'Por favor ingresa alguna descripción de tu proyecto.'}});
   }
   next();
 }

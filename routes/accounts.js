@@ -13,6 +13,7 @@ var router  = express.Router();
 var jwt = require('express-jwt');
 var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 var passport = require('passport');
+var validator = require("email-validator");
 
 /*
 * Logs in an User with provided credentials and returns a session token.
@@ -22,9 +23,14 @@ var passport = require('passport');
 *
 */
 router.post('/login', function(req, res, next) {
+
   // validate input parameters
-  if (!req.body.email || !req.body.password){
-    return res.status(400).json({ errors: { all: 'Por favor coloca tu dirección de correo y contraseña' }});
+  if (!validator.validate(req.body.email) || req.body.email.length > 255){
+    return res.status(400).json({ errors: { email: 'El correo ingresado es inválido.'}});
+  }
+
+  if (!req.body.password){
+    return res.status(400).json({ errors: { all: 'Por favor coloca tu contraseña.' }});
   }
 
   // login using passport

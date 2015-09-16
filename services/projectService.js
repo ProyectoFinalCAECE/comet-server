@@ -58,7 +58,7 @@ module.exports.createProject = function(req, res) {
         });
       });
     } else {
-      return res.status(403).json({ errors: { all: 'El usuario debe confirmar su cuenta para llevar adelante la acción solicitada.'}});
+      return res.status(403).json({ errors: { all: 'Por favor, confirma tu cuenta para poder crear proyectos.'}});
     }
   });
 };
