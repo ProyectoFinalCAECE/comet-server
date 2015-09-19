@@ -24,13 +24,28 @@ var validator = require("email-validator");
 */
 router.post('/login', function(req, res, next) {
 
+  var email = req.body.email;
+  var password = req.body.password;
+  var errors = {};
+  var hasErrors = false;
+
   // validate input parameters
-  if (!validator.validate(req.body.email) || req.body.email.length > 255){
-    return res.status(400).json({ errors: { email: 'El correo ingresado es inválido.'}});
+  if (!email && !password) {
+    return res.status(400).json({ errors: { all: 'Por favor ingresa tu y contraseña.'}});
   }
 
-  if (!req.body.password){
-    return res.status(400).json({ errors: { all: 'Por favor coloca tu contraseña.' }});
+  if (!validator.validate(email) || email.length > 255) {
+    errors.email = 'El correo ingresado es inválido.';
+    hasErrors = true;
+  }
+
+  if (!req.body.password) {
+    errors.password = 'Por favor coloca tu contraseña.';
+    hasErrors = true;
+  }
+
+  if (hasErrors) {
+    return res.status(400).json({errors:errors});
   }
 
   // login using passport

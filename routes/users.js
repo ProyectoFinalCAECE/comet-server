@@ -29,27 +29,58 @@ var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 *
 */
 router.post('/', function(req, res, next) {
+
+  var firstName = req.body.firstName;
+  var lastName = req.body.lastName;
+  var email = req.body.email;
+  var password = req.body.password;
+  var confirmPassword = req.body.confirmPassword;
+
+  var errors = {}
+  var hasErrors = false;
+
   // validate input parameters
 
-  if (!req.body.firstName || req.body.firstName.length > 255) {
-    return res.status(400).json({errors: { firstName: 'Por favor completa tu nombre.' }});
+  if (!firstName && !lastName && !email && !password && !confirmPassword) {
+    return res.status(400).json({errors: { all: 'Por favor completa todos los datos solicitados.' }});
   }
 
-  if (!req.body.lastName  || req.body.lastName.length > 255) {
-    return res.status(400).json({errors: { lastName: 'Por favor completa tu apellido.' }});
+  if (!firstName || firstName.trim == 0) {
+    errors.firstName = 'Por favor completa tu nombre.';
+    hasErrors = true;
+  } else if (firstName.length > 20) {
+    errors.firstName = 'Tu nombre no puede superar los 20 caracteres.';
+    hasErrors = true;
   }
 
-  //No se si validate ya chequea el tamaño maximo. Por las dudas lo corroboro.
-  if (!validator.validate(req.body.email) || req.body.email.length > 255){
-    return res.status(400).json({ errors: { email: 'El correo ingresado es inválido.'}});
+  if (!lastName || lastName.trim == 0) {
+    errors.lastName = 'Por favor completa tu apellido.';
+    hasErrors = true;
+  } else if (lastName.length > 30) {
+    errors.lastName = 'Tu apellido no puede superar los 30 caracteres.';
+    hasErrors = true;
   }
 
-  if (!models.User.isValidPassword(req.body.password)){
-    return res.status(400).json({ errors: { password: 'El formato de la contraseña provista no es válido.'}});
+  if (!validator.validate(email) || email.length > 255) {
+    errors.email = 'El correo ingresado es inválido.';
+    hasErrors = true;
   }
 
-  if (req.body.password != req.body.confirmPassword){
-    return res.status(400).json({ errors: { confirmPassword: 'Las contraseñas no coinciden.'}});
+  if (!models.User.isValidPassword(req.body.password)) {
+    errors.password = 'El formato de la contraseña provista no es válido.';
+    hasErrors = true;
+  }
+
+  if (!req.body.confirmPassword) {
+    errors.confirmPassword = 'Por favor repite tu contraseña.';
+    hasErrors = true;
+  } else if (req.body.password != req.body.confirmPassword) {
+    errors.confirmPassword = 'Las contraseñas no coinciden.';
+    hasErrors = true;
+  }
+
+  if (hasErrors) {
+    return res.status(400).json({errors: errors});
   }
 
   //check if there's already an User with provided email at the db
