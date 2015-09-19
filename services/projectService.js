@@ -300,6 +300,9 @@ module.exports.deleteProject = function(req, res, user){
         //deletes project
         projects[0].block();
 
+        //remove assignments
+        invalidateUsers(projects[0]);
+
         // save deleted User
         projects[0].save().then(function(projectSaved) {
           return res.status(200).json({});
@@ -509,4 +512,21 @@ function getProjectMemebers(users){
     }
   }
   return users_to_be_returned;
+}
+
+/*
+* Removes the Users from a given Project
+*
+* @projects
+*
+*/
+function invalidateUsers(project){
+  //look for members
+  project.getUsers().then(function(users){
+    var x;
+    for (x in users) {
+      users[x].ProjectUser.active = false;
+      users[x].ProjectUser.save();
+    }
+  });
 }
