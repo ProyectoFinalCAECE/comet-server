@@ -350,6 +350,59 @@ module.exports.closeProject = function(req, res, user){
 
 /*
 *
+* Update Project's attributes if currently logged user is the owner.
+* @user
+* @req
+* @res
+*
+*/
+module.exports.updateProject = function(req, res, user){
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ?  AND "Project"."state" != ?', req.params.id, 'B'] }).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      return res.status(404).json({ errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}});
+    }
+
+    //currently logged user is owner of the project
+    if(projects[0].ProjectUser.isOwner == true ){
+      //currently logged user is active on the project
+        if(projects[0].ProjectUser.active == true){
+            if(req.body.name){
+              projects[0].name = req.body.name;
+            }
+            if(req.body.description){
+              projects[0].description = req.body.description;
+            }
+            // save modified Project
+            projects[0].save()
+                    .then(function(projectSaved){
+                      // Project saved successfully
+                      //look for members
+                      projectSaved.getUsers().then(function(users){
+                      console.log('projectSaved is: ' + JSON.stringify(projectSaved));
+                      return res.json({
+                                        id: projectSaved.id,
+                                        name: projectSaved.name,
+                                        description: projectSaved.description,
+                                        createdAt: projectSaved.createdAt,
+                                        isOwner: projectSaved.ProjectUser.isOwner,
+                                        state: projectSaved.state,
+                                        members: getProjectMemebers(users),
+                                        integrations: []
+                                    });
+
+                      });
+                    });
+        } else {
+          return res.status(403).json({ errors: { all: 'El usuario no puede realizar la acción solicitada.'}});
+        }
+    } else {
+      return res.status(403).json({ errors: { all: 'El usuario no puede realizar la acción solicitada.'}});
+    }
+  });
+}
+
+/*
+*
 * Remove Project member if currently logged user is the owner.
 * @user
 * @req

@@ -28,6 +28,30 @@ module.exports.validCreate = function(req, res, next) {
 
 /*
 *
+* Checks if provided parameters to update a Project are valid or returns an appropiate response.
+* @name
+* @description
+*
+*/
+
+module.exports.validUpdate = function(req, res, next) {
+  // validate input parameters
+  if (req.body.name) {
+    if(req.body.name === ''){
+      return res.status(400).json({ errors: { name: 'El nombre provisto no es válido.'}});
+    }
+  }
+
+  if (req.body.description) {
+    if(req.body.description === ''){
+      return res.status(400).json({ errors: { description: 'La descripción provista no es válida.'}});
+    }
+  }
+  next();
+}
+
+/*
+*
 * Checks if provided parameters get a Project are valid or returns an appropiate response.
 * @id
 *
