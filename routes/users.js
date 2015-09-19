@@ -158,27 +158,37 @@ router.put('/', auth, function(req, res, next) {
 *
 */
 router.delete('/', auth, function(req, res, next) {
+
+  if (!req.body.password) {
+    return res.status(400).json({errors: { password: 'Por favor provee tu contraseña.' }});
+  }
+
   // look for user account
   models.User.findById(req.payload._id).then(function(user) {
     if (!user) {
-      return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
+      return res.status(404).json({errors: { all: 'No se encontro usuario asociado al token provisto.'}});
     } else {
-      //Closes account
-      user.closeAccount();
 
-      // save deleted User
-      user.save()
-            .then(function(userSaved) {
-              // User saved successfully
-              mailerService.sendGoodbyeMail(user.email);
-              req.logout();
-              res.redirect('/');
-            }).catch(function(err) {
-              // error while saving
-              return next (err);
-            });
-        }
-      });
+      if(user.validatePassword(req.body.password)){
+        //Closes account
+        user.closeAccount();
+
+        // save deleted User
+        user.save()
+              .then(function(userSaved) {
+                // User saved successfully
+                mailerService.sendGoodbyeMail(user.email);
+                req.logout();
+                return res.status(200).json({});
+              }).catch(function(err) {
+                // error while saving
+                return next (err);
+              });
+      } else {
+        return res.status(403).json({ errors: { password: 'La contraseña ingresada es incorrecta.'}});
+      }
+    }
+  });
 });
 
 module.exports = router;
