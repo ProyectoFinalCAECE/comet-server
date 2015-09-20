@@ -14,15 +14,51 @@
 * @members - optional
 *
 */
+var validator = require("email-validator");
+
+//Max project name and description text lengths
+//should be consts but it's use is not allowed under strict mode... yet.
+var NameLenght = 40;
+var DescLength = 2000;
+
 module.exports.validCreate = function(req, res, next) {
+  var errors = {};
+  var hasErrors = false;
+
   // validate input parameters
+  if (!req.body.name && !req.body.description) {
+    return res.status(400).json({ errors: { all: 'Por favor completa el nombre y la descripción de tu proyecto.'}});
+  }
+
   if (!req.body.name) {
-    return res.status(400).json({ errors: { name: 'Por favor ingresa el nombre de tu proyecto.'}});
+    errors.name = 'Por favor ingresa el nombre de tu proyecto.';
+    hasErrors = true;
+  } else if (req.body.name.length > NameLenght) {
+    errors.name = 'El nombre de tu proyecto no debe superar los '+NameLenght+' caracteres.';
+    hasErrors = true;
   }
 
   if (!req.body.description) {
-    return res.status(400).json({ errors: { description: 'Por favor ingresa alguna descripción de tu proyecto.'}});
+    errors.description = 'Por favor ingresa una descripción de tu proyecto.';
+    hasErrors = true;
+  } else if (req.body.description.length > DescLength) {
+    errors.description = 'La descripción de tu proyecto no debe superar los '+DescLength+' caracteres.';
+    hasErrors = true;
   }
+
+  if (req.body.members.length > 0) {
+    for (var m in req.body.members) {
+      if (!validator.validate((req.body.members[m].address))) {
+        errors[req.body.members[m].name] = 'Correo inválido';
+        hasErrors = true;
+      }
+    }
+  }
+
+  if (hasErrors) {
+    return res.status(400).json({ errors: errors });
+  }
+
   next();
 }
 
