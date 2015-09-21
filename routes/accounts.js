@@ -220,12 +220,30 @@ router.post('/password/recover', function(req, res){
 
 router.post('/password/renew', auth, function(req, res){
 
-  if(!req.body.oldpassword || !req.body.newpassword){
-    return res.status(400).json({ errors: { all: 'Por favor ingrese los parametros requeridos.'}});
+  var errors = {};
+  var hasErrors = false;
+
+  if (!req.body.oldpassword && !req.body.newpassword && !req.body.confirmPassword){
+    return res.status(400).json({ errors: { all: 'Por favor completa todos los datos solicitados.'}});
   }
 
-  if(!models.User.isValidPassword(req.body.newpassword)){
-    return res.status(400).json({ errors: { password: 'El formato de la contraseña provista no es valido.'}});
+  if (!req.body.oldpassword || req.body.oldpassword.length == 0) {
+    errors.password = 'Por favor ingresa tu contraseña actual.';
+    hasErrors = true;
+  }
+
+  if (!models.User.isValidPassword(req.body.newpassword)) {
+    errors.newPassword = 'El formato de la nueva contraseña es inválido.';
+    hasErrors = true;
+  }
+
+  if (req.body.confirmPassword != req.body.newpassword) {
+    errors.confirmPassword = 'Las contraseñas no coinciden.';
+    hasErrors = true;
+  }
+
+  if (hasErrors) {
+    return res.status(400).json({errors: errors});
   }
 
   // look for current user's account
@@ -241,7 +259,7 @@ router.post('/password/renew', auth, function(req, res){
       user.save();
       return res.status(200).json({});
     } else {
-      return res.status(403).json({ errors: { all: 'La contraseña ingresada es incorrecta.'}});
+      return res.status(403).json({ errors: { password: 'La contraseña ingresada es incorrecta.'}});
     }
   });
 });

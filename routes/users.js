@@ -19,6 +19,12 @@ var mailerService = require('../services/mailer');
 // saves the unencrypted token in the 'payload' field of request
 var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 
+//User name, lastname and alias max lenght constants
+//should be constants, but they're not allowed with 'strict' mode
+var MAX_FNAME = 20;
+var MAX_LNAME = 30;
+var MAX_ALIAS = MAX_FNAME + MAX_LNAME;
+
 /*
 * Create new User Account.
 *
@@ -48,16 +54,16 @@ router.post('/', function(req, res, next) {
   if (!firstName || firstName.trim == 0) {
     errors.firstName = 'Por favor completa tu nombre.';
     hasErrors = true;
-  } else if (firstName.length > 20) {
-    errors.firstName = 'Tu nombre no puede superar los 20 caracteres.';
+  } else if (firstName.length > MAX_FNAME) {
+    errors.firstName = 'Tu nombre no puede superar los '+MAX_FNAME+' caracteres.';
     hasErrors = true;
   }
 
   if (!lastName || lastName.trim == 0) {
     errors.lastName = 'Por favor completa tu apellido.';
     hasErrors = true;
-  } else if (lastName.length > 30) {
-    errors.lastName = 'Tu apellido no puede superar los 30 caracteres.';
+  } else if (lastName.length > MAX_LNAME) {
+    errors.lastName = 'Tu apellido no puede superar los '+MAX_LNAME+' caracteres.';
     hasErrors = true;
   }
 
@@ -91,9 +97,9 @@ router.post('/', function(req, res, next) {
 
     // create new User instance
     var user = models.User.build({
-      email: req.body.email,
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
+      email: email,
+      firstName: firstName,
+      lastName: lastName,
     });
 
     //populating other user record fields
@@ -154,17 +160,50 @@ router.get('/', auth, function(req, res, next) {
 router.put('/', auth, function(req, res, next) {
   // check if there's already an User with provided id at the db
   models.User.findById(req.payload._id).then(function(user) {
+
+    var firstName = req.body.firstName;
+    var lastName = req.body.lastName;
+    var alias = req.body.alias;
+    var errors = {};
+    var hasErrors = false;
+
+    //validate parameters
     if (!user) {
       return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
     } else {
-      if(req.body.firstName){
-        user.firstName = req.body.firstName;
+
+      if (!firstName || firstName.trim == 0) {
+        errors.firstName = 'Por favor completa tu nombre.';
+        hasErrors = true;
+      } else if (firstName.length > MAX_FNAME) {
+        errors.firstName = 'Tu nombre no puede superar los '+MAX_FNAME+' caracteres.';
+        hasErrors = true;
+      } else {
+        user.firstName = firstName;
       }
-      if(req.body.lastName){
-        user.lastName = req.body.lastName;
+
+      if (!lastName || lastName.trim == 0) {
+        errors.lastName = 'Por favor completa tu apellido.';
+        hasErrors = true;
+      } else if (lastName.length > MAX_LNAME) {
+        errors.lastName = 'Tu apellido no puede superar los '+MAX_LNAME+' caracteres.';
+        hasErrors = true;
+      } else {
+        user.lastName = lastName;
       }
-      if(req.body.alias){
-        user.alias = req.body.alias;
+
+      if (!alias || alias.trim == 0) {
+        errors.alias = 'Por favor completa tu alias.';
+        hasErrors = true;
+      } else if (alias.length > MAX_ALIAS) {
+        errors.alias = 'Tu alias no puede superar los '+MAX_ALIAS+' caracteres.';
+        hasErrors = true;
+      } else {
+        user.alias = alias;
+      }
+
+      if (hasErrors) {
+        return res.status(400).json({errors: errors});
       }
 
       // save modified User
