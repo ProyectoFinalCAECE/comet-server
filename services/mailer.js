@@ -14,23 +14,25 @@ var EmailTemplate = require('email-templates').EmailTemplate;
 var path = require('path');
 
 var account_confirmation_mailer_template_dir = path.join(__dirname, '..', '/views/templates/account_confirm_email');
-var welcome_mailer_template_dir = path.join(__dirname, '..', '/views/templates/welcome_email');
 var goodbye_mailer_template_dir = path.join(__dirname, '..', '/views/templates/goodbye_email');
 var password_recovery_mailer_template_dir = path.join(__dirname, '..', '/views/templates/password_recovery_email');
 var account_recovery_mailer_template_dir = path.join(__dirname, '..', '/views/templates/account_recovery_email');
+var welcome__and_account_confirmation_mailer_template_dir = path.join(__dirname, '..', '/views/templates/welcome_and_account_confirmation_email');
 
 /*
-* Sends Welcome mail to provided email account.
+* Sends Welcome and account confirmation email to provided email account, with expirable token.
 *
 * @receiver
+* @token
 *
 */
-module.exports.sendWelcomeMail = function(receiver) {
-  var welcome_mailer_template = new EmailTemplate(welcome_mailer_template_dir);
 
-  var locals = {};
+module.exports.sendWelcomeAndAccountConfirmationMail = function(receiver, token) {
+  var welcome__and_account_confirmation_mailer_template = new EmailTemplate(welcome__and_account_confirmation_mailer_template_dir);
 
-  welcome_mailer_template.render(locals, function (err, results) {
+  var locals = {message:{link: 'http://localhost:4000/#/account/confirm?token=' + token}};
+
+  welcome__and_account_confirmation_mailer_template.render(locals, function (err, results) {
     if (err) {
       console.log(err);
       return err;

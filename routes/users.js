@@ -109,8 +109,8 @@ router.post('/', function(req, res, next) {
     user.save()
             .then(function(userCreated) {
               // User created successfully
-              mailerService.sendWelcomeMail(user.email);
-              mailerService.sendAccountConfirmationMail(user.email, accountService.generateConfirmationToken(userCreated.id));
+              mailerService.sendWelcomeAndAccountConfirmationMail(user.email,
+                accountService.generateConfirmationToken(userCreated.id));
 
               return res.json({
                 token: userCreated.generateJWT()
