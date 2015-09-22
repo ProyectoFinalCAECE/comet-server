@@ -63,12 +63,16 @@ module.exports.confirmAccount = function(res, token){
             return res.status(403).json({ errors: { all: 'El token provisto ya ha sido consumido.'}});
           }
 
-           //saving token to avoid reusing it
-           user.createToken({value: token});
-           //confirming user account
-           user.confirmAccount();
-           user.save();
-           return res.status(200).json({});
+          if(!user.confirmed){
+             //saving token to avoid reusing it
+             user.createToken({value: token});
+             //confirming user account
+             user.confirmAccount();
+             user.save();
+             return res.status(200).json({});
+          } else {
+            return res.status(403).json({ errors: { all: 'La cuenta ya habia sido confirmada previamente.'}});
+          }
         });
       });
 

@@ -155,8 +155,12 @@ router.post('/confirm/token', auth, function(req, res, next) {
     if (!user) {
       return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
     } else {
-      mailerService.sendAccountConfirmationMail(user.email, accountService.generateConfirmationToken(user.id));
-      return res.status(200).json({});
+      if(!user.confirmed){
+        mailerService.sendAccountConfirmationMail(user.email, accountService.generateConfirmationToken(user.id));
+        return res.status(200).json({});
+      } else {
+        return res.status(403).json({ errors: { all: 'La cuenta ya habia sido confirmada previamente.'}});
+      }
     }
   });
 });
