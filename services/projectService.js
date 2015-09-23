@@ -507,7 +507,10 @@ function getProjectMemebers(users){
                                 id: users[y].id,
                                 email: users[y].email,
                                 profilePicture: users[y].profilePicture,
-                                alias: users[y].alias
+                                firstName: users[y].firstName,
+                                lastName: users[y].lastName,
+                                alias: users[y].alias,
+                                createdAt:users[y].createdAt
                               });
     }
   }
