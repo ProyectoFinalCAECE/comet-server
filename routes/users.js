@@ -12,6 +12,20 @@ var express = require('express');
 var validator = require("email-validator");
 var router  = express.Router();
 var accountService  = require('../services/accountService');
+var multer  = require('multer');
+
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './avatar_images/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '-' +req.payload._id + '-' + Date.now() + '.jpg');
+  }
+});
+
+var upload = multer({ storage: storage });
+
+var easyimg = require('easyimage');
 
 var mailerService = require('../services/mailer');
 // should we take this to a UserService.js ?
@@ -42,7 +56,7 @@ router.post('/', function(req, res, next) {
   var password = req.body.password;
   var confirmPassword = req.body.confirmPassword;
 
-  var errors = {}
+  var errors = {};
   var hasErrors = false;
 
   // validate input parameters
@@ -51,7 +65,7 @@ router.post('/', function(req, res, next) {
     return res.status(400).json({errors: { all: 'Por favor completa todos los datos solicitados.' }});
   }
 
-  if (!firstName || firstName.trim == 0) {
+  if (!firstName || firstName.trim === 0) {
     errors.firstName = 'Por favor completa tu nombre.';
     hasErrors = true;
   } else if (firstName.length > MAX_FNAME) {
@@ -59,7 +73,7 @@ router.post('/', function(req, res, next) {
     hasErrors = true;
   }
 
-  if (!lastName || lastName.trim == 0) {
+  if (!lastName || lastName.trim === 0) {
     errors.lastName = 'Por favor completa tu apellido.';
     hasErrors = true;
   } else if (lastName.length > MAX_LNAME) {
@@ -80,7 +94,7 @@ router.post('/', function(req, res, next) {
   if (!req.body.confirmPassword) {
     errors.confirmPassword = 'Por favor repite tu contraseña.';
     hasErrors = true;
-  } else if (req.body.password != req.body.confirmPassword) {
+  } else if (req.body.password !== req.body.confirmPassword) {
     errors.confirmPassword = 'Las contraseñas no coinciden.';
     hasErrors = true;
   }
@@ -172,7 +186,7 @@ router.put('/', auth, function(req, res, next) {
       return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
     } else {
 
-      if (!firstName || firstName.trim == 0) {
+      if (!firstName || firstName.trim === 0) {
         errors.firstName = 'Por favor completa tu nombre.';
         hasErrors = true;
       } else if (firstName.length > MAX_FNAME) {
@@ -182,7 +196,7 @@ router.put('/', auth, function(req, res, next) {
         user.firstName = firstName;
       }
 
-      if (!lastName || lastName.trim == 0) {
+      if (!lastName || lastName.trim === 0) {
         errors.lastName = 'Por favor completa tu apellido.';
         hasErrors = true;
       } else if (lastName.length > MAX_LNAME) {
@@ -192,7 +206,7 @@ router.put('/', auth, function(req, res, next) {
         user.lastName = lastName;
       }
 
-      if (!alias || alias.trim == 0) {
+      if (!alias || alias.trim === 0) {
         errors.alias = 'Por favor completa tu alias.';
         hasErrors = true;
       } else if (alias.length > MAX_ALIAS) {
@@ -222,6 +236,56 @@ router.put('/', auth, function(req, res, next) {
   });
 });
 
+/*
+* Update currently logged User's profile picture.
+* Requires authentication header.
+*
+*/
+router.post('/image', auth, upload.single('profilePicture'), function(req, res) {
+  // check if there's already an User with provided id at the db
+  models.User.findById(req.payload._id).then(function(user) {
+    //validate parameters
+    if (!user) {
+      return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
+    } else {
+      //we expect this info just to know that the image has been uploaded
+      //so we can work with it.
+      easyimg.info(req.file.path).then( function(file) {
+        var path = file.path;
+
+        //resizing image
+        easyimg.resize({
+               src: path, dst: path,
+               width:300, height:300
+        }).then(function(image) {
+          //assigning avatar
+          user.profilePicture = '/static/' + image.name;
+          user.save().then(function(user){
+            return res.json({
+                            user: {
+                            id: user.id,
+                            firstName: user.firstName,
+                            lastName: user.lastName,
+                            alias: user.alias,
+                            email: user.email,
+                            profilePicture: user.profilePicture,
+                            confirmed: user.confirmed
+                            }
+                          });
+          });
+        }, function (err) {
+            console.log(err);
+            return res.status(500).json({ message: 'Error procesando la imagen. Intente nuevamente más tarde.'});
+          }
+        );
+      }, function (err) {
+          console.log(err);
+          return res.status(500).json({ message: 'Error procesando la imagen. Intente nuevamente más tarde.'});
+        }
+      );
+    }
+  });
+});
 /*
 * Delete currently logged User's Account.
 * Requires authentication header.

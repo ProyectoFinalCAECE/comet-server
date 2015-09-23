@@ -91,7 +91,7 @@ module.exports = function(sequelize, DataTypes) {
       classMethods:{
         associate: function(models) {
           User.hasMany(models.Token);
-          User.belongsToMany(models.Project, { through: models.ProjectUser })
+          User.belongsToMany(models.Project, { through: models.ProjectUser });
         },
         isValidPassword: function(password){
           return XRegExp.test(password, /(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z]).{6,40}/);
