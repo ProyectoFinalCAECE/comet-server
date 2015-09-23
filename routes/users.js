@@ -19,8 +19,7 @@ var storage = multer.diskStorage({
     cb(null, './avatar_images/');
   },
   filename: function (req, file, cb) {
-    cb(null, file.fieldname + req.payload._id +'-' + Date.now() + '.jpg');
-    //cb(null, file.fieldname + '-' + Date.now() + '.jpg');
+    cb(null, file.fieldname + '-' +req.payload._id + '-' + Date.now() + '.jpg');
   }
 });
 
@@ -249,15 +248,18 @@ router.post('/image', auth, upload.single('profilePicture'), function(req, res) 
     if (!user) {
       return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
     } else {
-      var path = req.file.path;
-      //resizing image
-      easyimg.resize({
-             src: path, dst: path,
-             width:300, height:300
-      }).then(
-        function(image) {
+      //we expect this info just to know that the image has been uploaded
+      //so we can work with it.
+      easyimg.info(req.file.path).then( function(file) {
+        var path = file.path;
+
+        //resizing image
+        easyimg.resize({
+               src: path, dst: path,
+               width:300, height:300
+        }).then(function(image) {
           //assigning avatar
-          user.profilePicture = image.path;
+          user.profilePicture = '/static/' + image.name;
           user.save().then(function(user){
             return res.json({
                             user: {
@@ -271,8 +273,12 @@ router.post('/image', auth, upload.single('profilePicture'), function(req, res) 
                             }
                           });
           });
-        },
-        function (err) {
+        }, function (err) {
+            console.log(err);
+            return res.status(500).json({ message: 'Error procesando la imagen. Intente nuevamente más tarde.'});
+          }
+        );
+      }, function (err) {
           console.log(err);
           return res.status(500).json({ message: 'Error procesando la imagen. Intente nuevamente más tarde.'});
         }
