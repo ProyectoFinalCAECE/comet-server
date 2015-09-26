@@ -8,11 +8,9 @@
 
 var express = require('express');
 var path = require('path');
-var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var passport = require('passport');
 
 /**
 
@@ -26,6 +24,7 @@ var routes = require('./routes/index');
 var users  = require('./routes/users');
 var accounts  = require('./routes/accounts');
 var projects  = require('./routes/projects');
+var channels  = require('./routes/channels');
 
 var app = express();
 
@@ -40,9 +39,9 @@ app.use(cookieParser());
 
 // routes
 app.use('/', routes);
-app.use('/user/', users);
-app.use('/account/', accounts);
-app.use('/project/', projects);
+app.use('/users/', users);
+app.use('/accounts/', accounts);
+app.use('/projects/', projects);
 
 //static route to serve account profile images
 app.use('/static', express.static('avatar_images'));
