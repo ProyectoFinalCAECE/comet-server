@@ -20,6 +20,7 @@ module.exports = function(sequelize, DataTypes) {
       classMethods:{
         associate: function(models) {
           Channel.belongsTo(models.Project);
+          Channel.belongsToMany(models.User, { through: models.ChannelUser });
         }
       }
     }
