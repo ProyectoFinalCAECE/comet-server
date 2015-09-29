@@ -91,6 +91,7 @@ module.exports.getChannel = function(req, res, user) {
                         name: channels[0].name,
                         description: channels[0].description,
                         createdAt: channels[0].createdAt,
+                        type: channels[0].type,
                         state: channels[0].state,
                         members: getChannelMembers(users),
                         integrations: []
@@ -100,6 +101,43 @@ module.exports.getChannel = function(req, res, user) {
     }
   });
 };
+
+/*
+* Get Project's channels information
+*
+* @user
+* @req
+* @res
+*
+*/
+module.exports.getChannels = function(req, res, user) {
+  var channels_to_be_returned = [];
+  user.getChannels({ where: ['"Channel"."state" != ? AND "Channel"."ProjectId" = ?', "B", req.primaryParams.project_id],
+                      order: [['createdAt', 'DESC']],
+                      include: [{ model: models.User}]}).then(function(channels){
+                        //creating response
+                        var x;
+                        for (x in channels) {
+                          //filtering channels user is not assigned anymore
+
+                          if(channels[x].ChannelUser.active === true) {
+                              channels_to_be_returned.push({
+                                id: channels[x].id,
+                                name: channels[x].name,
+                                description: channels[x].description,
+                                createdAt: channels[x].createdAt,
+                                type: channels[x].type,
+                                state: channels[x].state,
+                                members: getChannelMembers(channels[x].Users),
+                                integrations: []
+                              });
+                          }
+                        }
+
+                        return res.json(channels_to_be_returned);
+  });
+};
+
 
 /*
 * Given a set of Users of a Channel, returns those which are active in a certain format.

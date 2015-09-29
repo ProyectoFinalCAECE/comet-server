@@ -28,9 +28,6 @@ var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 *
 */
 router.post('/', auth, channelValidator.validCreate, function(req, res) {
-  console.log('req.params is: ' + JSON.stringify(req.params));
-  console.log('req.body is: ' + JSON.stringify(req.body));
-  console.log('req.req.primaryParams.project_id is: ' + JSON.stringify(req.primaryParams.project_id));
   models.User.findById(req.payload._id).then(function(user) {
     if(!user){
       return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
@@ -54,5 +51,21 @@ router.get('/:id', auth, channelValidator.validGet, function(req, res) {
       channelService.getChannel(req, res, user);
     });
 });
+
+/*
+* Get all Project Channel's information.
+* Requires authentication header.
+*
+*/
+router.get('/', auth, channelValidator.validGetByChannel, function(req, res) {
+  // look for current user's account
+  models.User.findById(parseInt(req.payload._id)).then(function(user) {
+    if (!user) {
+      return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
+    }
+    channelService.getChannels(req, res, user);
+  });
+});
+
 
 module.exports = router;

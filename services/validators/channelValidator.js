@@ -81,3 +81,17 @@ module.exports.validGet = function(req, res, next) {
 
   next();
 };
+
+/*
+*
+* Checks if provided parameters to get Project's Channels are valid or returns an appropiate response.
+* @project_id
+*
+*/
+module.exports.validGetByChannel = function(req, res, next) {
+  if (!req.primaryParams.project_id)  {
+    return res.status(400).json({ errors: { all: 'Por favor ingrese el id de proyecto.'}});
+  }
+
+  next();
+};
