@@ -61,3 +61,23 @@ module.exports.validCreate = function(req, res, next) {
 
   next();
 };
+
+/*
+*
+* Checks if provided parameters to get a Channel are valid or returns an appropiate response.
+* @id
+* @project_id
+*
+*/
+module.exports.validGet = function(req, res, next) {
+  // validate input parameters
+  if (!req.params.id)  {
+    return res.status(400).json({ errors: { all: 'Por favor ingrese el id de canal deseado.'}});
+  }
+
+  if (!req.primaryParams.project_id)  {
+    return res.status(400).json({ errors: { all: 'Por favor ingrese el id de proyecto.'}});
+  }
+
+  next();
+};
