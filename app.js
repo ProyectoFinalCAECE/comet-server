@@ -24,7 +24,7 @@ var routes = require('./routes/index');
 var users  = require('./routes/users');
 var accounts  = require('./routes/accounts');
 var projects  = require('./routes/projects');
-//var channels  = require('./routes/channels');
+var channels  = require('./routes/channels');
 
 var app = express();
 
@@ -37,11 +37,19 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+//declare a function that will pass primary router's params to the request
+var passPrimaryParams = function(req, res, next) {
+    req.primaryParams = req.params;
+    next();
+};
+
 // routes
 app.use('/', routes);
 app.use('/users/', users);
 app.use('/accounts/', accounts);
 app.use('/projects/', projects);
+app.use('/projects/:project_id/channels', passPrimaryParams);
+app.use('/projects/:project_id/channels', channels);
 
 //static route to serve account profile images
 app.use('/static', express.static('avatar_images'));

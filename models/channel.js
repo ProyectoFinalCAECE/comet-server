@@ -16,6 +16,16 @@ module.exports = function(sequelize, DataTypes) {
     closedAt: { type: DataTypes.DATE, allowNull: true }
   }, {
     instanceMethods: {
+      close: function()
+      {
+        this.state = 'C';
+        this.closedAt = new Date();
+      },
+      block: function()
+      {
+        this.state = 'B';
+        this.severedAt = new Date();
+      }
     },
       classMethods:{
         associate: function(models) {

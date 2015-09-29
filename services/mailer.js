@@ -169,7 +169,7 @@ function genericMailer(receiver, subject, text, html){
         }
     });
 
-    if(site_config.enable_emails == "true"){
+    if(site_config.enable_emails === true){
         var mailOptions = {
             from: 'Equipo Comet ✔ <'+mailer_config.user+'>', // sender address
             to: receiver, // list of receivers
