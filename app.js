@@ -24,7 +24,7 @@ var routes = require('./routes/index');
 var users  = require('./routes/users');
 var accounts  = require('./routes/accounts');
 var projects  = require('./routes/projects');
-//var channels  = require('./routes/channels');
+var channels  = require('./routes/channels');
 
 var app = express();
 
