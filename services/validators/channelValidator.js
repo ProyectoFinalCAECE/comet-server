@@ -55,6 +55,15 @@ module.exports.validCreate = function(req, res, next) {
     hasErrors = true;
   }
 
+  if (req.body.members && req.body.members.length > 0) {
+    for (var m in req.body.members) {
+      if (isNaN(req.body.members[m].id)) {
+        errors[req.body.members[m].name] = 'ID de usuario inválido';
+        hasErrors = true;
+      }
+    }
+  }
+
   if (hasErrors) {
     return res.status(400).json({ errors: errors });
   }
