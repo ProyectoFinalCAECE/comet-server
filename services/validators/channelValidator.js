@@ -104,3 +104,35 @@ module.exports.validGetByChannel = function(req, res, next) {
 
   next();
 };
+
+module.exports.validAddMembers = function(req, res, next) {
+  var errors = {};
+  var hasErrors = false;
+
+  if (!req.primaryParams.project_id)  {
+    errors.project_id = 'Por favor ingrese el id de proyecto.';
+    hasErrors = true;
+  }
+
+  if (!req.params.id)  {
+    errors.id = 'Por favor ingrese el id de canal deseado.';
+    hasErrors = true;
+  }
+
+  if (!req.body.members || req.body.members.length === 0)  {
+    return res.status(400).json({ errors: { all: 'Por favor ingrese el id de los miembros a agregar al canal.'}});
+  } else {
+    for (var m in req.body.members) {
+      if (isNaN(req.body.members[m].id)) {
+        errors[req.body.members[m].name] = 'ID de usuario inválido';
+        hasErrors = true;
+      }
+    }
+  }
+
+  if (hasErrors) {
+    return res.status(400).json({ errors: errors });
+  }
+
+  next();
+};
