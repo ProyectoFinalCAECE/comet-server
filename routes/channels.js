@@ -25,6 +25,7 @@ var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 * @name
 * @description
 * @type
+* @project_id
 *
 */
 router.post('/', auth, channelValidator.validCreate, function(req, res) {
@@ -40,6 +41,8 @@ router.post('/', auth, channelValidator.validCreate, function(req, res) {
 /*
 * Get channel's information.
 * Requires authentication header.
+* @project_id
+* @id
 *
 */
 router.get('/:id', auth, channelValidator.validGet, function(req, res) {
@@ -55,6 +58,7 @@ router.get('/:id', auth, channelValidator.validGet, function(req, res) {
 /*
 * Get all Project Channel's information.
 * Requires authentication header.
+* @project_id
 *
 */
 router.get('/', auth, channelValidator.validGetByChannel, function(req, res) {
@@ -67,5 +71,23 @@ router.get('/', auth, channelValidator.validGetByChannel, function(req, res) {
   });
 });
 
+/*
+*Allows Project's User to add other Project's Users to a Project's Channel.
+* @project_id
+* @id
+* @members
+*
+*/
+router.put('/:id/members', auth, channelValidator.validAddMembers, function(req, res){
+  // look for current user's account
+  models.User.findById(parseInt(req.payload._id)).then(function(user) {
+    if (!user) {
+      return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
+    }
+    channelService.getAddMembersBulk(req.body.members, req.primaryParams.project_id, req.params.id, user, function(result){
+      return res.status(result.code).json(result.message);
+    });
+  });
+});
 
 module.exports = router;

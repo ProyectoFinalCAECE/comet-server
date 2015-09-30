@@ -20,7 +20,7 @@ var models  = require('../models');
 */
 
 module.exports.createChannel = function(user, req, res) {
-  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', req.primaryParams.project_id, "B"] }).then(function(projects){
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', req.primaryParams.project_id, "B"], include: [{ model: models.User}] }).then(function(projects){
     if (projects === undefined || projects.length === 0) {
       return res.status(404).json({ errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}});
     }
@@ -37,28 +37,28 @@ module.exports.createChannel = function(user, req, res) {
       });
 
       channel.save().then(function(channelCreated) {
-        user.addChannel(channel, {active: true});
-        user.save().then(function(user) {
-          // Channel created successfully
+        user.addChannel(channel, {active: true}).then(function(){
+          user.save().then(function() {
+            // Channel created successfully
 
-          //associating members if provided
-          //ASOCIAR USUSARIOS
+            //associating members if provided
+            associateMembers(req.body.members, channel, projects[0].Users, function(){
+              //look for members
+              channel.getUsers().then(function(users){
 
-          return res.json({
-                            id: channelCreated.id,
-                            name: channelCreated.name,
-                            description: channelCreated.description,
-                            createdAt: channelCreated.createdAt,
-                            type: channelCreated.type,
-                            state: channelCreated.state,
-                            members:  [{
-                                        id: user.id,
-                                        email: user.email,
-                                        profilePicture: user.profilePicture,
-                                        alias: user.alias
-                                      }],
-                            integrations: []
-                          });
+                return res.json({
+                                  id: channelCreated.id,
+                                  name: channelCreated.name,
+                                  description: channelCreated.description,
+                                  createdAt: channelCreated.createdAt,
+                                  type: channelCreated.type,
+                                  state: channelCreated.state,
+                                  members:  getChannelMembers(users),
+                                  integrations: []
+                                });
+              });
+            });
+          });
         });
       });
     }
@@ -138,6 +138,55 @@ module.exports.getChannels = function(req, res, user) {
   });
 };
 
+/*
+*
+* Adds new Project's members basing on provided ids.
+* @members
+* @project_id
+* @channel_id
+* @user
+* @callback
+*
+*/
+module.exports.getAddMembersBulk = function(members, project_id, channel_id, user, callback) {
+  var result = {};
+  user.getChannels({ where: ['"ChannelUser"."ChannelId" = ? AND "Channel"."state" != ? AND "Channel"."ProjectId" = ?', channel_id, "B", project_id] }).then(function(channels){
+    if (channels === undefined || channels.length === 0) {
+      result.code = 404;
+      result.message = { errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}};
+      return callback(result);
+    }
+
+    if(channels[0].ChannelUser.active === false){
+      result.code = 403;
+      result.message = { errors: { all: 'El usuario no puede acceder al canal solicitado.'}};
+      return callback(result);
+    } else {
+      
+      //associating members if provided
+      models.Project.findById(project_id, {include: [{ model: models.User}] }).then(function(project){
+        associateMembers(members, channels[0], project.Users, function(){
+          //look for members
+          channels[0].getUsers().then(function(users){
+
+            result.code = 200;
+            result.message = {
+                              id: channels[0].id,
+                              name: channels[0].name,
+                              description: channels[0].description,
+                              createdAt: channels[0].createdAt,
+                              type: channels[0].type,
+                              state: channels[0].state,
+                              members: getChannelMembers(users),
+                              integrations: []
+                            };
+            return callback(result);
+          });
+        });
+      });
+    }
+  });
+};
 
 /*
 * Given a set of Users of a Channel, returns those which are active in a certain format.
@@ -161,4 +210,43 @@ function getChannelMembers(users){
     }
   }
   return users_to_be_returned;
+}
+
+/*
+* Given a set of User IDs, associates them to channel if they exist in project
+* @members
+* @channel
+* @project
+*
+*/
+function associateMembers(members, channel, projectUsers, callback){
+  if(members){
+    var x;
+    var project_users_ids = getUsersIds(projectUsers);
+    var channel_users_to_create = [];
+    for(x in members){
+      if(project_users_ids.indexOf(parseInt(members[x].id)) > -1){
+        channel_users_to_create.push({ active: 'true', ChannelId: channel.id, UserId: parseInt(members[x].id) });
+      }
+    }
+    models.ChannelUser.bulkCreate(channel_users_to_create).then(function() {
+      return true;
+    });
+  }
+  callback();
+}
+
+/*
+*Given a set of Users, returns an array containing its ids.
+*
+*/
+function getUsersIds(projectUsers){
+    var ids_to_be_returned = [];
+    if(projectUsers){
+      var y;
+      for(y in projectUsers){
+        ids_to_be_returned.push(projectUsers[y].id);
+      }
+    }
+    return ids_to_be_returned;
 }
