@@ -37,26 +37,27 @@ module.exports.createChannel = function(user, req, res) {
       });
 
       channel.save().then(function(channelCreated) {
-        user.addChannel(channel, {active: true});
-        user.save().then(function() {
-          // Channel created successfully
+        user.addChannel(channel, {active: true}).then(function(){
+          user.save().then(function() {
+            // Channel created successfully
 
-          //associating members if provided
-          associateMembers(req.body.members, channel, projects[0].Users);
+            //associating members if provided
+            associateMembers(req.body.members, channel, projects[0].Users, function(){
+              //look for members
+              channel.getUsers().then(function(users){
 
-          //look for members
-          channel.getUsers().then(function(users){
-
-            return res.json({
-                              id: channelCreated.id,
-                              name: channelCreated.name,
-                              description: channelCreated.description,
-                              createdAt: channelCreated.createdAt,
-                              type: channelCreated.type,
-                              state: channelCreated.state,
-                              members:  getChannelMembers(users),
-                              integrations: []
-                            });
+                return res.json({
+                                  id: channelCreated.id,
+                                  name: channelCreated.name,
+                                  description: channelCreated.description,
+                                  createdAt: channelCreated.createdAt,
+                                  type: channelCreated.type,
+                                  state: channelCreated.state,
+                                  members:  getChannelMembers(users),
+                                  integrations: []
+                                });
+              });
+            });
           });
         });
       });
@@ -169,20 +170,21 @@ function getChannelMembers(users){
 * @project
 *
 */
-function associateMembers(members, channel, projectUsers){
+function associateMembers(members, channel, projectUsers, callback){
   if(members){
     var x;
     var project_users_ids = getUsersIds(projectUsers);
+    var channel_users_to_create = [];
     for(x in members){
       if(project_users_ids.indexOf(parseInt(members[x].id)) > -1){
-        models.User.findById(members[x].id).then(function(user) {
-          user.addChannel(channel, {active: true});
-        });
-      } else {
-        console.log('discarding: ' + JSON.stringify(members[x].id));
+        channel_users_to_create.push({ active: 'true', ChannelId: channel.id, UserId: parseInt(members[x].id) });
       }
     }
+    models.ChannelUser.bulkCreate(channel_users_to_create).then(function() {
+      return true;
+    });
   }
+  callback();
 }
 
 /*
