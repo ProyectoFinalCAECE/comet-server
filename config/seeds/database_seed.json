@@ -1,0 +1,26 @@
+[
+       {
+           "model": "User",
+           "data": {
+               "email": "themail@mail.com",
+               "hash": "the hash",
+               "salt": "the salt",
+               "lastName": "the last name",
+               "firstName": "the first name",
+               "alias": "the alias",
+               "profilePicture": "the profile picture",
+               "confirmed": true,
+               "isAdministrator": false,
+               "active": true
+           }
+       },
+       {
+           "model": "Channel",
+           "data": {
+               "name": "THE CHANNEL NAME",
+               "type": "S",
+               "description": "the DESC",
+               "state": "O"
+           }
+       }
+]

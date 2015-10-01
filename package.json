@@ -34,7 +34,9 @@
     "validator":"4.0.5",
     "email-validator":"1.0.3",
     "multer":"1.0.5",
-    "easyimage":"2.1.0"
+    "easyimage":"2.1.0",
+    "grunt": "^0.4.5",
+    "sequelize-fixtures":"0.4.7"
   },
   "devDependencies": {
     "bluebird": "^2.9.33",
