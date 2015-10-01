@@ -162,7 +162,7 @@ module.exports.getAddMembersBulk = function(members, project_id, channel_id, use
       result.message = { errors: { all: 'El usuario no puede acceder al canal solicitado.'}};
       return callback(result);
     } else {
-      
+
       //associating members if provided
       models.Project.findById(project_id, {include: [{ model: models.User}] }).then(function(project){
         associateMembers(members, channels[0], project.Users, function(){
@@ -183,6 +183,40 @@ module.exports.getAddMembersBulk = function(members, project_id, channel_id, use
             return callback(result);
           });
         });
+      });
+    }
+  });
+};
+
+/*
+*
+* Deletes a Project's Channel
+* @project_id
+* @channel_id
+* @user
+* @callback
+*
+*/
+module.exports.deleteChannel = function(project_id, channel_id, user, callback) {
+  var result = {};
+  user.getChannels({ where: ['"ChannelUser"."ChannelId" = ? AND "Channel"."state" != ? AND "Channel"."ProjectId" = ?', channel_id, "B", project_id] }).then(function(channels){
+    if (channels === undefined || channels.length === 0) {
+      result.code = 404;
+      result.message = { errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}};
+      return callback(result);
+    }
+
+    if(channels[0].ChannelUser.active === false){
+      result.code = 403;
+      result.message = { errors: { all: 'El usuario no puede acceder al canal solicitado.'}};
+      return callback(result);
+    } else {
+      //deleting channel
+      channels[0].block(user.id);
+      channels[0].save().then(function(){
+        result.code = 200;
+        result.message = {};
+        return callback(result);
       });
     }
   });

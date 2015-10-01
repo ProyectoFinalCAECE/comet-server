@@ -105,6 +105,14 @@ module.exports.validGetByChannel = function(req, res, next) {
   next();
 };
 
+/*
+*
+* Checks if provided parameters to add members to a Project's Channels are valid or returns an appropiate response.
+* @project_id
+* @id
+* @members
+*
+*/
 module.exports.validAddMembers = function(req, res, next) {
   var errors = {};
   var hasErrors = false;
@@ -128,6 +136,34 @@ module.exports.validAddMembers = function(req, res, next) {
         hasErrors = true;
       }
     }
+  }
+
+  if (hasErrors) {
+    return res.status(400).json({ errors: errors });
+  }
+
+  next();
+};
+
+/*
+*
+* Checks if provided parameters to delete a Project's Channels are valid or returns an appropiate response.
+* @project_id
+* @id
+*
+*/
+module.exports.validDelete = function(req, res, next){
+  var errors = {};
+  var hasErrors = false;
+
+  if (!req.params.id)  {
+    errors.id = 'Por favor ingrese el id de canal deseado.';
+    hasErrors = true;
+  }
+
+  if (!req.primaryParams.project_id)  {
+    errors.id = 'Por favor ingrese el id de proyecto.';
+    hasErrors = true;
   }
 
   if (hasErrors) {

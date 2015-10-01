@@ -90,4 +90,23 @@ router.put('/:id/members', auth, channelValidator.validAddMembers, function(req,
   });
 });
 
+/*
+* Delete a Channel of a Project.
+* Requires authentication header.
+* @project_id
+* @id
+*
+*/
+router.delete('/:id', auth, channelValidator.validDelete, function(req, res) {
+  // look for user account
+  models.User.findById(req.payload._id).then(function(user) {
+    if (!user) {
+      return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
+    }
+    channelService.deleteChannel(req.primaryParams.project_id, req.params.id, user, function(result){
+      return res.status(result.code).json(result.message);
+    });
+  });
+});
+
 module.exports = router;

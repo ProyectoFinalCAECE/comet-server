@@ -13,7 +13,9 @@ module.exports = function(sequelize, DataTypes) {
     type: { type: DataTypes.ENUM('S', 'P'), defaultValue: 'S' }, //S stands for 'Shared'; P stands for 'Private'
     description: { type: DataTypes.STRING(500) },
     state: { type: DataTypes.ENUM('O', 'B', 'C'), defaultValue: 'O' },
-    closedAt: { type: DataTypes.DATE, allowNull: true }
+    closedAt: { type: DataTypes.DATE, allowNull: true },
+    deletedBy: { type: DataTypes.INTEGER, allowNull: true },
+    severedAt:  {type: DataTypes.DATE, allowNull: true },
   }, {
     instanceMethods: {
       close: function()
@@ -21,10 +23,11 @@ module.exports = function(sequelize, DataTypes) {
         this.state = 'C';
         this.closedAt = new Date();
       },
-      block: function()
+      block: function(user_id)
       {
         this.state = 'B';
         this.severedAt = new Date();
+        this.deletedBy = user_id;
       }
     },
       classMethods:{
