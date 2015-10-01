@@ -15,13 +15,15 @@ module.exports = function(sequelize, DataTypes) {
     state: { type: DataTypes.ENUM('O', 'B', 'C'), defaultValue: 'O' },
     closedAt: { type: DataTypes.DATE, allowNull: true },
     deletedBy: { type: DataTypes.INTEGER, allowNull: true },
+    closedBy: { type: DataTypes.INTEGER, allowNull: true },
     severedAt:  {type: DataTypes.DATE, allowNull: true },
   }, {
     instanceMethods: {
-      close: function()
+      close: function(user_id)
       {
         this.state = 'C';
         this.closedAt = new Date();
+        this.deletedBy = user_id;
       },
       block: function(user_id)
       {
