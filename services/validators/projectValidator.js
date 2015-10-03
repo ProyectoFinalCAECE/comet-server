@@ -108,10 +108,27 @@ module.exports.validGet = function(req, res, next) {
 *
 */
 module.exports.validNewMembers = function(req, res, next){
+  var errors = {};
+  var hasErrors = false;
+
   // validate input parameters
   if (!req.params.id || !req.body.addresses)  {
         return res.status(400).json({ errors: { all: 'Por favor ingrese los parámetros requeridos.'}});
   }
+
+  if (req.body.addresses.length > 0) {
+    for (var a in req.body.addresses) {
+      if (!validator.validate((req.body.addresses[a].address))) {
+        errors[req.body.addresses[a].name] = 'Correo inválido';
+        hasErrors = true;
+      }
+    }
+  }
+
+  if (hasErrors) {
+    return res.status(400).json({ errors: errors });
+  }
+
   next();
 }
 

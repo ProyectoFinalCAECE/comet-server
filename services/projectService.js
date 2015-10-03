@@ -11,6 +11,11 @@ var models  = require('../models');
 var validator = require('validator');
 var jwt = require('jsonwebtoken');
 
+//Max project name and description text lengths
+//should be consts but it's use is not allowed under strict mode... yet.
+var NameLenght = 40;
+var DescLength = 2000;
+
 /*
 * Create new Project and send invitations if members provided.
 *
@@ -360,9 +365,37 @@ module.exports.closeProject = function(req, res, user){
 *
 */
 module.exports.updateProject = function(req, res, user){
+  var errors = {};
+  var hasErrors = false;
+
   user.getProjects({ where: ['"ProjectUser"."ProjectId" = ?  AND "Project"."state" != ?', req.params.id, 'B'] }).then(function(projects){
     if (projects === undefined || projects.length === 0) {
       return res.status(404).json({ errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}});
+    }
+
+    // validate input parameters
+    if (!req.body.name && !req.body.description) {
+      return res.status(400).json({ errors: { all: 'Por favor completa el nombre y la descripción de tu proyecto.'}});
+    }
+
+    if (!req.body.name) {
+      errors.name = 'Por favor ingresa el nombre de tu proyecto.';
+      hasErrors = true;
+    } else if (req.body.name.length > NameLenght) {
+      errors.name = 'El nombre de tu proyecto no debe superar los '+NameLenght+' caracteres.';
+      hasErrors = true;
+    }
+
+    if (!req.body.description) {
+      errors.description = 'Por favor ingresa una descripción de tu proyecto.';
+      hasErrors = true;
+    } else if (req.body.description.length > DescLength) {
+      errors.description = 'La descripción de tu proyecto no debe superar los '+DescLength+' caracteres.';
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      return res.status(400).json({ errors: errors });
     }
 
     //currently logged user is owner of the project

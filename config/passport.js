@@ -11,6 +11,9 @@ passport.use(new LocalStrategy({
   function(email, password, done) {
 
     // search for an User with provided email at db
+
+    //convert to lowercase since pg is casesensitive
+    email = email.toLowerCase();
     models.User.findOne({ where: { email: email} }).then( function(user) {
 
       // User doesn't exist

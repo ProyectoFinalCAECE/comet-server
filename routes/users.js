@@ -103,8 +103,11 @@ router.post('/', function(req, res, next) {
     return res.status(400).json({errors: errors});
   }
 
+  //convert to lower, since pg is case sensitive
+  email = email.toLowerCase();
+
   //check if there's already an User with provided email at the db
-  models.User.findOne({ where: { email: req.body.email } }).then(function(userExists) {
+  models.User.findOne({ where: { email: email } }).then(function(userExists) {
     if (userExists) {
       return res.status(403).json({ errors: { email: 'Ya existe un usuario con esta dirección de correo.' }});
     }
