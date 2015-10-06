@@ -112,29 +112,52 @@ module.exports.getChannel = function(req, res, user) {
 */
 module.exports.getChannels = function(req, res, user) {
   var channels_to_be_returned = [];
-  user.getChannels({ where: ['"Channel"."state" != ? AND "Channel"."ProjectId" = ?', "B", req.primaryParams.project_id],
-                      order: [['createdAt', 'DESC']],
-                      include: [{ model: models.User}]}).then(function(channels){
-                        //creating response
-                        var x;
-                        for (x in channels) {
-                          //filtering channels user is not assigned anymore
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', req.primaryParams.project_id, "B"] }).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      return res.status(404).json({ errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}});
+    }
 
-                          if(channels[x].ChannelUser.active === true) {
-                              channels_to_be_returned.push({
-                                id: channels[x].id,
-                                name: channels[x].name,
-                                description: channels[x].description,
-                                createdAt: channels[x].createdAt,
-                                type: channels[x].type,
-                                state: channels[x].state,
-                                members: getChannelMembers(channels[x].Users),
-                                integrations: []
-                              });
-                          }
-                        }
-
-                        return res.json(channels_to_be_returned);
+    if(projects[0].ProjectUser.active === false){
+      return res.status(403).json({ errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}});
+    } else {
+      models.Channel.findAll({ where: ['"Channel"."ProjectId" = ? AND "Channel"."state" != ?', req.primaryParams.project_id, "B"],
+                              include: [{ model: models.User}],
+                              order: [['createdAt', 'DESC']]}).then(function(channels){
+        //creating response
+        var x;
+        for (x in channels) {
+          //filtering channels user is not assigned anymore
+          if(channels[x].type === 'S') {
+              channels_to_be_returned.push({
+                id: channels[x].id,
+                name: channels[x].name,
+                description: channels[x].description,
+                createdAt: channels[x].createdAt,
+                type: channels[x].type,
+                state: channels[x].state,
+                members: getChannelMembers(channels[x].Users),
+                integrations: []
+              });
+          } else {
+            console.log('channels[x].Users is: ' + JSON.stringify(channels[x].Users));
+            var channel_members_ids = getActiveUsersIds(channels[x].Users);
+            if((channel_members_ids.indexOf(user.id)) > -1){
+              channels_to_be_returned.push({
+                id: channels[x].id,
+                name: channels[x].name,
+                description: channels[x].description,
+                createdAt: channels[x].createdAt,
+                type: channels[x].type,
+                state: channels[x].state,
+                members: getChannelMembers(channels[x].Users),
+                integrations: []
+              });
+            }
+          }
+        }
+        return res.json(channels_to_be_returned);
+      });
+    }
   });
 };
 
@@ -257,6 +280,47 @@ module.exports.closeChannel = function(project_id, channel_id, user, callback) {
 };
 
 /*
+*
+* Removes currently logged User from Project's channel
+* @project_id
+* @channel_id
+* @user
+* @callback
+*
+*/
+module.exports.removeMember = function(project_id, channel_id, user, member_id, callback) {
+  var result = {};
+  if(user.id !== parseInt(member_id)){
+    result.code = 403;
+    result.message = { errors: { all: 'No se puede eliminar el usuario con el id provisto.'}};
+    return callback(result);
+  }else{
+    user.getChannels({ where: ['"ChannelUser"."ChannelId" = ? AND "Channel"."state" != ? AND "Channel"."ProjectId" = ?', channel_id, "B", project_id] }).then(function(channels){
+      if (channels === undefined || channels.length === 0) {
+        result.code = 404;
+        result.message = { errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}};
+        return callback(result);
+      }
+
+      if(channels[0].ChannelUser.active === false){
+        result.code = 403;
+        result.message = { errors: { all: 'El usuario no puede acceder al canal solicitado.'}};
+        return callback(result);
+      } else {
+        //deleting user from channel
+        channels[0].ChannelUser.active = false;
+
+        channels[0].ChannelUser.save().then(function(){
+          result.code = 200;
+          result.message = {};
+          return callback(result);
+        });
+      }
+    });
+  }
+};
+
+/*
 * Given a set of Users of a Channel, returns those which are active in a certain format.
 * @users
 *
@@ -317,4 +381,21 @@ function getUsersIds(projectUsers){
       }
     }
     return ids_to_be_returned;
+}
+
+/*
+*Given a set of Users, returns an array containing its ids if they're active for the channel.
+*
+*/
+function getActiveUsersIds(channel_members){
+  var ids_to_be_returned = [];
+  if(channel_members){
+    var y;
+    for(y in channel_members){
+      if(channel_members[y].ChannelUser.active === true){
+        ids_to_be_returned.push(channel_members[y].id);
+      }
+    }
+  }
+  return ids_to_be_returned;
 }
