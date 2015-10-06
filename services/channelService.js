@@ -74,30 +74,50 @@ module.exports.createChannel = function(user, req, res) {
 *
 */
 module.exports.getChannel = function(req, res, user) {
-  user.getChannels({ where: ['"ChannelUser"."ChannelId" = ? AND "Channel"."state" != ? AND "Channel"."ProjectId" = ?', req.params.id, "B", req.primaryParams.project_id] }).then(function(channels){
-    if (channels === undefined || channels.length === 0) {
-      return res.status(404).json({ errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}});
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', req.primaryParams.project_id, "B"] }).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      return res.status(404).json({ errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}});
     }
 
-    if(channels[0].ChannelUser.active === false){
-      return res.status(403).json({ errors: { all: 'El usuario no puede acceder al canal solicitado.'}});
+    if(projects[0].ProjectUser.active === false){
+      return res.status(403).json({ errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}});
     } else {
+      models.Channel.findAll({ where: ['"Channel"."id" = ? AND "Channel"."ProjectId" = ? AND "Channel"."state" != ?', req.params.id ,req.primaryParams.project_id, "B"],
+                              include: [{ model: models.User}]}).then(function(channels){
+                                if (channels === undefined || channels.length === 0) {
+                                  return res.status(404).json({ errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}});
+                                }
 
-      //look for members
-      channels[0].getUsers().then(function(users){
+                                if(channels[0].type === 'S'){
 
-      return res.json({
-                        id: channels[0].id,
-                        name: channels[0].name,
-                        description: channels[0].description,
-                        createdAt: channels[0].createdAt,
-                        type: channels[0].type,
-                        state: channels[0].state,
-                        members: getChannelMembers(users),
-                        integrations: []
-                    });
+                                  return res.json({
+                                                    id: channels[0].id,
+                                                    name: channels[0].name,
+                                                    description: channels[0].description,
+                                                    createdAt: channels[0].createdAt,
+                                                    type: channels[0].type,
+                                                    state: channels[0].state,
+                                                    members: getChannelMembers(channels[0].Users),
+                                                    integrations: []
+                                                });
+                                } else {
+                                  var channelUser = findChannelUser(channels[0].Users, user.id);
+                                  if(!channelUser || channelUser.active === false){
+                                    return res.status(403).json({ errors: { all: 'El usuario no puede acceder al canal solicitado.'}});
+                                  }
 
-      });
+                                  return res.json({
+                                                    id: channels[0].id,
+                                                    name: channels[0].name,
+                                                    description: channels[0].description,
+                                                    createdAt: channels[0].createdAt,
+                                                    type: channels[0].type,
+                                                    state: channels[0].state,
+                                                    members: getChannelMembers(channels[0].Users),
+                                                    integrations: []
+                                                });
+                                }
+                              });
     }
   });
 };
@@ -139,7 +159,6 @@ module.exports.getChannels = function(req, res, user) {
                 integrations: []
               });
           } else {
-            console.log('channels[x].Users is: ' + JSON.stringify(channels[x].Users));
             var channel_members_ids = getActiveUsersIds(channels[x].Users);
             if((channel_members_ids.indexOf(user.id)) > -1){
               channels_to_be_returned.push({
@@ -398,4 +417,21 @@ function getActiveUsersIds(channel_members){
     }
   }
   return ids_to_be_returned;
+}
+
+/*
+*Given a set of Users, returns the one whose id is equal to the provided one
+*
+*/
+function findChannelUser(channel_users, current_user_id){
+  if(channel_users){
+    var y;
+    for(y in channel_users){
+      if(channel_users[y].id === current_user_id){
+        return channel_users[y];
+      }
+    }
+  }else{
+    return null;
+  }
 }
