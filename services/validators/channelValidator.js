@@ -200,3 +200,37 @@ module.exports.validClose = function(req, res, next){
 
   next();
 };
+
+/*
+*
+* Checks if provided parameters to remove a Project's Channel's member are valid or returns an appropiate response.
+* @project_id
+* @id
+* @member_id
+*
+*/
+module.exports.validRemoveMember = function(req, res, next){
+  var errors = {};
+  var hasErrors = false;
+
+  if (!req.params.member_id)  {
+    errors.member_id = 'Por favor ingrese el id del usuario a eliminar.';
+    hasErrors = true;
+  }
+
+  if (!req.params.id)  {
+    errors.id = 'Por favor ingrese el id de canal deseado.';
+    hasErrors = true;
+  }
+
+  if (!req.primaryParams.project_id)  {
+    errors.id = 'Por favor ingrese el id de proyecto.';
+    hasErrors = true;
+  }
+
+  if (hasErrors) {
+    return res.status(400).json({ errors: errors });
+  }
+
+  next();
+};

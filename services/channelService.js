@@ -257,6 +257,47 @@ module.exports.closeChannel = function(project_id, channel_id, user, callback) {
 };
 
 /*
+*
+* Removes currently logged User from Project's channel
+* @project_id
+* @channel_id
+* @user
+* @callback
+*
+*/
+module.exports.removeMember = function(project_id, channel_id, user, member_id, callback) {
+  var result = {};
+  if(user.id !== parseInt(member_id)){
+    result.code = 403;
+    result.message = { errors: { all: 'No se puede eliminar el usuario con el id provisto.'}};
+    return callback(result);
+  }else{
+    user.getChannels({ where: ['"ChannelUser"."ChannelId" = ? AND "Channel"."state" != ? AND "Channel"."ProjectId" = ?', channel_id, "B", project_id] }).then(function(channels){
+      if (channels === undefined || channels.length === 0) {
+        result.code = 404;
+        result.message = { errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}};
+        return callback(result);
+      }
+
+      if(channels[0].ChannelUser.active === false){
+        result.code = 403;
+        result.message = { errors: { all: 'El usuario no puede acceder al canal solicitado.'}};
+        return callback(result);
+      } else {
+        //deleting user from channel
+        channels[0].ChannelUser.active = false;
+
+        channels[0].ChannelUser.save().then(function(){
+          result.code = 200;
+          result.message = {};
+          return callback(result);
+        });
+      }
+    });
+  }
+};
+
+/*
 * Given a set of Users of a Channel, returns those which are active in a certain format.
 * @users
 *

@@ -144,7 +144,7 @@ router.delete('/:id/close', auth, function(req, res, next) {
 
 /*
 *
-* Allows currently logged User to remove a Project member
+* Allows currently logged User to remove a Project's member if currently logged User is the Project's owner.
 * Requires authentication header.
 *
 */
