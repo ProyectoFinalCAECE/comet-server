@@ -192,42 +192,45 @@ module.exports.getChannels = function(req, res, user) {
 */
 module.exports.getAddMembersBulk = function(members, project_id, channel_id, user, callback) {
   var result = {};
-  user.getChannels({ where: ['"ChannelUser"."ChannelId" = ? AND "Channel"."state" != ? AND "Channel"."ProjectId" = ?', channel_id, "B", project_id] }).then(function(channels){
-    if (channels === undefined || channels.length === 0) {
-      result.code = 404;
-      result.message = { errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}};
-      return callback(result);
-    }
+  models.Channel.findAll({ where: ['"Channel"."id" = ? AND "Channel"."ProjectId" = ? AND "Channel"."state" != ?', channel_id , project_id, "B"],
+                          include: [{ model: models.User}]}).then(function(channels){
+                            if (channels === undefined || channels.length === 0) {
+                              result.code = 404;
+                              result.message = { errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}};
+                              return callback(result);
+                            }
 
-    if(channels[0].ChannelUser.active === false){
-      result.code = 403;
-      result.message = { errors: { all: 'El usuario no puede acceder al canal solicitado.'}};
-      return callback(result);
-    } else {
+                            var channel_members_ids = getActiveUsersIds(channels[0].Users);
 
-      //associating members if provided
-      models.Project.findById(project_id, {include: [{ model: models.User}] }).then(function(project){
-        associateMembers(members, channels[0], project.Users, function(){
-          //look for members
-          channels[0].getUsers().then(function(users){
+                            if((channel_members_ids.indexOf(user.id) === -1) && (user.id !== parseInt(members[0].id))){
+                              result.code = 403;
+                              result.message = { errors: { all: 'El usuario no puede acceder al canal solicitado.'}};
+                              return callback(result);
+                            } else {
 
-            result.code = 200;
-            result.message = {
-                              id: channels[0].id,
-                              name: channels[0].name,
-                              description: channels[0].description,
-                              createdAt: channels[0].createdAt,
-                              type: channels[0].type,
-                              state: channels[0].state,
-                              members: getChannelMembers(users),
-                              integrations: []
-                            };
-            return callback(result);
-          });
-        });
-      });
-    }
-  });
+                              //associating members if provided
+                              models.Project.findById(project_id, {include: [{ model: models.User}] }).then(function(project){
+                                associateMembers(members, channels[0], project.Users, function(){
+                                  //look for members again to get new ones
+                                  channels[0].getUsers().then(function(users){
+
+                                    result.code = 200;
+                                    result.message = {
+                                                      id: channels[0].id,
+                                                      name: channels[0].name,
+                                                      description: channels[0].description,
+                                                      createdAt: channels[0].createdAt,
+                                                      type: channels[0].type,
+                                                      state: channels[0].state,
+                                                      members: getChannelMembers(users),
+                                                      integrations: []
+                                                    };
+                                    return callback(result);
+                                  });
+                                });
+                              });
+                            }
+                          });
 };
 
 /*
