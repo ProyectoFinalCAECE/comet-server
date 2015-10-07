@@ -23,7 +23,7 @@ module.exports = function(sequelize, DataTypes) {
       {
         this.state = 'C';
         this.closedAt = new Date();
-        this.deletedBy = user_id;
+        this.closedBy = user_id;
       },
       block: function(user_id)
       {
