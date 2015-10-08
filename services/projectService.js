@@ -10,6 +10,7 @@ var projectMailerService = require('../services/mailers/projectMailer');
 var models  = require('../models');
 var validator = require('validator');
 var jwt = require('jsonwebtoken');
+var site_config = require('../config/site_config.json');
 
 //Max project name and description text lengths
 //should be consts but it's use is not allowed under strict mode... yet.
@@ -36,32 +37,35 @@ module.exports.createProject = function(req, res) {
         name: req.body.name,
         description: req.body.description
       });
+        if(site_config.users_per_project_limit < req.body.members.length){
+          return res.status(403).json({ errors: { all: 'Sólo es posible invitar hasta ' + site_config.users_per_project_limit +' miembros al proyecto.'}});
+        } else {
+          project.save().then(function() {
+            user.addProject(project, { isOwner: true });
+            user.save().then(function(user) {
+              // Project created successfully
 
-      project.save().then(function(projectCreated) {
-        user.addProject(project, { isOwner: true });
-        user.save().then(function(user) {
-          // Project created successfully
+              //sending invitations
+              sendInvitations(req.body.members, project.name, project.id, user.alias);
 
-          //sending invitations
-          sendInvitations(req.body.members, project.name, project.id, user.alias);
-
-          return res.json({
-                            id: project.id,
-                            name: project.name,
-                            description: project.description,
-                            createdAt: project.createdAt,
-                            isOwner: true,
-                            state: project.state,
-                            members:  [{
-                                        id: user.id,
-                                        email: user.email,
-                                        profilePicture: user.profilePicture,
-                                        alias: user.alias
-                                      }],
-                            integrations: []
-                          });
-        });
-      });
+              return res.json({
+                                id: project.id,
+                                name: project.name,
+                                description: project.description,
+                                createdAt: project.createdAt,
+                                isOwner: true,
+                                state: project.state,
+                                members:  [{
+                                            id: user.id,
+                                            email: user.email,
+                                            profilePicture: user.profilePicture,
+                                            alias: user.alias
+                                          }],
+                                integrations: []
+                              });
+            });
+          });
+        }
     } else {
       return res.status(403).json({ errors: { all: 'Por favor, confirma tu cuenta para poder crear proyectos.'}});
     }
@@ -155,9 +159,9 @@ module.exports.sendInvitationsBulk = function(req, res, user){
     }
 
     //currently logged user is owner of the project
-    if(projects[0].ProjectUser.isOwner == true ){
+    if(projects[0].ProjectUser.isOwner === true ){
       //currently logged user is active on the project
-        if(projects[0].ProjectUser.active == true){
+        if(projects[0].ProjectUser.active === true){
 
           //look for already existent members
           projects[0].getUsers({attributes: ['email']}).then(function(members){
@@ -172,14 +176,18 @@ module.exports.sendInvitationsBulk = function(req, res, user){
 
             //filter emails of already existent memebers
             for (y in req.body.addresses) {
-              if(members_mails.indexOf(req.body.addresses[y].address) == -1){
+              if(members_mails.indexOf(req.body.addresses[y].address) === -1){
                 new_members.push(req.body.addresses[y]);
               }
             }
 
-            //sending invitations
-            sendInvitations(new_members, projects[0].name, projects[0].id, user.alias);
-            return res.status(200).json({});
+            if(site_config.users_per_project_limit < parseInt(new_members.length) + members_mails.length){
+              return res.status(403).json({ errors: { all: 'Sólo es posible invitar hasta ' + site_config.users_per_project_limit +' miembros al proyecto.'}});
+            } else {
+              //sending invitations
+              sendInvitations(new_members, projects[0].name, projects[0].id, user.alias);
+              return res.status(200).json({});
+            }
           });
         } else {
           return res.status(403).json({ errors: { all: 'El usuario no puede realizar la acción solicitada.'}});
@@ -230,7 +238,7 @@ module.exports.acceptProjectInvitation = function(req, res, user, token){
               return res.status(404).json({ errors: { all: 'No se encontró Proyecto asociado al token provisto.'}});
             }
             //validate that provided token belongs to active project
-            if(project.state == 'C' || project.state == 'B'){
+            if(project.state === 'C' || project.state === 'B'){
               return res.status(404).json({ errors: { all: 'El Proyecto asociado al token provisto no está activo.'}});
             }
 
@@ -245,12 +253,12 @@ module.exports.acceptProjectInvitation = function(req, res, user, token){
             }
 
             //checking if currently logged user already belongs to Project
-            if(members_ids.indexOf(user.id) == -1){
+            if(members_ids.indexOf(user.id) === -1){
 
               //saving token to avoid reusing it
               user.createToken({value: token});
 
-              user.addProject(project, { isOwner: false }).then(function(user) {
+              user.addProject(project, { isOwner: false }).then(function() {
                 // Project created successfully
 
                 //look for members
@@ -281,7 +289,7 @@ module.exports.acceptProjectInvitation = function(req, res, user, token){
       return res.status(403).json({ errors: { all: 'El token provisto no fue diseñado para éste propósito.'}});
     }
   });
-}
+};
 
 /*
 *
@@ -309,7 +317,7 @@ module.exports.deleteProject = function(req, res, user){
         invalidateUsers(projects[0]);
 
         // save deleted User
-        projects[0].save().then(function(projectSaved) {
+        projects[0].save().then(function() {
           return res.status(200).json({});
         });
       } else {
@@ -319,7 +327,7 @@ module.exports.deleteProject = function(req, res, user){
       return res.status(403).json({ errors: { all: 'El usuario no puede realizar la acción solicitada.'}});
     }
   });
-}
+};
 
 /*
 *
@@ -344,7 +352,7 @@ module.exports.closeProject = function(req, res, user){
         projects[0].close();
 
         // save closed Project
-        projects[0].save().then(function(projectSaved) {
+        projects[0].save().then(function() {
           return res.status(200).json({});
         });
       } else {
@@ -354,7 +362,7 @@ module.exports.closeProject = function(req, res, user){
       return res.status(403).json({ errors: { all: 'El usuario no puede realizar la acción solicitada.'}});
     }
   });
-}
+};
 
 /*
 *
@@ -399,9 +407,9 @@ module.exports.updateProject = function(req, res, user){
     }
 
     //currently logged user is owner of the project
-    if(projects[0].ProjectUser.isOwner == true ){
+    if(projects[0].ProjectUser.isOwner === true ){
       //currently logged user is active on the project
-        if(projects[0].ProjectUser.active == true){
+        if(projects[0].ProjectUser.active === true){
             if(req.body.name){
               projects[0].name = req.body.name;
             }
@@ -435,7 +443,7 @@ module.exports.updateProject = function(req, res, user){
       return res.status(403).json({ errors: { all: 'El usuario no puede realizar la acción solicitada.'}});
     }
   });
-}
+};
 
 /*
 *
@@ -464,7 +472,7 @@ module.exports.removeMember = function(req, res, user){
               //removes membership
               members[0].ProjectUser.active = false;
 
-              members[0].ProjectUser.save().then(function(memberSaved) {
+              members[0].ProjectUser.save().then(function() {
                 return res.status(200).json({});
               });
             });
@@ -478,7 +486,7 @@ module.exports.removeMember = function(req, res, user){
       return res.status(403).json({ errors: { all: 'El usuario no puede eliminarse a si mismo del proyecto.'}});
     }
   });
-}
+};
 
 /*
 * Generates an expirable project invitation token for provided email.
