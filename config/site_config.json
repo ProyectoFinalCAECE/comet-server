@@ -1,4 +1,5 @@
 {
   "enable_emails":false,
-  "base":"http://localhost:4000"
+  "base":"http://localhost:4000",
+  "users_per_project_limit":50
 }
