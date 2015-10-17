@@ -22,5 +22,33 @@
                "description": "the DESC",
                "state": "O"
            }
+       },
+       {
+           "model": "MessageType",
+           "data": {
+               "description": "Text",
+               "character": "T"
+           }
+       },
+       {
+           "model": "MessageType",
+           "data": {
+               "description": "Integration",
+               "character": "I"
+           }
+       },
+       {
+           "model": "MessageType",
+           "data": {
+               "description": "File",
+               "character": "F"
+           }
+       },
+       {
+           "model": "MessageType",
+           "data": {
+               "description": "Videochat",
+               "character": "V"
+           }
        }
 ]
