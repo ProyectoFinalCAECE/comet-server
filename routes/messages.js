@@ -7,14 +7,14 @@
  */
 
 
-//var jwt = require('express-jwt');
+var jwt = require('express-jwt');
 var express = require('express');
 var router  = express.Router();
 var messagingService  = require('../services/messagingService');
 
 
 // saves the unencrypted token in the 'payload' field of request
-//var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
+var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 
 /*
 * Get all Project's Channels information ordered by createdAt date showing the last created first.
@@ -22,8 +22,7 @@ var messagingService  = require('../services/messagingService');
 * @project_id
 *
 */
-router.get('/', function(req, res) {
-  console.log("llegue a la ruta yeyy");
+router.get('/', auth, function(req, res) {
   messagingService.retrieveMessages(req.primaryParams.channel_id, req.query.offset, req.query.limit, function(result){
     return res.status(result.code).json(result.message);
   });

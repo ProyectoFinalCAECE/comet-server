@@ -50,7 +50,7 @@ module.exports.retrieveMessages = function(channelId, offset, limit, callback) {
 
   var result = {};
 
-  models.Message.findAll({ where: ['"ChannelId" = ?', channelId], order: [['sentDateTimeUTC', 'DESC']], offset: offset, limit: limit }).then(function(messages){
+  models.Message.findAll({ where: ['"ChannelId" = ?', channelId], order: [['sentDateTimeUTC', 'ASC']], offset: offset, limit: limit }).then(function(messages){
     result.code = 200;
     result.message = {
                       messages: formatMessages(messages),
@@ -69,13 +69,14 @@ function formatMessages(messages){
 
   var y;
   for (y in messages) {
-      messages_to_be_returned.push({
-                                id: messages[y].id,
-                                text: messages[y].content,
-                                link: messages[y].link || "",
-                                user: messages[y].UserId,
-                                type: 'T',
-                                date: messages[y].sentDateTimeUTC
+      messages_to_be_returned.push({ message: {
+                                  id: messages[y].id,
+                                  text: messages[y].content,
+                                  link: messages[y].link || "",
+                                  user: messages[y].UserId,
+                                  type: 'T',
+                                  date: messages[y].sentDateTimeUTC
+                                }
                               });
   }
   return messages_to_be_returned;
