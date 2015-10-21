@@ -21,15 +21,28 @@ var validator = require('validator');
 */
 module.exports.storeMessage = function(data) {
   //VALIDAR CON TOKEN EL ENVIO DE MENSAJES
-
       // create new Message instance
-      var message = models.Message.build({
-        content: data.message.message.text,
-        UserId: data.message.message.user,
-        MessageTypeId: 1,
-        ChannelId: data.room,
-        sentDateTimeUTC: new Date()
-      });
+      var message;
+      if(data.message.message.destinationUser === undefined ||
+          data.message.message.destinationUser === 0){
+        message = models.Message.build({
+          content: data.message.message.text,
+          UserId: data.message.message.user,
+          MessageTypeId: 1,
+          ChannelId: data.room,
+          sentDateTimeUTC: new Date()
+        });
+      } else {
+        message = models.PrivateMessage.build({
+          content: data.message.message.text,
+          OriginUserId: parseInt(data.message.message.user),
+          DestinationUserId: parseInt(data.message.message.destinationUser),
+          MessageTypeId: 1,
+          channel: data.room,
+          sentDateTimeUTC: new Date()
+        });
+      }
+      //saving message
       message.save();
 };
 
