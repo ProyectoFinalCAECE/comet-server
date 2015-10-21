@@ -166,6 +166,32 @@ router.get('/', auth, function(req, res, next) {
 });
 
 /*
+* Get User's full Account information by Id.
+* Requires authentication header.
+*
+*/
+router.get('/:id', auth, function(req, res) {
+  // look for User's account
+  models.User.findById(parseInt(req.params.id)).then(function(user) {
+    if (!user) {
+      return res.status(401).json({ all: 'No se encontro usuario asociado al token provisto.' });
+    }
+
+    return res.json({
+                    user: {
+                      id: user.id,
+                      firstName: user.firstName,
+                      lastName: user.lastName,
+                      alias: user.alias,
+                      email: user.email,
+                      profilePicture: user.profilePicture,
+                      confirmed: user.confirmed
+                    }
+                  });
+  });
+});
+
+/*
 * Update currently logged User's Account.
 * Requires authentication header.
 *
