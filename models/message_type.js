@@ -13,9 +13,9 @@ module.exports = function(sequelize, DataTypes) {
     character: { type: DataTypes.CHAR(2), defaultValue: 'T' }
   }, {
       classMethods:{
-        associate: function(models) {
-          MessageType.hasMany(models.Message);
-        }
+        //associate: function(models) {
+        //  MessageType.hasMany(models.Message);
+        //}
       }
     }
   );
