@@ -23,7 +23,7 @@ var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 *
 */
 router.get('/', auth, function(req, res) {
-  messagingService.retrieveMessages(req.primaryParams.channel_id, req.query.offset, req.query.limit, function(result){
+  messagingService.retrieveMessages(req.primaryParams.channel_id, req.query.offset, req.query.limit, req.query.isDirect, req.payload._id, function(result){
     return res.status(result.code).json(result.message);
   });
 });

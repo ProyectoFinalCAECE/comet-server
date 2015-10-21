@@ -51,7 +51,7 @@ module.exports.storeMessage = function(data) {
 *
 *
 */
-module.exports.retrieveMessages = function(channelId, offset, limit, callback) {
+module.exports.retrieveMessages = function(channelId, offset, limit, isDirect, requesterId, callback) {
 
   if(offset === undefined){
     offset = 0;
@@ -63,14 +63,30 @@ module.exports.retrieveMessages = function(channelId, offset, limit, callback) {
 
   var result = {};
 
-  models.Message.findAll({ where: ['"ChannelId" = ?', channelId], order: [['sentDateTimeUTC', 'ASC']], offset: offset, limit: limit }).then(function(messages){
-    result.code = 200;
-    result.message = {
-                      messages: formatMessages(messages),
-                      next_offset: parseInt(offset)+parseInt(limit)
-                    };
-    return callback(result);
-  });
+  if(isDirect){
+    var channel_identifier = 'Direct_' + requesterId + '_' + channelId;
+    if(parseInt(channelId) < parseInt(requesterId)){
+      channel_identifier = 'Direct_' + channelId + '_' + requesterId;
+    }
+
+    models.PrivateMessage.findAll({ where: ['"channel" = ?', channel_identifier], order: [['sentDateTimeUTC', 'ASC']], offset: offset, limit: limit }).then(function(messages){
+      result.code = 200;
+      result.message = {
+                        messages: formatPrivateMessages(messages),
+                        next_offset: parseInt(offset)+parseInt(limit)
+                      };
+      return callback(result);
+    });
+  } else {
+    models.Message.findAll({ where: ['"ChannelId" = ?', channelId], order: [['sentDateTimeUTC', 'ASC']], offset: offset, limit: limit }).then(function(messages){
+      result.code = 200;
+      result.message = {
+                        messages: formatMessages(messages),
+                        next_offset: parseInt(offset)+parseInt(limit)
+                      };
+      return callback(result);
+    });
+  }
 };
 
 
@@ -87,6 +103,27 @@ function formatMessages(messages){
                                   text: messages[y].content,
                                   link: messages[y].link || "",
                                   user: messages[y].UserId,
+                                  type: 'T',
+                                  date: messages[y].sentDateTimeUTC
+                                }
+                              });
+  }
+  return messages_to_be_returned;
+}
+
+function formatPrivateMessages(messages){
+  var messages_to_be_returned = [];
+  if (messages === undefined || messages.length === 0) {
+    return messages_to_be_returned;
+  }
+
+  var y;
+  for (y in messages) {
+      messages_to_be_returned.push({ message: {
+                                  id: messages[y].id,
+                                  text: messages[y].content,
+                                  user: messages[y].OriginUserId,
+                                  destinationUser: messages[y].DestinationUserId,
                                   type: 'T',
                                   date: messages[y].sentDateTimeUTC
                                 }
