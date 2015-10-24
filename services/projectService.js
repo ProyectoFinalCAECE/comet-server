@@ -61,7 +61,8 @@ module.exports.createProject = function(req, res) {
                                             profilePicture: user.profilePicture,
                                             alias: user.alias
                                           }],
-                                integrations: []
+                                integrations: [],
+                                closedAt: project.closedAt
                               });
             });
           });
@@ -101,7 +102,8 @@ module.exports.getProject = function(req, res, user) {
                         isOwner: projects[0].ProjectUser.isOwner,
                         state: projects[0].state,
                         members: getProjectMemebers(users),
-                        integrations: []
+                        integrations: [],
+                        closedAt: projects[0].closedAt
                     });
 
       });
@@ -134,7 +136,8 @@ module.exports.getProjects = function(req, res, user) {
             isOwner: projects[x].ProjectUser.isOwner,
             state: projects[x].state,
             members: getProjectMemebers(projects[x].Users),
-            integrations: []
+            integrations: [],
+            closedAt: projects[x].closedAt
           });
       }
     }
@@ -271,7 +274,8 @@ module.exports.acceptProjectInvitation = function(req, res, user, token){
                                     isOwner: false,
                                     state: project.state,
                                     members: getProjectMemebers(users),
-                                    integrations: []
+                                    integrations: [],
+                                    closedAt: project.closedAt
                                 });
                 });
               });
@@ -431,7 +435,8 @@ module.exports.updateProject = function(req, res, user){
                                         isOwner: projectSaved.ProjectUser.isOwner,
                                         state: projectSaved.state,
                                         members: getProjectMemebers(users),
-                                        integrations: []
+                                        integrations: [],
+                                        closedAt: projectSaved.closedAt
                                     });
 
                       });
