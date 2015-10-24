@@ -150,6 +150,7 @@ router.get('/', auth, function(req, res, next) {
     if (!user) {
       return res.status(401).json({ all: 'No se encontro usuario asociado al token provisto.' });
     }
+    console.log("daleeeeeee");
 
     return res.json({
                     user: {
@@ -159,7 +160,8 @@ router.get('/', auth, function(req, res, next) {
                     alias: user.alias,
                     email: user.email,
                     profilePicture: user.profilePicture,
-                    confirmed: user.confirmed
+                    confirmed: user.confirmed,
+                    fullName: user.firstName + ' ' + user.lastName
                     }
                   });
   });
@@ -298,7 +300,8 @@ router.post('/image', auth, upload.single('profilePicture'), function(req, res) 
                             alias: user.alias,
                             email: user.email,
                             profilePicture: user.profilePicture,
-                            confirmed: user.confirmed
+                            confirmed: user.confirmed,
+                            fullName: user.firstName + ' ' + user.lastName
                             }
                           });
           });
@@ -338,7 +341,7 @@ router.delete('/', auth, function(req, res, next) {
 
         // save deleted User
         user.save()
-              .then(function(userSaved) {
+              .then(function() {
                 // User saved successfully
                 mailerService.sendGoodbyeMail(user.email);
                 req.logout();
