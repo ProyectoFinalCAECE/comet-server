@@ -8,8 +8,8 @@
 
 //Max channel name and description text lengths
 //should be consts but it's use is not allowed under strict mode... yet.
-var NameLenght = 50;
-var DescLenght = 500;
+var models  = require('../../models');
+
 //Allowed channel types.
 var channelTypes = ['S','P'];
 
@@ -34,16 +34,16 @@ module.exports.validCreate = function(req, res, next) {
   if (!req.body.name) {
     errors.name = 'Por favor ingresa el nombre de tu canal.';
     hasErrors = true;
-  } else if (req.body.name.length > NameLenght) {
-    errors.name = 'El nombre de tu canal no debe superar los '+ NameLenght +' caracteres.';
+  } else if (req.body.name.length > models.Channel.nameLenght) {
+    errors.name = 'El nombre de tu canal no debe superar los '+ models.Channel.nameLenght +' caracteres.';
     hasErrors = true;
   }
 
   if (!req.body.description) {
     errors.description = 'Por favor ingresa la descripción de tu canal.';
     hasErrors = true;
-  } else if (req.body.description.length > DescLenght) {
-    errors.description = 'La descripción de tu canal no debe superar los '+ DescLenght +' caracteres.';
+  } else if (req.body.description.length > models.Channel.descriptionLength) {
+    errors.description = 'La descripción de tu canal no debe superar los '+ models.Channel.descriptionLength +' caracteres.';
     hasErrors = true;
   }
 
@@ -230,6 +230,43 @@ module.exports.validRemoveMember = function(req, res, next){
 
   if (hasErrors) {
     return res.status(400).json({ errors: errors });
+  }
+
+  next();
+};
+
+/*
+*
+* Checks if provided parameters to update a Channel are valid or returns an appropiate response.
+* @name
+* @description
+* @type
+*
+*/
+module.exports.validUpdateChannel = function(req, res, next){
+  // validate input parameters
+  if (req.body.name !== undefined) {
+    if(req.body.name === ''){
+      return res.status(400).json({ errors: { name: 'El nombre provisto no es válido.'}});
+    }
+    if(req.body.name.length > models.Channel.nameLenght){
+        return res.status(400).json({ errors: { name: 'El nombre de tu canal no debe superar los '+ models.Channel.nameLenght +' caracteres.'}});
+    }
+  }
+
+  if (req.body.description !== undefined) {
+    if(req.body.description === ''){
+      return res.status(400).json({ errors: { description: 'La descripción provista no es válida.'}});
+    }
+    if(req.body.name.description > models.Channel.descriptionLength){
+        return res.status(400).json({ errors: { name: 'La descripción de tu canal no debe superar los '+ models.Channel.descriptionLength +' caracteres.'}});
+    }
+  }
+
+  if (req.body.type !== undefined) {
+    if(req.body.type === '' || channelTypes.indexOf(req.body.type) === -1){
+      return res.status(400).json({ errors: { description: 'El tipo provisto no es válido.'}});
+    }
   }
 
   next();

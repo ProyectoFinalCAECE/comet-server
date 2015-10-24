@@ -347,6 +347,59 @@ module.exports.removeMember = function(project_id, channel_id, user, member_id, 
 };
 
 /*
+* Allows Channel's Member to update Channel's properties.
+* @project_id
+* @id
+* @name
+* @type
+* @description
+*
+*/
+module.exports.updateChannel = function(body, project_id, channel_id, user, callback) {
+  var result = {};
+  user.getChannels({ where: ['"ChannelUser"."ChannelId" = ? AND "Channel"."state" != ?', channel_id, "B"], include: [{ model: models.User}] }).then(function(channels){
+    if (channels === undefined || channels.length === 0) {
+      result.code = 404;
+      result.message = { errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}};
+      return callback(result);
+    }
+
+    if(channels[0].ChannelUser.active === false){
+      result.code = 403;
+      result.message = { errors: { all: 'El usuario no puede acceder al canal solicitado.'}};
+      return callback(result);
+    } else {
+      //updating channel
+        if (body.name) {
+          channels[0].name = body.name;
+        }
+        if (body.description) {
+          channels[0].description = body.description;
+        }
+        if (body.type) {
+          channels[0].type = body.type;
+        }
+
+      channels[0].save().then(function(){
+        result.code = 200;
+        result.message = {
+                            id: channels[0].id,
+                            name: channels[0].name,
+                            description: channels[0].description,
+                            createdAt: channels[0].createdAt,
+                            type: channels[0].type,
+                            state: channels[0].state,
+                            members:  getChannelMembers(channels[0].Users),
+                            integrations: []
+
+        };
+        return callback(result);
+      });
+    }
+});
+};
+
+/*
 * Given a set of Users of a Channel, returns those which are active in a certain format.
 * @users
 *

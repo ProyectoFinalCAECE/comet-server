@@ -146,4 +146,25 @@ router.delete('/:id/members/:member_id', auth, channelValidator.validRemoveMembe
   });
 });
 
+/*
+* Allows Channel's Member to update Channel's properties.
+* @project_id
+* @id
+* @name
+* @type
+* @description
+*
+*/
+router.put('/:id', auth, channelValidator.validUpdateChannel, function(req, res){
+  // look for current user's account
+  models.User.findById(parseInt(req.payload._id)).then(function(user) {
+    if (!user) {
+      return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
+    }
+    channelService.updateChannel(req.body, req.primaryParams.project_id, req.params.id, user, function(result){
+      return res.status(result.code).json(result.message);
+    });
+  });
+});
+
 module.exports = router;
