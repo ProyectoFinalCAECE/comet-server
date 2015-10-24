@@ -59,7 +59,8 @@ module.exports.createProject = function(req, res) {
                                             id: user.id,
                                             email: user.email,
                                             profilePicture: user.profilePicture,
-                                            alias: user.alias
+                                            alias: user.alias,
+                                            fullName: user.firstName + ' ' + user.lastName
                                           }],
                                 integrations: [],
                                 closedAt: project.closedAt
@@ -555,6 +556,7 @@ function getProjectMemebers(users){
                                 profilePicture: users[y].profilePicture,
                                 firstName: users[y].firstName,
                                 lastName: users[y].lastName,
+                                fullName: users[y].firstName + ' ' + users[y].lastName,
                                 alias: users[y].alias,
                                 createdAt:users[y].createdAt
                               });

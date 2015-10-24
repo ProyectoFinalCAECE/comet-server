@@ -56,7 +56,7 @@ module.exports.createChannel = function(user, req, res) {
                                     createdAt: channelCreated.createdAt,
                                     type: channelCreated.type,
                                     state: channelCreated.state,
-                                    members:  getChannelMembers(users),
+                                    members: getChannelMembers(users),
                                     integrations: []
                                   });
                 });
@@ -389,7 +389,7 @@ module.exports.updateChannel = function(body, project_id, channel_id, user, call
                             createdAt: channels[0].createdAt,
                             type: channels[0].type,
                             state: channels[0].state,
-                            members:  getChannelMembers(channels[0].Users),
+                            members: getChannelMembers(channels[0].Users),
                             integrations: []
 
         };
@@ -415,6 +415,7 @@ function getChannelMembers(users){
                                 profilePicture: users[y].profilePicture,
                                 firstName: users[y].firstName,
                                 lastName: users[y].lastName,
+                                fullName: users[y].firstName + ' ' + users[y].lastName,
                                 alias: users[y].alias,
                                 createdAt:users[y].createdAt
                               });
