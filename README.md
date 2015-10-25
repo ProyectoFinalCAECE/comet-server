@@ -20,7 +20,8 @@ Gruntfile includes a task to populate database tables basing on /config/seeds/da
 
 To add new records to the db:
 
-1) Add content to database_seed.json providing a valid json.<br />
-2) Truncate db tables if neccessary, as seed does not remove anything. Just adds missing records.<br />
-3) Move to Gruntfile directory.<br />
-4) Run 'grunt'.
+1) Run `npm install -g grunt-cli` to install grunt's command line interface.<br />
+2) Add content to database_seed.json providing a valid json.<br />
+3) Truncate db tables if neccessary, as seed does not remove anything. Just adds missing records.<br />
+4) Move to Gruntfile directory.<br />
+5) Run `grunt`.
