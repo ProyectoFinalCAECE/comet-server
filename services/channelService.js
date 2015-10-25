@@ -52,16 +52,7 @@ module.exports.createChannel = function(user, req, res) {
                   //look for members
                   channel.getUsers().then(function(users){
 
-                    return res.json({
-                                      id: channelCreated.id,
-                                      name: channelCreated.name,
-                                      description: channelCreated.description,
-                                      createdAt: channelCreated.createdAt,
-                                      type: channelCreated.type,
-                                      state: channelCreated.state,
-                                      members: getChannelMembers(users),
-                                      integrations: []
-                                    });
+                    return res.json(getChannelFromHash(channelCreated, users));
                   });
                 });
               });
@@ -92,40 +83,19 @@ module.exports.getChannel = function(req, res, user) {
     } else {
       models.Channel.findAll({ where: ['"Channel"."id" = ? AND "Channel"."ProjectId" = ? AND "Channel"."state" != ?', req.params.id ,req.primaryParams.project_id, "B"],
                               include: [{ model: models.User}]}).then(function(channels){
-                                if (channels === undefined || channels.length === 0) {
-                                  return res.status(404).json({ errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}});
-                                }
-
-                                if(channels[0].type === 'S'){
-
-                                  return res.json({
-                                                    id: channels[0].id,
-                                                    name: channels[0].name,
-                                                    description: channels[0].description,
-                                                    createdAt: channels[0].createdAt,
-                                                    type: channels[0].type,
-                                                    state: channels[0].state,
-                                                    members: getChannelMembers(channels[0].Users),
-                                                    integrations: []
-                                                });
-                                } else {
-                                  var channelUser = findChannelUser(channels[0].Users, user.id);
-                                  if(!channelUser || channelUser.active === false){
-                                    return res.status(403).json({ errors: { all: 'El usuario no puede acceder al canal solicitado.'}});
-                                  }
-
-                                  return res.json({
-                                                    id: channels[0].id,
-                                                    name: channels[0].name,
-                                                    description: channels[0].description,
-                                                    createdAt: channels[0].createdAt,
-                                                    type: channels[0].type,
-                                                    state: channels[0].state,
-                                                    members: getChannelMembers(channels[0].Users),
-                                                    integrations: []
-                                                });
-                                }
-                              });
+        if (channels === undefined || channels.length === 0) {
+          return res.status(404).json({ errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}});
+        }
+        if(channels[0].type === 'S'){
+          return res.json(getChannelFromHash(channels[0], channels[0].Users));
+        } else {
+          var channelUser = findChannelUser(channels[0].Users, user.id);
+          if(!channelUser || channelUser.active === false){
+            return res.status(403).json({ errors: { all: 'El usuario no puede acceder al canal solicitado.'}});
+          }
+            return res.json(getChannelFromHash(channels[0], channels[0].Users));
+        }
+      });
     }
   });
 };
@@ -156,29 +126,11 @@ module.exports.getChannels = function(req, res, user) {
         for (x in channels) {
           //filtering channels user is not assigned anymore
           if(channels[x].type === 'S') {
-              channels_to_be_returned.push({
-                id: channels[x].id,
-                name: channels[x].name,
-                description: channels[x].description,
-                createdAt: channels[x].createdAt,
-                type: channels[x].type,
-                state: channels[x].state,
-                members: getChannelMembers(channels[x].Users),
-                integrations: []
-              });
+              channels_to_be_returned.push(getChannelFromHash(channels[x], channels[x].Users));
           } else {
             var channel_members_ids = getActiveUsersIds(channels[x].Users);
             if((channel_members_ids.indexOf(user.id)) > -1){
-              channels_to_be_returned.push({
-                id: channels[x].id,
-                name: channels[x].name,
-                description: channels[x].description,
-                createdAt: channels[x].createdAt,
-                type: channels[x].type,
-                state: channels[x].state,
-                members: getChannelMembers(channels[x].Users),
-                integrations: []
-              });
+              channels_to_be_returned.push(getChannelFromHash(channels[x], channels[x].Users));
             }
           }
         }
@@ -221,18 +173,8 @@ module.exports.getAddMembersBulk = function(members, project_id, channel_id, use
                                 associateMembers(members, channels[0], project.Users, function(){
                                   //look for members again to get new ones
                                   channels[0].getUsers().then(function(users){
-
                                     result.code = 200;
-                                    result.message = {
-                                                      id: channels[0].id,
-                                                      name: channels[0].name,
-                                                      description: channels[0].description,
-                                                      createdAt: channels[0].createdAt,
-                                                      type: channels[0].type,
-                                                      state: channels[0].state,
-                                                      members: getChannelMembers(users),
-                                                      integrations: []
-                                                    };
+                                    result.message = getChannelFromHash(channels[0], users);
                                     return callback(result);
                                   });
                                 });
@@ -386,17 +328,7 @@ module.exports.updateChannel = function(body, project_id, channel_id, user, call
 
       channels[0].save().then(function(){
         result.code = 200;
-        result.message = {
-                            id: channels[0].id,
-                            name: channels[0].name,
-                            description: channels[0].description,
-                            createdAt: channels[0].createdAt,
-                            type: channels[0].type,
-                            state: channels[0].state,
-                            members: getChannelMembers(channels[0].Users),
-                            integrations: []
-
-        };
+        result.message = getChannelFromHash(channels[0], channels[0].Users);
         return callback(result);
       });
     }
@@ -499,4 +431,28 @@ function findChannelUser(channel_users, current_user_id){
   }else{
     return null;
   }
+}
+
+/*
+* Given a channel hash and a set of users, returns a hash for the service response.
+* @channel_hash
+* @users
+*
+*/
+function getChannelFromHash(channel_hash, users){
+  var channel = {};
+  if(channel_hash !== undefined){
+    channel = {
+                    id: channel_hash.id,
+                    name: channel_hash.name,
+                    description: channel_hash.description,
+                    createdAt: channel_hash.createdAt,
+                    closedAt: channel_hash.closedAt,
+                    type: channel_hash.type,
+                    state: channel_hash.state,
+                    members: getChannelMembers(users),
+                    integrations: []
+              };
+  }
+  return channel;
 }
