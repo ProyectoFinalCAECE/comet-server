@@ -7,7 +7,6 @@
  */
 
 var models  = require('../models');
-var validator = require('validator');
 
 //Max project name and description text lengths
 //should be consts but it's use is not allowed under strict mode... yet.
@@ -30,7 +29,7 @@ module.exports.storeMessage = function(data) {
           UserId: data.message.message.user,
           MessageTypeId: 1,
           ChannelId: data.room,
-          sentDateTimeUTC: new Date()
+          sentDateTimeUTC: new Date().getTime()
         });
       } else {
         message = models.PrivateMessage.build({
@@ -39,7 +38,7 @@ module.exports.storeMessage = function(data) {
           DestinationUserId: parseInt(data.message.message.destinationUser),
           MessageTypeId: 1,
           channel: data.room,
-          sentDateTimeUTC: new Date()
+          sentDateTimeUTC: new Date().getTime()
         });
       }
       //saving message
@@ -65,20 +64,21 @@ module.exports.retrieveMessages = function(channelId, offset, limit, isDirect, r
 
   if(isDirect){
     var channel_identifier = 'Direct_' + requesterId + '_' + channelId;
+
     if(parseInt(channelId) < parseInt(requesterId)){
       channel_identifier = 'Direct_' + channelId + '_' + requesterId;
     }
 
-    models.PrivateMessage.findAll({ where: ['"channel" = ?', channel_identifier], order: [['sentDateTimeUTC', 'ASC']], offset: offset, limit: limit }).then(function(messages){
+    models.PrivateMessage.findAll({ where: ['"channel" = ?', channel_identifier], order: [['sentDateTimeUTC', 'DESC']], offset: offset, limit: limit }).then(function(messages){
       result.code = 200;
       result.message = {
-                        messages: formatPrivateMessages(messages),
+                        messages: formatMessages(messages),
                         next_offset: parseInt(offset)+parseInt(limit)
                       };
       return callback(result);
     });
   } else {
-    models.Message.findAll({ where: ['"ChannelId" = ?', channelId], order: [['sentDateTimeUTC', 'ASC']], offset: offset, limit: limit }).then(function(messages){
+    models.Message.findAll({ where: ['"ChannelId" = ?', channelId], order: [['sentDateTimeUTC', 'DESC']], offset: offset, limit: limit }).then(function(messages){
       result.code = 200;
       result.message = {
                         messages: formatMessages(messages),
@@ -90,6 +90,10 @@ module.exports.retrieveMessages = function(channelId, offset, limit, isDirect, r
 };
 
 
+/*
+* Formats and orders messages to be returned by the service
+*
+*/
 function formatMessages(messages){
   var messages_to_be_returned = [];
   if (messages === undefined || messages.length === 0) {
@@ -98,7 +102,9 @@ function formatMessages(messages){
 
   var y;
   for (y in messages) {
-      messages_to_be_returned.push({ message: {
+    var message = {};
+    if(messages[y].link !== undefined){
+      message = { message: {
                                   id: messages[y].id,
                                   text: messages[y].content,
                                   link: messages[y].link || "",
@@ -106,20 +112,9 @@ function formatMessages(messages){
                                   type: 'T',
                                   date: messages[y].sentDateTimeUTC
                                 }
-                              });
-  }
-  return messages_to_be_returned;
-}
-
-function formatPrivateMessages(messages){
-  var messages_to_be_returned = [];
-  if (messages === undefined || messages.length === 0) {
-    return messages_to_be_returned;
-  }
-
-  var y;
-  for (y in messages) {
-      messages_to_be_returned.push({ message: {
+                              };
+    }else{
+      message = { message: {
                                   id: messages[y].id,
                                   text: messages[y].content,
                                   user: messages[y].OriginUserId,
@@ -127,7 +122,9 @@ function formatPrivateMessages(messages){
                                   type: 'T',
                                   date: messages[y].sentDateTimeUTC
                                 }
-                              });
+                              };
+    }
+    messages_to_be_returned.push(message);
   }
-  return messages_to_be_returned;
+  return messages_to_be_returned.reverse();
 }
