@@ -126,5 +126,5 @@ function formatMessages(messages){
     }
     messages_to_be_returned.push(message);
   }
-  return messages_to_be_returned.reverse();
+  return messages_to_be_returned;
 }
