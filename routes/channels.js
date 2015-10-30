@@ -84,7 +84,7 @@ router.put('/:id/members', auth, channelValidator.validAddMembers, function(req,
     if (!user) {
       return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
     }
-    channelService.getAddMembersBulk(req.body.members, req.primaryParams.project_id, req.params.id, user, function(result){
+    channelService.addMembersBulk(req.body.members, req.primaryParams.project_id, req.params.id, user, function(result){
       return res.status(result.code).json(result.message);
     });
   });

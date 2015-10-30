@@ -7,6 +7,9 @@
  */
 
 var models  = require('../models');
+var Sequelize = require("sequelize");
+var env       = process.env.NODE_ENV || "development";
+var config    = require(__dirname + '/../config/sequelize.json')[env];
 
 /*
 * Create new Channel and and associates project members if provided.
@@ -142,7 +145,7 @@ module.exports.getChannels = function(req, res, user) {
 
 /*
 *
-* Adds new Project's members basing on provided ids.
+* Adds new Channel members basing on provided ids.
 * @members
 * @project_id
 * @channel_id
@@ -150,7 +153,7 @@ module.exports.getChannels = function(req, res, user) {
 * @callback
 *
 */
-module.exports.getAddMembersBulk = function(members, project_id, channel_id, user, callback) {
+module.exports.addMembersBulk = function(members, project_id, channel_id, user, callback) {
   var result = {};
   models.Channel.findAll({ where: ['"Channel"."id" = ? AND "Channel"."ProjectId" = ? AND "Channel"."state" != ?', channel_id , project_id, "B"],
                           include: [{ model: models.User}]}).then(function(channels){
@@ -162,6 +165,7 @@ module.exports.getAddMembersBulk = function(members, project_id, channel_id, use
 
                             var channel_members_ids = getActiveUsersIds(channels[0].Users);
 
+                            //checking that current logged user can perform this action.
                             if((channel_members_ids.indexOf(user.id) === -1) && (user.id !== parseInt(members[0].id))){
                               result.code = 403;
                               result.message = { errors: { all: 'El usuario no puede acceder al canal solicitado.'}};
@@ -368,18 +372,34 @@ function getChannelMembers(users){
 *
 */
 function associateMembers(members, channel, projectUsers, callback){
+  var inactive_users = getInactiveUsersIds(channel.Users);
+
+  //adding new users to the channel and updating once exitent ones.
   if(members){
     var x;
     var project_users_ids = getUsersIds(projectUsers);
     var channel_users_to_create = [];
+
+    var sequelize = new Sequelize(config.database, config.username, config.password, config);
+
     for(x in members){
       if(project_users_ids.indexOf(parseInt(members[x].id)) > -1){
-        channel_users_to_create.push({ active: 'true', ChannelId: channel.id, UserId: parseInt(members[x].id) });
+        //memeber existed once. must update row
+        if(inactive_users.indexOf(parseInt(members[x].id)) > -1){
+          sequelize.query('UPDATE "ChannelUsers" SET active = TRUE WHERE "UserId" = ? and "ChannelId" = ?',
+                          { replacements: [members[x].id, channel.id], type: sequelize.QueryTypes.SELECT } ).spread();
+        } else {
+          channel_users_to_create.push({ active: 'true', ChannelId: channel.id, UserId: parseInt(members[x].id) });
+        }
       }
     }
-    models.ChannelUser.bulkCreate(channel_users_to_create).then(function() {
-      return true;
-    });
+    sequelize = null;
+
+    if(channel_users_to_create.length > 0){
+      models.ChannelUser.bulkCreate(channel_users_to_create).then(function() {
+        return true;
+      });
+    }
   }
   callback();
 }
@@ -409,6 +429,23 @@ function getActiveUsersIds(channel_members){
     var y;
     for(y in channel_members){
       if(channel_members[y].ChannelUser.active === true){
+        ids_to_be_returned.push(channel_members[y].id);
+      }
+    }
+  }
+  return ids_to_be_returned;
+}
+
+/*
+*Given a set of Users, returns an array containing its ids if they're inactive for the channel.
+*
+*/
+function getInactiveUsersIds(channel_members){
+  var ids_to_be_returned = [];
+  if(channel_members){
+    var y;
+    for(y in channel_members){
+      if(channel_members[y].ChannelUser.active === false){
         ids_to_be_returned.push(channel_members[y].id);
       }
     }
