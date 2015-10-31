@@ -7,6 +7,9 @@
  */
 
 var models  = require('../models');
+var Sequelize = require("sequelize");
+var env       = process.env.NODE_ENV || "development";
+var config    = require(__dirname + '/../config/sequelize.json')[env];
 
 //Max project name and description text lengths
 //should be consts but it's use is not allowed under strict mode... yet.
@@ -36,6 +39,7 @@ module.exports.storeMessage = function(data) {
           content: data.message.message.text,
           OriginUserId: parseInt(data.message.message.user),
           DestinationUserId: parseInt(data.message.message.destinationUser),
+          ProjectId: parseInt(data.message.message.projectId),
           MessageTypeId: 1,
           channel: data.room,
           sentDateTimeUTC: new Date().getTime()
@@ -89,6 +93,101 @@ module.exports.retrieveMessages = function(channelId, offset, limit, isDirect, r
   }
 };
 
+/*
+* Store disconnection date of an user from a project
+*
+*/
+module.exports.storeDisconnectionDate = function(data) {
+      var sequelize = new Sequelize(config.database, config.username, config.password, config);
+
+      //looking for last connection date to this project.
+      var last_seen_at = new Date();
+      sequelize.query('UPDATE "ProjectUsers" ' +
+                      ' SET "disconnectedAt" = ? ' +
+                      ' WHERE "UserId" = ? AND "ProjectId" = ?;',
+                      { type: sequelize.QueryTypes.UPDATE, replacements: [ last_seen_at, data.userId, data.projectId]});
+};
+
+
+/*
+* Retrieve messages from db by channelId. Allows pagination.
+*
+*/
+module.exports.getProjectChannelsUpdates = function(projectId, userId, callback) {
+  var result = {
+                  channels_with_updates: [],
+                  users_with_updates: []
+                };
+
+  if(projectId === undefined || userId === undefined){
+      return callback(result);
+  }
+
+  var sequelize = new Sequelize(config.database, config.username, config.password, config);
+
+  //looking for last connection date to this project.
+  sequelize.query('SELECT "disconnectedAt" ' +
+                  'FROM "ProjectUsers" ' +
+                  'WHERE "ProjectId" = ? ' +
+                  'AND "UserId" = ? ' +
+                  'AND active = true;',
+                  { type: sequelize.QueryTypes.SELECT,
+                    replacements: [projectId, userId]})
+  .then(function(disconnectedAt) {
+    if(disconnectedAt[0].disconnectedAt === undefined || disconnectedAt[0].disconnectedAt === null){
+      var d = new Date();
+      d.setDate(d.getDate() - 365*100);
+      disconnectedAt = d;
+    } else {
+      disconnectedAt = disconnectedAt[0].disconnectedAt;
+    }
+
+    //looking for messages sent to project's channels after last connection date.
+    sequelize.query('SELECT DISTINCT "ChannelId" ' +
+                      ' FROM "Messages" ' +
+                      ' WHERE "ChannelId" IN ( ' +
+                      	' SELECT "ChannelId" ' +
+                      	' FROM "ChannelUsers" ' +
+                      	'WHERE "ChannelUsers"."UserId" = ? ' +
+                      	' AND "ChannelUsers".active = true ' +
+                      	' AND "ChannelUsers"."ChannelId" IN ( ' +
+                      		' SELECT id ' +
+                      		' FROM "Channels" ' +
+                      		' WHERE "ProjectId" = ? ' +
+                      		' AND state = \'O\' ' +
+                      	' ) ' +
+                      ') ' +
+                      ' AND "sentDateTimeUTC" > ?;',
+                    { type: sequelize.QueryTypes.SELECT,
+                      replacements: [userId, projectId, disconnectedAt]})
+    .then(function(channel_with_updates) {
+      console.log("channel_with_updates is: " + JSON.stringify(channel_with_updates));
+      var x;
+      for(x in channel_with_updates){
+        result.channels_with_updates.push({'id':channel_with_updates[x].ChannelId});
+      }
+      console.log("result is: " + JSON.stringify(result));
+
+      //looking for direct messages sent to project's users after last connection date.
+      sequelize.query('SELECT DISTINCT "OriginUserId" ' +
+                        ' FROM "PrivateMessages" ' +
+                        ' WHERE "DestinationUserId" = ? ' +
+                        ' AND "ProjectId" = ? ' +
+                        ' AND "sentDateTimeUTC" > ?',
+                      { type: sequelize.QueryTypes.SELECT,
+                        replacements: [userId, projectId, disconnectedAt]})
+      .then(function(users_with_updates) {
+        console.log("users_with_updates is: " + JSON.stringify(users_with_updates));
+        var x;
+        for(x in users_with_updates){
+          result.users_with_updates.push({'id':users_with_updates[x].OriginUserId});
+        }
+        console.log("result is: " + JSON.stringify(result));
+        return callback(result);
+      });
+    });
+  });
+};
 
 /*
 * Formats and orders messages to be returned by the service
