@@ -15,7 +15,7 @@ var site_config = require('../config/site_config.json');
 //Max project name and description text lengths
 //should be consts but it's use is not allowed under strict mode... yet.
 var NameLenght = 40;
-var DescLength = 2000;
+var DescLength = 200;
 
 /*
 * Create new Project and send invitations if members provided.
