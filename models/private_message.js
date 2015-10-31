@@ -19,6 +19,7 @@ module.exports = function(sequelize, DataTypes) {
           PrivateMessage.belongsTo(models.User,  { as: 'OriginUser' });
           PrivateMessage.belongsTo(models.User,  { as: 'DestinationUser' });
           PrivateMessage.belongsTo(models.MessageType);
+          PrivateMessage.belongsTo(models.Project);
         }
       }
     }
