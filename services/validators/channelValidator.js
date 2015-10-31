@@ -34,16 +34,16 @@ module.exports.validCreate = function(req, res, next) {
   if (!req.body.name) {
     errors.name = 'Por favor ingresa el nombre de tu canal.';
     hasErrors = true;
-  } else if (req.body.name.length > models.Channel.nameLenght) {
-    errors.name = 'El nombre de tu canal no debe superar los '+ models.Channel.nameLenght +' caracteres.';
+  } else if (req.body.name.length > models.Channel.nameLength()) {
+    errors.name = 'El nombre de tu canal no debe superar los '+ models.Channel.nameLength() +' caracteres.';
     hasErrors = true;
   }
 
   if (!req.body.description) {
     errors.description = 'Por favor ingresa la descripción de tu canal.';
     hasErrors = true;
-  } else if (req.body.description.length > models.Channel.descriptionLength) {
-    errors.description = 'La descripción de tu canal no debe superar los '+ models.Channel.descriptionLength +' caracteres.';
+  } else if (req.body.description.length > models.Channel.descriptionLength()) {
+    errors.description = 'La descripción de tu canal no debe superar los '+ models.Channel.descriptionLength() +' caracteres.';
     hasErrors = true;
   }
 
@@ -249,8 +249,8 @@ module.exports.validUpdateChannel = function(req, res, next){
     if(req.body.name === ''){
       return res.status(400).json({ errors: { name: 'El nombre provisto no es válido.'}});
     }
-    if(req.body.name.length > models.Channel.nameLenght){
-        return res.status(400).json({ errors: { name: 'El nombre de tu canal no debe superar los '+ models.Channel.nameLenght +' caracteres.'}});
+    if(req.body.name.length > models.Channel.nameLength()){
+        return res.status(400).json({ errors: { name: 'El nombre de tu canal no debe superar los '+ models.Channel.nameLength() +' caracteres.'}});
     }
   }
 
@@ -258,8 +258,8 @@ module.exports.validUpdateChannel = function(req, res, next){
     if(req.body.description === ''){
       return res.status(400).json({ errors: { description: 'La descripción provista no es válida.'}});
     }
-    if(req.body.name.description > models.Channel.descriptionLength){
-        return res.status(400).json({ errors: { name: 'La descripción de tu canal no debe superar los '+ models.Channel.descriptionLength +' caracteres.'}});
+    if(req.body.name.description > models.Channel.descriptionLength()){
+        return res.status(400).json({ errors: { name: 'La descripción de tu canal no debe superar los '+ models.Channel.descriptionLength() +' caracteres.'}});
     }
   }
 
