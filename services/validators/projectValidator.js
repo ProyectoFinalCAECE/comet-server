@@ -19,7 +19,7 @@ var validator = require("email-validator");
 //Max project name and description text lengths
 //should be consts but it's use is not allowed under strict mode... yet.
 var NameLenght = 40;
-var DescLength = 2000;
+var DescLength = 200;
 
 module.exports.validCreate = function(req, res, next) {
   var errors = {};
