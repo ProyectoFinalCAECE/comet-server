@@ -10,6 +10,20 @@ var models  = require('../models');
 var Sequelize = require("sequelize");
 var env       = process.env.NODE_ENV || "development";
 var config    = require(__dirname + '/../config/sequelize.json')[env];
+var sequelize = new Sequelize(config.database, config.username, config.password, {    "username": "postgres",
+  "password": "123456789",
+  "database": "comet",
+  "host": "127.0.0.1",
+  "dialect": "postgres",
+  "define": {
+    "updatedAt": "updatedAt",
+    "createdAt": "createdAt"},
+                                                                                    "pool": {
+                                                                                      "max": 10,
+                                                                                      "min": 1,
+                                                                                      "idle": 10000
+                                                                                    }
+                                                                                });
 
 //Max project name and description text lengths
 //should be consts but it's use is not allowed under strict mode... yet.
@@ -98,7 +112,6 @@ module.exports.retrieveMessages = function(channelId, offset, limit, isDirect, r
 *
 */
 module.exports.storeDisconnectionDate = function(data) {
-      var sequelize = new Sequelize(config.database, config.username, config.password, config);
 
       //looking for last connection date to this project.
       var last_seen_at = new Date();
@@ -122,8 +135,6 @@ module.exports.getProjectChannelsUpdates = function(projectId, userId, callback)
   if(projectId === undefined || userId === undefined){
       return callback(result);
   }
-
-  var sequelize = new Sequelize(config.database, config.username, config.password, config);
 
   //looking for last connection date to this project.
   sequelize.query('SELECT "disconnectedAt" ' +
