@@ -340,6 +340,24 @@ module.exports.updateChannel = function(body, project_id, channel_id, user, call
 };
 
 /*
+* Given a channel id, returns a list of channel's active members
+* @id
+*
+*/
+module.exports.getChannelActiveMembers = function(channel_id, callback) {
+  var members = {};
+  models.Channel.findAll({ where: ['"Channel"."id" = ? AND "Channel"."state" != ?', channel_id, "B"],
+                          include: [{ model: models.User}]}).then(function(channels){
+                            if (channels === undefined || channels.length === 0) {
+                              return callback(members);
+                            }
+
+                            members = getActiveUsersIds(channels[0].Users);
+                            return callback(members);
+                          });
+};
+
+/*
 * Given a set of Users of a Channel, returns those which are active in a certain format.
 * @users
 *
