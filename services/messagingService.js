@@ -44,7 +44,7 @@ module.exports.storeMessage = function(data) {
         message = models.Message.build({
           content: data.message.message.text,
           UserId: data.message.message.user,
-          MessageTypeId: 1,
+          MessageTypeId: parseInt(data.message.message.type),
           ChannelId: data.room,
           sentDateTimeUTC: new Date().getTime()
         });
@@ -54,7 +54,7 @@ module.exports.storeMessage = function(data) {
           OriginUserId: parseInt(data.message.message.user),
           DestinationUserId: parseInt(data.message.message.destinationUser),
           ProjectId: parseInt(data.message.message.projectId),
-          MessageTypeId: 1,
+          MessageTypeId: parseInt(data.message.message.type),
           channel: data.room,
           sentDateTimeUTC: new Date().getTime()
         });
