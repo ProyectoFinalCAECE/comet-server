@@ -87,7 +87,7 @@ module.exports.retrieveMessages = function(channelId, offset, limit, isDirect, r
       channel_identifier = 'Direct_' + channelId + '_' + requesterId;
     }
 
-    models.PrivateMessage.findAll({ where: ['"channel" = ?', channel_identifier], order: [['sentDateTimeUTC', 'DESC']], offset: offset, limit: limit }).then(function(messages){
+    models.PrivateMessage.findAll({ where: ['"channel" = ?', channel_identifier], order: [['sentDateTimeUTC', 'DESC']], offset: offset, limit: limit, include: [{ model: models.MessageType}] }).then(function(messages){
       result.code = 200;
       result.message = {
                         messages: formatMessages(messages),
@@ -96,7 +96,7 @@ module.exports.retrieveMessages = function(channelId, offset, limit, isDirect, r
       return callback(result);
     });
   } else {
-    models.Message.findAll({ where: ['"ChannelId" = ?', channelId], order: [['sentDateTimeUTC', 'DESC']], offset: offset, limit: limit }).then(function(messages){
+    models.Message.findAll({ where: ['"ChannelId" = ?', channelId], order: [['sentDateTimeUTC', 'DESC']], offset: offset, limit: limit, include: [{ model: models.MessageType}] }).then(function(messages){
       result.code = 200;
       result.message = {
                         messages: formatMessages(messages),
@@ -219,7 +219,7 @@ function formatMessages(messages){
                                   text: messages[y].content,
                                   link: messages[y].link || "",
                                   user: messages[y].UserId,
-                                  type: 'T',
+                                  type: messages[y].MessageType.id.toString(),
                                   date: messages[y].sentDateTimeUTC
                                 }
                               };
@@ -229,7 +229,7 @@ function formatMessages(messages){
                                   text: messages[y].content,
                                   user: messages[y].OriginUserId,
                                   destinationUser: messages[y].DestinationUserId,
-                                  type: 'T',
+                                  type: messages[y].MessageType.id.toString(),
                                   date: messages[y].sentDateTimeUTC
                                 }
                               };
