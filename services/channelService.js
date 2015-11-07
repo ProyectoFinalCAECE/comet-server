@@ -329,7 +329,6 @@ module.exports.updateChannel = function(body, project_id, channel_id, user, call
         if (body.type) {
           channels[0].type = body.type;
         }
-
       channels[0].save().then(function(){
         result.code = 200;
         result.message = getChannelFromHash(channels[0], channels[0].Users);

@@ -245,21 +245,28 @@ module.exports.validRemoveMember = function(req, res, next){
 */
 module.exports.validUpdateChannel = function(req, res, next){
   // validate input parameters
+  var errors = {};
+  var hasErrors = false;
+
   if (req.body.name !== undefined) {
     if(req.body.name === ''){
-      return res.status(400).json({ errors: { name: 'El nombre provisto no es válido.'}});
+      errors.name = 'Por favor ingresa el nombre de tu canal.';
+      hasErrors = true;
     }
     if(req.body.name.length > models.Channel.nameLength()){
-        return res.status(400).json({ errors: { name: 'El nombre de tu canal no debe superar los '+ models.Channel.nameLength() +' caracteres.'}});
+      errors.name = 'El nombre de tu canal no debe superar los '+ models.Channel.nameLength() +' caracteres.';
+      hasErrors = true;
     }
   }
 
   if (req.body.description !== undefined) {
     if(req.body.description === ''){
-      return res.status(400).json({ errors: { description: 'La descripción provista no es válida.'}});
+      errors.description = 'Por favor ingresa la descripción de tu canal.';
+      hasErrors = true;
     }
-    if(req.body.name.description > models.Channel.descriptionLength()){
-        return res.status(400).json({ errors: { name: 'La descripción de tu canal no debe superar los '+ models.Channel.descriptionLength() +' caracteres.'}});
+    if(req.body.description.length > models.Channel.descriptionLength()){
+      errors.description = 'La descripción de tu canal no debe superar los '+ models.Channel.descriptionLength() +' caracteres.';
+      hasErrors = true;
     }
   }
 
@@ -267,6 +274,10 @@ module.exports.validUpdateChannel = function(req, res, next){
     if(req.body.type === '' || channelTypes.indexOf(req.body.type) === -1){
       return res.status(400).json({ errors: { description: 'El tipo provisto no es válido.'}});
     }
+  }
+
+  if (hasErrors) {
+    return res.status(400).json({ errors: errors });
   }
 
   next();
