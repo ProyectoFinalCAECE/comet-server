@@ -21,7 +21,12 @@ module.exports = function(sequelize, DataTypes) {
           PrivateMessage.belongsTo(models.MessageType);
           PrivateMessage.belongsTo(models.Project);
         }
-      }
+      },
+      indexes:[{
+        name: 'priv_message_channel_idx',
+        method: 'BTREE',
+        fields: ['channel']
+      }]
     }
   );
 

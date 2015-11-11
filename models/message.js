@@ -24,9 +24,13 @@ module.exports = function(sequelize, DataTypes) {
         contentLength: function(){
           return 500;
         }
-      }
-    }
-  );
+      },
+      indexes:[{
+        name: 'message_channel_idx',
+        method: 'BTREE',
+        fields: ['ChannelId']
+      }]
+  });
 
   return Message;
 };

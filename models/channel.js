@@ -43,7 +43,12 @@ module.exports = function(sequelize, DataTypes) {
         descriptionLength: function(){
           return 200;
         }
-      }
+      },
+      indexes:[{
+        name: 'channel_project_idx',
+        method: 'BTREE',
+        fields: ['ProjectId']
+      }]
     }
   );
 

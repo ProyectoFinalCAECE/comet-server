@@ -31,7 +31,12 @@ module.exports = function(sequelize, DataTypes) {
         associate: function(models) {
           Project.belongsToMany(models.User, { through: models.ProjectUser });
         }
-      }
+      },
+      indexes:[{
+        name: 'project_idx',
+        method: 'BTREE',
+        fields: ['id']
+      }]
     }
   );
 

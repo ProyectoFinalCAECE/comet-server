@@ -21,7 +21,12 @@ module.exports = function(sequelize, DataTypes) {
           }
         });
       }
-    }
+    },
+    indexes:[{
+      name: 'token_user_idx',
+      method: 'BTREE',
+      fields: ['UserId']
+    }]
   });
   return Token;
 };

@@ -97,7 +97,12 @@ module.exports = function(sequelize, DataTypes) {
         isValidPassword: function(password){
           return XRegExp.test(password, /(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z]).{6,40}/);
         }
-      }
+      },
+      indexes:[{
+        name: 'user_mail_idx',
+        method: 'BTREE',
+        fields: ['email']
+      }]
     }
   );
 

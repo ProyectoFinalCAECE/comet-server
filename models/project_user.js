@@ -22,7 +22,16 @@ module.exports = function(sequelize, DataTypes) {
     },
       classMethods:{
 
-      }
+      },
+      indexes:[{
+        name: 'pu_project_idx',
+        method: 'BTREE',
+        fields: ['ProjectId']
+      },{
+        name: 'pu_user_idx',
+        method: 'BTREE',
+        fields: ['UserId']
+      }]
     }
   );
 
