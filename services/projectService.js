@@ -495,6 +495,39 @@ module.exports.removeMember = function(req, res, user){
 };
 
 /*
+* Get Project's active members
+*
+* @projectId
+*
+*/
+module.exports.getProjectMembers = function(projectId, callback) {
+  models.Project.findById(projectId).then(function(project){
+
+    //validate that provided id exists
+    if (!project) {
+      callback(null);
+    }
+
+    //validate that provided id belongs to an active project
+    if(project.state === 'C' || project.state === 'B'){
+      callback(null);
+    }
+
+    //look for members
+    project.getUsers().then(function(users){
+      var members_ids = [];
+      var x;
+      for (x in users) {
+        if(users[x].ProjectUser.active === true){
+          members_ids.push({id: users[x].id});
+        }
+      }
+      callback(members_ids);
+    });
+});
+};
+
+/*
 * Generates an expirable project invitation token for provided email.
 *
 * @email_address
