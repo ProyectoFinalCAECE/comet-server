@@ -10,6 +10,7 @@ var models  = require('../models');
 var Sequelize = require("sequelize");
 var env       = process.env.NODE_ENV || "development";
 var config    = require(__dirname + '/../config/sequelize.json')[env];
+var socket = require('../lib/socket');
 
 /*
 * Create new Channel and and associates project members if provided.
@@ -54,6 +55,14 @@ module.exports.createChannel = function(user, req, res) {
                 associateMembers(req.body.members, channel, projects[0].Users, function(){
                   //look for members
                   channel.getUsers().then(function(users){
+
+                    var data = {
+                      projectId: projects[0].id,
+                      userId: user.id,
+                      content: 'user id ' + user.id + ' created channel "' + channel.name +'"'
+                    };
+
+                    socket.systemEmit(projects[0].id, data);
 
                     return res.json(getChannelFromHash(channelCreated, users));
                   });
