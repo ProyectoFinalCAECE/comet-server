@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "NODE_ENV=development nodemon ./bin/www",
+    "start": "scripts/start.sh",
     "test": "npm run test-unit && npm run test-integration",
     "test-unit": "mocha test/unit/*.test.js",
     "test-integration": "mocha test/integration/*.test.js"
