@@ -29,8 +29,12 @@ node_modules
 # dist folder populated by running grunt build on the client
 dist
 
+# redis
+.rdb
+
 #######
 For avatar images folder
 #######
 avatar_images/*
 !avatar_images/.keep
+dump.rdb

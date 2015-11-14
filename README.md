@@ -8,6 +8,7 @@ Run `npm install` to install dependencies.
 
 ## Build & development
 
+Add execute permission to scripts/start.sh `chmod a+x scripts/start.sh`
 Run `npm start` to start application.
 
 ## Testing
