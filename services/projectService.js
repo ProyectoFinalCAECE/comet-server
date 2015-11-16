@@ -454,7 +454,20 @@ module.exports.updateProject = function(req, res, user){
                       // Project saved successfully
                       //look for members
                       projectSaved.getUsers().then(function(users){
-                      console.log('projectSaved is: ' + JSON.stringify(projectSaved));
+
+                        //sending 'system' notifications.
+                        var data = {
+                          type: 7,
+                          date: new Date().getTime(),
+                          projectId: projectSaved.id,
+                          projectName: projectSaved.name,
+                          projectDescription: projectSaved.description,
+                          userId: user.id,
+                          alias: (user.alias === null || user.alias === undefined) ? '' : user.alias
+                        };
+
+                        socket.systemEmit(projectSaved.id, data);
+
                       return res.json({
                                         id: projectSaved.id,
                                         name: projectSaved.name,
