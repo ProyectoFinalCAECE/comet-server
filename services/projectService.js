@@ -11,6 +11,7 @@ var models  = require('../models');
 var validator = require('validator');
 var jwt = require('jsonwebtoken');
 var site_config = require('../config/site_config.json');
+var socket = require('../lib/socket');
 
 //Max project name and description text lengths
 //should be consts but it's use is not allowed under strict mode... yet.
@@ -358,6 +359,19 @@ module.exports.closeProject = function(req, res, user){
 
         // save closed Project
         projects[0].save().then(function() {
+
+          //sending 'system' notifications.
+          var data = {
+            type: 4,
+            date: new Date().getTime(),
+            projectId: projects[0].id,
+            projectName: projects[0].name,
+            userId: user.id,
+            alias: (user.alias === null || user.alias === undefined) ? '' : user.alias
+          };
+
+          socket.systemEmit(projects[0].id, data);
+
           return res.status(200).json({});
         });
       } else {
