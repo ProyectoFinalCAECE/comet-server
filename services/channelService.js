@@ -57,9 +57,14 @@ module.exports.createChannel = function(user, req, res) {
                   channel.getUsers().then(function(users){
 
                     var data = {
+                      type: 1,
+                      date: new Date().getTime(),
                       projectId: projects[0].id,
+                      projectName: projects[0].name,
                       userId: user.id,
-                      content: 'user id ' + user.id + ' created channel "' + channel.name +'"'
+                      alias: (user.alias === null || user.alias === undefined) ? '' : user.alias,
+                      channelId:channel.id,
+                      channelName: channel.name
                     };
 
                     socket.systemEmit(projects[0].id, data);
