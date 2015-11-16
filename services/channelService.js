@@ -335,13 +335,13 @@ module.exports.removeMember = function(project_id, channel_id, user, member_id, 
 */
 module.exports.updateChannel = function(body, project_id, channel_id, user, callback) {
   var result = {};
-  user.getChannels({ where: ['"ChannelUser"."ChannelId" = ? AND "Channel"."state" != ?', channel_id, "B"], include: [{ model: models.User}] }).then(function(channels){
+  user.getChannels({ where: ['"ChannelUser"."ChannelId" = ? AND "Channel"."state" != ?', channel_id, "B"], include: [{ model: models.User }, { model: models.Project }] }).then(function(channels){
     if (channels === undefined || channels.length === 0) {
       result.code = 404;
       result.message = { errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}};
       return callback(result);
     }
-
+    
     if(channels[0].ChannelUser.active === false){
       result.code = 403;
       result.message = { errors: { all: 'El usuario no puede acceder al canal solicitado.'}};
@@ -357,11 +357,28 @@ module.exports.updateChannel = function(body, project_id, channel_id, user, call
         if (body.type) {
           channels[0].type = body.type;
         }
-      channels[0].save().then(function(){
-        result.code = 200;
-        result.message = getChannelFromHash(channels[0], channels[0].Users);
-        return callback(result);
-      });
+
+        channels[0].save().then(function(){
+
+          //sending 'system' notifications.
+          var data = {
+            type: 6,
+            date: new Date().getTime(),
+            projectId: channels[0].Project.id,
+            channelId: channels[0].id,
+            channelName: channels[0].name,
+            channelDescription: channels[0].description,
+            channelType: channels[0].type,
+            userId: user.id,
+            alias: (user.alias === null || user.alias === undefined) ? '' : user.alias
+          };
+
+          socket.systemEmit(channels[0].Project.id, data);
+
+          result.code = 200;
+          result.message = getChannelFromHash(channels[0], channels[0].Users);
+          return callback(result);
+        });
     }
 });
 };
