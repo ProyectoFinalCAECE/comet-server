@@ -11,6 +11,7 @@ var models  = require('../models');
 var validator = require('validator');
 var jwt = require('jsonwebtoken');
 var site_config = require('../config/site_config.json');
+var socket = require('../lib/socket');
 
 //Max project name and description text lengths
 //should be consts but it's use is not allowed under strict mode... yet.
@@ -267,6 +268,19 @@ module.exports.acceptProjectInvitation = function(req, res, user, token){
 
                 //look for members
                 project.getUsers().then(function(users){
+
+                  //sending 'system' notifications.
+                  var data = {
+                    type: 5,
+                    date: new Date().getTime(),
+                    projectId: project.id,
+                    projectName: project.name,
+                    userId: user.id,
+                    alias: (user.alias === null || user.alias === undefined) ? '' : user.alias
+                  };
+
+                  socket.systemEmit(project.id, data);
+
                   return res.json({
                                     id: project.id,
                                     name: project.name,
@@ -358,6 +372,19 @@ module.exports.closeProject = function(req, res, user){
 
         // save closed Project
         projects[0].save().then(function() {
+
+          //sending 'system' notifications.
+          var data = {
+            type: 4,
+            date: new Date().getTime(),
+            projectId: projects[0].id,
+            projectName: projects[0].name,
+            userId: user.id,
+            alias: (user.alias === null || user.alias === undefined) ? '' : user.alias
+          };
+
+          socket.systemEmit(projects[0].id, data);
+
           return res.status(200).json({});
         });
       } else {
@@ -427,7 +454,20 @@ module.exports.updateProject = function(req, res, user){
                       // Project saved successfully
                       //look for members
                       projectSaved.getUsers().then(function(users){
-                      console.log('projectSaved is: ' + JSON.stringify(projectSaved));
+
+                        //sending 'system' notifications.
+                        var data = {
+                          type: 7,
+                          date: new Date().getTime(),
+                          projectId: projectSaved.id,
+                          projectName: projectSaved.name,
+                          projectDescription: projectSaved.description,
+                          userId: user.id,
+                          alias: (user.alias === null || user.alias === undefined) ? '' : user.alias
+                        };
+
+                        socket.systemEmit(projectSaved.id, data);
+
                       return res.json({
                                         id: projectSaved.id,
                                         name: projectSaved.name,
