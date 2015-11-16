@@ -246,7 +246,7 @@ module.exports.deleteChannel = function(project_id, channel_id, user, callback) 
 */
 module.exports.closeChannel = function(project_id, channel_id, user, callback) {
   var result = {};
-  user.getChannels({ where: ['"ChannelUser"."ChannelId" = ? AND "Channel"."state" != ? AND "Channel"."ProjectId" = ?', channel_id, "B", project_id] }).then(function(channels){
+  user.getChannels({ where: ['"ChannelUser"."ChannelId" = ? AND "Channel"."state" != ? AND "Channel"."ProjectId" = ?', channel_id, "B", project_id], include: [{ model: models.Project }] }).then(function(channels){
     if (channels === undefined || channels.length === 0) {
       result.code = 404;
       result.message = { errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}};
@@ -261,6 +261,20 @@ module.exports.closeChannel = function(project_id, channel_id, user, callback) {
       //deleting channel
       channels[0].close(user.id);
       channels[0].save().then(function(){
+
+        var data = {
+          type: 2,
+          date: new Date().getTime(),
+          projectId: project_id,
+          projectName: channels[0].Project.name,
+          userId: user.id,
+          alias: (user.alias === null || user.alias === undefined) ? '' : user.alias,
+          channelId: channels[0].id,
+          channelName: channels[0].name
+        };
+
+        socket.systemEmit(project_id, data);
+
         result.code = 200;
         result.message = {};
         return callback(result);
