@@ -268,6 +268,19 @@ module.exports.acceptProjectInvitation = function(req, res, user, token){
 
                 //look for members
                 project.getUsers().then(function(users){
+
+                  //sending 'system' notifications.
+                  var data = {
+                    type: 5,
+                    date: new Date().getTime(),
+                    projectId: project.id,
+                    projectName: project.name,
+                    userId: user.id,
+                    alias: (user.alias === null || user.alias === undefined) ? '' : user.alias
+                  };
+
+                  socket.systemEmit(project.id, data);
+
                   return res.json({
                                     id: project.id,
                                     name: project.name,
