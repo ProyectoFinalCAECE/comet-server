@@ -30,6 +30,7 @@ module.exports = function(sequelize, DataTypes) {
       classMethods:{
         associate: function(models) {
           Project.belongsToMany(models.User, { through: models.ProjectUser });
+          Project.belongsToMany(models.Integration, { through: models.ProjectIntegration });
         }
       },
       indexes:[{

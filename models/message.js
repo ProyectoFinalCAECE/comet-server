@@ -20,6 +20,7 @@ module.exports = function(sequelize, DataTypes) {
           Message.belongsTo(models.Channel);
           Message.belongsTo(models.User);
           Message.belongsTo(models.MessageType);
+          Message.belongsTo(models.ProjectIntegration, {constraints: false});
         },
         contentLength: function(){
           return 500;
