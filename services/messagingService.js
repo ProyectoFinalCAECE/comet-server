@@ -219,7 +219,7 @@ function formatMessages(messages){
                                   text: messages[y].content,
                                   link: messages[y].link || "",
                                   user: messages[y].UserId,
-                                  type: messages[y].MessageType.id.toString(),
+                                  type: messages[y].MessageType.id,
                                   date: messages[y].sentDateTimeUTC
                                 }
                               };
@@ -229,7 +229,7 @@ function formatMessages(messages){
                                   text: messages[y].content,
                                   user: messages[y].OriginUserId,
                                   destinationUser: messages[y].DestinationUserId,
-                                  type: messages[y].MessageType.id.toString(),
+                                  type: messages[y].MessageType.id,
                                   date: messages[y].sentDateTimeUTC
                                 }
                               };
