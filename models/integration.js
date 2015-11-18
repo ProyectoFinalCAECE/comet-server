@@ -16,6 +16,9 @@ module.exports = function(sequelize, DataTypes) {
     instanceMethods: {
     },
       classMethods:{
+        associate: function(models) {
+          Integration.belongsToMany(models.Project, { through: models.ProjectIntegration });
+        },
         nameMaxLength: function(){
           return 50;
         },
