@@ -2,30 +2,23 @@
        {
            "model": "User",
            "data": {
-               "email": "themail@mail.com",
-               "hash": "the hash",
-               "salt": "the salt",
-               "lastName": "the last name",
-               "firstName": "the first name",
-               "alias": "the alias",
-               "profilePicture": "the profile picture",
+	       "id": "0",
+               "email": "admin@comet.com",
+               "hash": "59a23101c62c05b757d72c12d864b4496a3652437bc0fb62c09a507588a2802a1187c94fe4e796956329460f02b2b4632a78418484ad32a4cb8409a51fd24871",
+               "salt": "2e9de7382c9ff4a4a6a9ba7ee82ef31a",
+               "lastName": "Admin",
+               "firstName": "Walter",
+               "alias": "sysadmin",
+               "profilePicture": "/static/0.1206949332263320712312134avatar.png",
                "confirmed": true,
-               "isAdministrator": false,
+               "isAdministrator": true,
                "active": true
-           }
-       },
-       {
-           "model": "Channel",
-           "data": {
-               "name": "THE CHANNEL NAME",
-               "type": "S",
-               "description": "the DESC",
-               "state": "O"
            }
        },
        {
            "model": "MessageType",
            "data": {
+	       "id": "1",
                "description": "Text",
                "character": "T"
            }
@@ -33,13 +26,7 @@
        {
            "model": "MessageType",
            "data": {
-               "description": "Integration",
-               "character": "I"
-           }
-       },
-       {
-           "model": "MessageType",
-           "data": {
+	       "id": "2",
                "description": "File",
                "character": "F"
            }
@@ -47,8 +34,49 @@
        {
            "model": "MessageType",
            "data": {
-               "description": "Videochat",
-               "character": "V"
+	       "id": "3",
+               "description": "Integration",
+               "character": "I"
+           }
+       },
+       {
+           "model": "MessageType",
+           "data": {
+	       "id": "4",
+               "description": "Auto",
+               "character": "A"
+           }
+       },
+       {
+           "model": "MessageType",
+           "data": {
+	       "id": "5",
+               "description": "Dropbox - Integration",
+               "character": "D"
+           }
+       },
+       {
+           "model": "MessageType",
+           "data": {
+	       "id": "6",
+               "description": "Github - Integration",
+               "character": "G"
+           }
+       },
+       {
+           "model": "MessageType",
+           "data": {
+	       "id": "7",
+               "description": "Trello - Integration",
+               "character": "R"
+           }
+       },
+       {
+           "model": "MessageType",
+           "data": {
+	       "id": "8",
+               "description": "PingDom - Integration",
+               "character": "P"
            }
        }
 ]
