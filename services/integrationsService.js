@@ -81,6 +81,69 @@ module.exports.getActiveIntegrationsForProject = function(project_id, user, call
 };
 
 /*
+* Update the state of an Integration of a Project.
+*
+* @project_id
+* @integration_id
+* @user
+* @active
+* @callback
+*
+*/
+module.exports.updateProjectIntegrationActiveState = function(project_id, integration_id, user, active, callback) {
+  var result = {};
+  result.code = 404;
+  result.message = { errors: { all: 'No se encontró ninguna Integración disponible.'}};
+
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', project_id, "B"] }).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      result.code = 404;
+      result.message = { errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}};
+      callback(result);
+    }
+
+    if(projects[0].ProjectUser.active === false){
+      result.code = 403;
+      result.message = { errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}};
+      callback(result);
+    } else {
+      if(projects[0].ProjectUser.isOwner === false){
+        result.code = 403;
+        result.message = { errors: { all: 'El usuario no puede realizar la operación solicitada.'}};
+        callback(result);
+      } else {
+
+        //look for active integrations
+        projects[0].getIntegrations({ where: ['"ProjectIntegration"."uid" = ?', integration_id] }).then(function(integrations){
+
+          if (integrations === undefined || integrations.length === 0) {
+            result.code = 404;
+            result.message = { errors: { all: 'No se puede encontrar ninguna Integración con el id provisto.'}};
+            callback(result);
+          }
+
+          integrations[0].ProjectIntegration.active = (active === 'true');
+
+          integrations[0].ProjectIntegration.save().then(function(saved){
+            result.code = 200;
+            result.message = { integration: {
+                                              integrationId: integrations[0].id,
+                                              name: integrations[0].name,
+                                              description: integrations[0].description,
+                                              projectIntegrationId: saved.uid,
+                                              active: saved.active
+                                            }
+                            };
+            return callback(result);
+            }
+          );
+        });
+      }
+    }
+  });
+};
+
+/*
 * Format a given Integration to match excepted output.
 */
 function formatIntegration(raw_integration){
