@@ -895,12 +895,183 @@
                "active": true
            }
        },
+ 		{
+           "model": "Project",
+           "data": {
+	       "id": "1",
+               "name": "Proyecto Comet",
+               "description": "Desarrollo de aplicacion comet",
+               "state": "O"
+		}
+	},
 	       {
            "model": "Project",
            "data": {
-	       "id": "100",
-               "name": "Proyecto Comet",
-               "description": "Desarrollo de aplicacion comet",
+	       "id": "2",
+               "name": "Grupo de desarrollo",
+               "description": "Proyecto del grupo de desarollo",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "3",
+               "name": "Grupo de operaciones",
+               "description": "Proyecto del grupo de operaciones",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "4",
+               "name": "Grupo de testers",
+               "description": "Proyecto del grupo de testers",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "5",
+               "name": "Sysadmins",
+               "description": "Proyecto del grupo de sysadmins",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "6",
+               "name": "Comet Admins",
+               "description": "Proyecto para el grupo de admins del sistema comet",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "7",
+               "name": "Transito",
+               "description": "Proyecto de manejo de transito",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "8",
+               "name": "Espacios verdes",
+               "description": "Diseño de espacios verdes en la ciudad",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "9",
+               "name": "Fase de produccion",
+               "description": "Proyecto creado para usarse durante la fase de produccion del producto",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "10",
+               "name": "Automatizacion",
+               "description": "Proyecto para la automatizacion de proyectos",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "11",
+               "name": "Libreria",
+               "description": "Proyecto para administracion de la libreria",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "12",
+               "name": "Videoclub",
+               "description": "Administracion de videoclub",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "13",
+               "name": "Censo",
+               "description": "Proyecto dedicado a desarrollar el censo",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "14",
+               "name": "Policia",
+               "description": "Proyecto para control de insumos en la comisaria",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "15",
+               "name": "Hospital",
+               "description": "Proyecto de manejo de horarios en el hospital",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "16",
+               "name": "Arquitectura",
+               "description": "Proyecto del grupo de arquitectura",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "17",
+               "name": "Compras",
+               "description": "Grupo de compras",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "18",
+               "name": "Ventas",
+               "description": "Grupo de ventas",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "19",
+               "name": "Escuelas",
+               "description": "Proyecto de infraestructura para escuelas",
+               "state": "O"
+		}
+	},
+	       {
+           "model": "Project",
+           "data": {
+	       "id": "20",
+               "name": "Agencia de viajes",
+               "description": "Proyecto para la agencia de viajes",
                "state": "O"
 		}
 	}
