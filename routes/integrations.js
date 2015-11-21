@@ -55,7 +55,7 @@ router.get('/', auth, function(req, res) {
 * @active
 *
 */
-router.put('/:id', auth, integrationValidator.validUpdateIntegration, function(req, res) {
+router.put('/:id', auth, integrationValidator.validUpdateProjectIntegration, function(req, res) {
   //If these parameters are detected, somebody is requesting to update the state of a certain integration
   //of a certain project.
   if(req.primaryParams && req.primaryParams.project_id){
@@ -77,5 +77,23 @@ router.put('/:id', auth, integrationValidator.validUpdateIntegration, function(r
   }
 });
 
+/*
+* Get Project Integration by Id.
+* Requires authentication header.
+*
+*/
+router.get('/:id', auth, function(req, res) {
+
+    models.User.findById(req.payload._id).then(function(user) {
+      if(!user){
+        return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
+      }
+      
+      integrationsService.getProjectIntegrationById(req.primaryParams.project_id, req.params.id, user, function(result){
+        return res.status(result.code).json(result.message);
+      });
+
+    });
+});
 
 module.exports = router;

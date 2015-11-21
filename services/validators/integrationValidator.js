@@ -19,7 +19,7 @@ var validActiveStates = ["true", "false"];
 * @integration_id
 *
 */
-module.exports.validUpdateIntegration = function(req, res, next){
+module.exports.validUpdateProjectIntegration = function(req, res, next){
   // validate input parameters
   var errors = {};
   var hasErrors = false;
