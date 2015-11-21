@@ -150,7 +150,6 @@ router.get('/', auth, function(req, res, next) {
     if (!user) {
       return res.status(401).json({ all: 'No se encontro usuario asociado al token provisto.' });
     }
-    console.log("daleeeeeee");
 
     return res.json({
                     user: {
