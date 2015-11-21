@@ -55,6 +55,8 @@ app.use('/projects/:project_id/channels', channels);
 app.use('/projects/:project_id/channels/:channel_id/messages', passPrimaryParams);
 app.use('/projects/:project_id/channels/:channel_id/messages', messages);
 app.use('/integrations', integrations);
+app.use('/projects/:project_id/integrations', passPrimaryParams);
+app.use('/projects/:project_id/integrations', integrations);
 
 //static route to serve account profile images
 app.use('/static', express.static('avatar_images'));

@@ -49,6 +49,9 @@ module.exports.createProject = function(req, res) {
               //sending invitations
               sendInvitations(req.body.members, project.name, project.id, user.alias);
 
+              //generating ProjectIntegrations records on creation (active = false)
+              generateProjectIntegrationsRecords(project);
+
               return res.json({
                                 id: project.id,
                                 name: project.name,
@@ -63,7 +66,6 @@ module.exports.createProject = function(req, res) {
                                             alias: user.alias,
                                             fullName: user.firstName + ' ' + user.lastName
                                           }],
-                                integrations: [],
                                 closedAt: project.closedAt
                               });
             });
@@ -104,7 +106,6 @@ module.exports.getProject = function(req, res, user) {
                         isOwner: projects[0].ProjectUser.isOwner,
                         state: projects[0].state,
                         members: getProjectMemebers(users),
-                        integrations: [],
                         closedAt: projects[0].closedAt
                     });
 
@@ -138,7 +139,6 @@ module.exports.getProjects = function(req, res, user) {
             isOwner: projects[x].ProjectUser.isOwner,
             state: projects[x].state,
             members: getProjectMemebers(projects[x].Users),
-            integrations: [],
             closedAt: projects[x].closedAt
           });
       }
@@ -289,7 +289,6 @@ module.exports.acceptProjectInvitation = function(req, res, user, token){
                                     isOwner: false,
                                     state: project.state,
                                     members: getProjectMemebers(users),
-                                    integrations: [],
                                     closedAt: project.closedAt
                                 });
                 });
@@ -476,7 +475,6 @@ module.exports.updateProject = function(req, res, user){
                                         isOwner: projectSaved.ProjectUser.isOwner,
                                         state: projectSaved.state,
                                         members: getProjectMemebers(users),
-                                        integrations: [],
                                         closedAt: projectSaved.closedAt
                                     });
 
@@ -651,6 +649,21 @@ function invalidateUsers(project){
     for (x in users) {
       users[x].ProjectUser.active = false;
       users[x].ProjectUser.save();
+    }
+  });
+}
+
+/*
+* Creates a record at ProjectIntegrations table for provided project and each available Integration.
+*/
+function generateProjectIntegrationsRecords(project){
+  models.Integration.findAll().then(function(integrations){
+    if(integrations === null || integrations === undefined){
+      return;
+    }
+
+    for(var x in integrations){
+      project.addIntegration(integrations[x], { active: false });
     }
   });
 }
