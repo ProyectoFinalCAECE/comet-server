@@ -26,3 +26,6 @@ To add new records to the db:
 3) Truncate db tables if neccessary, as seed does not remove anything. Just adds missing records.<br />
 4) Move to Gruntfile directory.<br />
 5) Run `grunt`.
+
+6) Para llenar la base con los datos de prueba ejecutar: grunt --gruntfile Gruntfile_testdata.js
+Si tira error hay que vaciar las tablas que afecta previamente. 
