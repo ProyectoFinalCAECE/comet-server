@@ -3,7 +3,7 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
           fixtures: {
-              import_test_data: {
+              import_default_data: {
                   src: ['config/seeds/database_seed.json'],
                   models: function () {
                       return require('./models');
