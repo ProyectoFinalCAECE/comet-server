@@ -66,7 +66,6 @@ module.exports.createProject = function(req, res) {
                                             alias: user.alias,
                                             fullName: user.firstName + ' ' + user.lastName
                                           }],
-                                integrations: [],
                                 closedAt: project.closedAt
                               });
             });
@@ -107,7 +106,6 @@ module.exports.getProject = function(req, res, user) {
                         isOwner: projects[0].ProjectUser.isOwner,
                         state: projects[0].state,
                         members: getProjectMemebers(users),
-                        integrations: [],
                         closedAt: projects[0].closedAt
                     });
 
@@ -141,7 +139,6 @@ module.exports.getProjects = function(req, res, user) {
             isOwner: projects[x].ProjectUser.isOwner,
             state: projects[x].state,
             members: getProjectMemebers(projects[x].Users),
-            integrations: [],
             closedAt: projects[x].closedAt
           });
       }
@@ -292,7 +289,6 @@ module.exports.acceptProjectInvitation = function(req, res, user, token){
                                     isOwner: false,
                                     state: project.state,
                                     members: getProjectMemebers(users),
-                                    integrations: [],
                                     closedAt: project.closedAt
                                 });
                 });
@@ -479,7 +475,6 @@ module.exports.updateProject = function(req, res, user){
                                         isOwner: projectSaved.ProjectUser.isOwner,
                                         state: projectSaved.state,
                                         members: getProjectMemebers(users),
-                                        integrations: [],
                                         closedAt: projectSaved.closedAt
                                     });
 
