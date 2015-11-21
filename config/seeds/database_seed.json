@@ -78,5 +78,37 @@
                "description": "PingDom - Integration",
                "character": "P"
            }
+       },
+       {
+           "model": "Integration",
+           "data": {
+               "name": "Dropbox",
+               "description": "Dropbox",
+               "active": true
+           }
+       },
+       {
+           "model": "Integration",
+           "data": {
+               "name": "Github",
+               "description": "Github",
+               "active": true
+           }
+       },
+       {
+           "model": "Integration",
+           "data": {
+               "name": "Trello",
+               "description": "Trello",
+               "active": true
+           }
+       },
+       {
+           "model": "Integration",
+           "data": {
+               "name": "PingDom",
+               "description": "PingDom",
+               "active": true
+           }
        }
 ]
