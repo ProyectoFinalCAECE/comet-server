@@ -20,7 +20,12 @@ module.exports = function(sequelize, DataTypes) {
       },
         classMethods:{
 
-        }
+        },
+        indexes:[{
+          name: 'project_integration_idx',
+          method: 'BTREE',
+          fields: ['ProjectId']
+        }]
       }
   );
 
