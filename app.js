@@ -27,6 +27,7 @@ var projects  = require('./routes/projects');
 var channels  = require('./routes/channels');
 var messages  = require('./routes/messages');
 var integrations  = require('./routes/integrations');
+var hooks  = require('./routes/hooks');
 
 var app = express();
 
@@ -55,7 +56,7 @@ app.use('/projects/:project_id/channels', channels);
 app.use('/projects/:project_id/channels/:channel_id/messages', passPrimaryParams);
 app.use('/projects/:project_id/channels/:channel_id/messages', messages);
 app.use('/integrations', integrations);
-app.use('/projects/:project_id/integrations', passPrimaryParams);
+app.use('/hooks/', hooks);
 app.use('/projects/:project_id/integrations', integrations);
 
 //static route to serve account profile images
