@@ -49,6 +49,9 @@ module.exports.createProject = function(req, res) {
               //sending invitations
               sendInvitations(req.body.members, project.name, project.id, user.alias);
 
+              //generating ProjectIntegrations records on creation (active = false)
+              generateProjectIntegrationsRecords(project);
+
               return res.json({
                                 id: project.id,
                                 name: project.name,
@@ -651,6 +654,21 @@ function invalidateUsers(project){
     for (x in users) {
       users[x].ProjectUser.active = false;
       users[x].ProjectUser.save();
+    }
+  });
+}
+
+/*
+* Creates a record at ProjectIntegrations table for provided project and each available Integration.
+*/
+function generateProjectIntegrationsRecords(project){
+  models.Integration.findAll().then(function(integrations){
+    if(integrations === null || integrations === undefined){
+      return;
+    }
+
+    for(var x in integrations){
+      project.addIntegration(integrations[x], { active: false });
     }
   });
 }
