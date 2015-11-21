@@ -38,3 +38,4 @@ For avatar images folder
 avatar_images/*
 !avatar_images/.keep
 dump.rdb
+ngrok
