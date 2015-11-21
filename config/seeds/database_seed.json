@@ -82,6 +82,7 @@
        {
            "model": "Integration",
            "data": {
+                "id": "1",
                "name": "Dropbox",
                "description": "Dropbox",
                "active": true
@@ -90,6 +91,7 @@
        {
            "model": "Integration",
            "data": {
+                "id": "2",
                "name": "Github",
                "description": "Github",
                "active": true
@@ -98,6 +100,7 @@
        {
            "model": "Integration",
            "data": {
+                "id": "3",
                "name": "Trello",
                "description": "Trello",
                "active": true
@@ -106,6 +109,7 @@
        {
            "model": "Integration",
            "data": {
+                "id": "4",
                "name": "PingDom",
                "description": "PingDom",
                "active": true
