@@ -57,13 +57,13 @@ module.exports.getActiveIntegrationsForProject = function(project_id, user, call
     if (projects === undefined || projects.length === 0) {
       result.code = 404;
       result.message = { errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}};
-      callback(result);
+      return callback(result);
     }
 
     if(projects[0].ProjectUser.active === false){
       result.code = 403;
       result.message = { errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}};
-      callback(result);
+      return callback(result);
     } else {
 
       //look for active integrations
@@ -99,27 +99,26 @@ module.exports.updateProjectIntegrationActiveState = function(project_id, integr
     if (projects === undefined || projects.length === 0) {
       result.code = 404;
       result.message = { errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}};
-      callback(result);
+      return callback(result);
     }
 
     if(projects[0].ProjectUser.active === false){
       result.code = 403;
       result.message = { errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}};
-      callback(result);
+      return callback(result);
     } else {
       if(projects[0].ProjectUser.isOwner === false){
         result.code = 403;
         result.message = { errors: { all: 'El usuario no puede realizar la operación solicitada.'}};
-        callback(result);
+        return callback(result);
       } else {
 
-        //look for active integrations
         projects[0].getIntegrations({ where: ['"ProjectIntegration"."uid" = ?', integration_id] }).then(function(integrations){
 
           if (integrations === undefined || integrations.length === 0) {
             result.code = 404;
             result.message = { errors: { all: 'No se puede encontrar ninguna Integración con el id provisto.'}};
-            callback(result);
+            return callback(result);
           }
 
           integrations[0].ProjectIntegration.active = (active === 'true');
@@ -137,6 +136,59 @@ module.exports.updateProjectIntegrationActiveState = function(project_id, integr
             return callback(result);
             }
           );
+        });
+      }
+    }
+  });
+};
+
+/*
+* Get Project Integration by Id.
+* @project_id
+* @integration_id
+* @user
+* @callback
+*
+*/
+
+module.exports.getProjectIntegrationById = function(project_id, integration_id, user, callback) {
+  var result = {};
+  result.code = 404;
+  result.message = { errors: { all: 'No se encontró ninguna Integración disponible.'}};
+
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', project_id, "B"] }).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      result.code = 404;
+      result.message = { errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}};
+      return callback(result);
+    }
+
+    if(projects[0].ProjectUser.active === false){
+      result.code = 403;
+      result.message = { errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}};
+      return callback(result);
+    } else {
+      if(projects[0].ProjectUser.isOwner === false){
+        result.code = 403;
+        result.message = { errors: { all: 'El usuario no puede realizar la operación solicitada.'}};
+        return callback(result);
+      } else {
+
+        projects[0].getIntegrations({ where: ['"ProjectIntegration"."uid" = ?', integration_id] }).then(function(integrations){
+
+          if (integrations === undefined || integrations.length === 0) {
+            result.code = 404;
+            result.message = { errors: { all: 'No se puede encontrar ninguna Integración con el id provisto.'}};
+            return callback(result);
+          }
+
+          result.code = 200;
+          result.message = { integration: formatIntegrationForProjects(integrations[0]) };
+
+          console.log("integrations[0] is: ", integrations[0]);
+          console.log("result is: ", result);
+          console.log("callback is: ", callback);
+          return callback(result);
         });
       }
     }
