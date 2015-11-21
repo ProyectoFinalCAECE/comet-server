@@ -13,7 +13,7 @@ module.exports = function(sequelize, DataTypes) {
       primaryKey: true,
       autoIncrement: true // Automatically gets converted to SERIAL for postgres
     },
-    active: { type: DataTypes.BOOLEAN, defaultValue: true }
+    active: { type: DataTypes.BOOLEAN, defaultValue: false }
     }, {
       instanceMethods: {
 
