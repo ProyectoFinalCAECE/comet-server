@@ -96,9 +96,10 @@ function formatIntegration(raw_integration){
 */
 function formatIntegrationForProjects(raw_integration){
   return {
-    id: raw_integration.id,
+    integrationId: raw_integration.id,
     name: raw_integration.name,
     description: raw_integration.description,
+    projectIntegrationId: raw_integration.ProjectIntegration.uid,
     active: raw_integration.ProjectIntegration.active
   };
 }
