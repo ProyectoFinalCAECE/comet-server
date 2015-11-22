@@ -84,7 +84,7 @@
            "data": {
                 "id": "1",
                "name": "Dropbox",
-               "description": "Dropbox",
+               "description": "Sincronización y almacenamiento de archivos",
                "active": true
            }
        },
@@ -93,7 +93,7 @@
            "data": {
                 "id": "2",
                "name": "Github",
-               "description": "Github",
+               "description": "Control de versión y administración de código fuente",
                "active": true
            }
        },
@@ -102,7 +102,7 @@
            "data": {
                 "id": "3",
                "name": "Trello",
-               "description": "Trello",
+               "description": "Listas de tareas y administracion de proyectos",
                "active": true
            }
        },
@@ -111,7 +111,7 @@
            "data": {
                 "id": "4",
                "name": "PingDom",
-               "description": "PingDom",
+               "description": "Monitoreo de uptime y performance",
                "active": true
            }
        }
