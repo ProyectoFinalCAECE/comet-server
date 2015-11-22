@@ -31,6 +31,7 @@ module.exports = function(sequelize, DataTypes) {
         associate: function(models) {
           Project.belongsToMany(models.User, { through: models.ProjectUser });
           Project.belongsToMany(models.Integration, { through: models.ProjectIntegration });
+          Project.hasMany(models.Channel);
         }
       },
       indexes:[{
