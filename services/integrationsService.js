@@ -224,11 +224,6 @@ module.exports.getProjectIntegrationById = function(project_id, integration_id, 
           }
 
           switch (integrations[0].name) {
-            case 'Dropbox': {
-              result.code = 200;
-              result.message = { integration: formatIntegrationForProjects(integrations[0]) };
-              return callback(result);
-            }
             case 'Github': {
               integrations[0].ProjectIntegration.getGithubIntegrations().then(function(github_integrations){
                 result.code = 200;
@@ -306,11 +301,6 @@ module.exports.createProjectIntegration = function(project_id, integration_id, u
             }
 
             switch (integrations[0].name) {
-              case 'Dropbox': {
-                result.code = 400;
-                result.message = { errors: { all: 'La integracion provista no requiere de configuración.'}};
-                return callback(result);
-              }
               case 'Github': {
                 //Checking if Tuple Project-Integration-Channel does not exist already.
                 models.GithubIntegration.findAll({ where: ['"GithubIntegration"."ProjectIntegrationUid" = ? AND "GithubIntegration"."ChannelId" = ?',
