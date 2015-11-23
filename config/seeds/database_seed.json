@@ -83,15 +83,6 @@
            "model": "Integration",
            "data": {
                 "id": "1",
-               "name": "Dropbox",
-               "description": "Sincronización y almacenamiento de archivos",
-               "active": true
-           }
-       },
-       {
-           "model": "Integration",
-           "data": {
-                "id": "2",
                "name": "Github",
                "description": "Control de versión y administración de código fuente",
                "active": true
@@ -100,7 +91,7 @@
        {
            "model": "Integration",
            "data": {
-                "id": "3",
+                "id": "2",
                "name": "Trello",
                "description": "Listas de tareas y administracion de proyectos",
                "active": true
@@ -109,7 +100,7 @@
        {
            "model": "Integration",
            "data": {
-                "id": "4",
+                "id": "3",
                "name": "PingDom",
                "description": "Monitoreo de uptime y performance",
                "active": true
