@@ -19,7 +19,9 @@ module.exports = function(sequelize, DataTypes) {
 
       },
         classMethods:{
-
+          associate: function(models) {
+            ProjectIntegration.hasMany(models.GithubIntegration);
+          }
         },
         indexes:[{
           name: 'project_integration_idx',

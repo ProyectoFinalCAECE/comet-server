@@ -7,7 +7,23 @@
  */
 
 var models  = require('../models');
-
+var Sequelize = require("sequelize");
+var env       = process.env.NODE_ENV || "development";
+var config    = require(__dirname + '/../config/sequelize.json')[env];
+var sequelize = new Sequelize(config.database, config.username, config.password, {    "username": "postgres",
+  "password": "123456789",
+  "database": "comet",
+  "host": "127.0.0.1",
+  "dialect": "postgres",
+  "define": {
+    "updatedAt": "updatedAt",
+    "createdAt": "createdAt"},
+                                                                                    "pool": {
+                                                                                      "max": 10,
+                                                                                      "min": 1,
+                                                                                      "idle": 10000
+                                                                                    }
+                                                                                });
 
 /*
 * Get available Integrations.
@@ -67,14 +83,39 @@ module.exports.getActiveIntegrationsForProject = function(project_id, user, call
     } else {
 
       //look for active integrations
-      projects[0].getIntegrations().then(function(integrations){
-        for(var x in integrations){
-          integrations_to_be_returned.push(formatIntegrationForProjects(integrations[x]));
+      sequelize.query('SELECT "PI".uid as "PIuid", "PI".active as "PIactive", "PI"."IntegrationId", ' +
+                      ' "I".name as "Iname", "I".description as "Idescription", "I".active as "Iactive" ' +
+                      ' FROM "ProjectIntegrations" AS "PI" ' +
+                      ' JOIN "Integrations" AS "I" ' +
+                      ' ON "I".id = "PI"."IntegrationId" ' +
+                      ' WHERE "PI"."ProjectId" = ?',
+                      { type: sequelize.QueryTypes.SELECT,
+                        replacements: [project_id]})
+      .then(function(fullProjectIntegrations) {
+
+
+        for(var x in fullProjectIntegrations){
+          integrations_to_be_returned.push(formatIntegrationForProjectsFromQuery(fullProjectIntegrations[x]));
         }
 
-        result.code = 200;
-        result.message = { integrations: integrations_to_be_returned };
-        return callback(result);
+        var githubPuid = obtainGithubPuidFromIntegrationsToBeReturned(integrations_to_be_returned);
+
+        sequelize.query('SELECT "GI".id as "GIid", "GI".name as "GIname", "GI".token as "GItoken" ,' +
+                      ' "GI"."ChannelId" as "GIChannelId", "GI".active as "GIactive", ' +
+                      ' "GI"."createdAt" as "GIcreatedAt", "GI"."updatedAt" as "GIupdatedAt", ' +
+                      ' "GI"."ProjectIntegrationUid" as "GIProjectIntegrationUid" ' +
+                      ' FROM "GithubIntegrations" AS "GI" ' +
+                      ' WHERE "GI"."ProjectIntegrationUid" = ?',
+                        { type: sequelize.QueryTypes.SELECT,
+                          replacements: [githubPuid]})
+        .then(function(githubDetails) {
+
+          addGithubDetailsToIntegrationsToBeReturned(integrations_to_be_returned, githubDetails);
+
+          result.code = 200;
+          result.message = { integrations: integrations_to_be_returned };
+          return callback(result);
+        });
       });
     }
   });
@@ -182,15 +223,36 @@ module.exports.getProjectIntegrationById = function(project_id, integration_id, 
             return callback(result);
           }
 
-          result.code = 200;
-          result.message = { integration: formatIntegrationForProjects(integrations[0]) };
-          return callback(result);
+          switch (integrations[0].name) {
+            case 'Dropbox': {
+              result.code = 200;
+              result.message = { integration: formatIntegrationForProjects(integrations[0]) };
+              return callback(result);
+            }
+            case 'Github': {
+              integrations[0].ProjectIntegration.getGithubIntegrations().then(function(github_integrations){
+                result.code = 200;
+                result.message = { integration: formatIntegrationForProjects(integrations[0], github_integrations) };
+                return callback(result);
+              });
+              break;
+            }
+            case 'Trello': {
+              result.code = 200;
+              result.message = { integration: formatIntegrationForProjects(integrations[0]) };
+              return callback(result);
+            }
+            case 'PingDom': {
+              result.code = 200;
+              result.message = { integration: formatIntegrationForProjects(integrations[0]) };
+              return callback(result);
+            }
+          }
         });
       }
     }
   });
 };
-
 /*
 * Create a specific XXX_Integration for ProjectId by ProjectIntegrationId.
 * @projectId
@@ -322,12 +384,69 @@ function formatIntegration(raw_integration){
 /*
 * Format a given Integration to match excepted output.
 */
-function formatIntegrationForProjects(raw_integration){
-  return {
+function formatIntegrationForProjects(raw_integration, collection){
+  var response = {
+    projectIntegrationId: raw_integration.ProjectIntegration.uid,
     integrationId: raw_integration.id,
     name: raw_integration.name,
     description: raw_integration.description,
-    projectIntegrationId: raw_integration.ProjectIntegration.uid,
     active: raw_integration.ProjectIntegration.active
   };
+
+  if(collection !== null &&
+    collection !== undefined &&
+    collection.length > 0){
+      var configurations = [];
+      for(var x in collection ){
+        configurations.push(JSON.parse(JSON.stringify(collection[x])));
+      }
+      response.configurations = configurations;
+  }
+
+  return response;
+}
+
+function formatIntegrationForProjectsFromQuery(raw_row){
+  var response = {
+    projectIntegrationId: raw_row.PIuid,
+    integrationId: raw_row.IntegrationId,
+    name: raw_row.Iname,
+    description: raw_row.Idescription,
+    active: raw_row.Iactive
+  };
+  return response;
+}
+
+function obtainGithubPuidFromIntegrationsToBeReturned(integrations_to_be_returned){
+  for(var x in integrations_to_be_returned){
+    console.log("integrations_to_be_returned[x].name is: ", integrations_to_be_returned[x].name);
+    if(integrations_to_be_returned[x].name === "Github"){
+      return integrations_to_be_returned[x].projectIntegrationId;
+    }
+  }
+}
+
+
+function addGithubDetailsToIntegrationsToBeReturned(integrations_to_be_returned, githubDetails){
+  var configurations = [];
+
+  for(var x in githubDetails){
+    configurations.push({
+      id: githubDetails[x].GIid,
+      name: githubDetails[x].GIname,
+      token: githubDetails[x].GItoken,
+      active: githubDetails[x].GIactive,
+      createdAt: githubDetails[x].GIcreatedAt,
+      updatedAt: githubDetails[x].GIupdatedAt,
+      ProjectIntegrationUid: githubDetails[x].PIuid,
+      ChannelId: githubDetails[x].GIChannelId,
+    });
+  }
+
+  for(var y in integrations_to_be_returned){
+    if(integrations_to_be_returned[y].name === "Github"){
+      integrations_to_be_returned[y].configurations = configurations;
+      break;
+    }
+  }
 }
