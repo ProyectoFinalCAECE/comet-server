@@ -442,6 +442,12 @@ module.exports.updateInstanceOfProjectIntegration = function(project_id, integra
                         project_integrations[0].active = request_body.active;
                   }
 
+                  //Updating Channel
+                  if(request_body.newChannelId){
+                    project_integrations[0].ChannelId = request_body.newChannelId;
+                  }
+
+
                   //Saving GithubIntegration instance.
                   project_integrations[0].save().then(function(){
                     result.code = 200;
