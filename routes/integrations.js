@@ -55,7 +55,7 @@ router.get('/', auth, function(req, res) {
 * @active
 *
 */
-router.put('/:id', auth, integrationValidator.validUpdateProjectIntegration, function(req, res) {
+/*router.put('/:id', auth, integrationValidator.validUpdateProjectIntegration, function(req, res) {
   //If these parameters are detected, somebody is requesting to update the state of a certain integration
   //of a certain project.
   if(req.primaryParams && req.primaryParams.project_id){
@@ -75,7 +75,7 @@ router.put('/:id', auth, integrationValidator.validUpdateProjectIntegration, fun
       //
       return res.status(404).json('Requested Operation Not Found');
   }
-});
+});*/
 
 /*
 * Get Project Integration by Id.
@@ -112,7 +112,30 @@ router.post('/:id', auth, integrationValidator.validCreateProjectIntegration, fu
       return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
     }
 
-    integrationsService.createProjectIntegration(req.primaryParams.project_id,
+    integrationsService.createInstanceOfProjectIntegration(req.primaryParams.project_id,
+      req.params.id, user, req.body, function(result){
+        return res.status(result.code).json(result.message);
+    });
+  });
+});
+
+/*
+* Create a specific XXX_Integration for ProjectId by ProjectIntegrationId.
+* Requires authentication header.
+* @projectId
+* @projectIntegrationId
+* @channelId
+* @name
+* @token
+*
+*/
+router.put('/:id', auth, integrationValidator.validUpdateInstanceOfProjectIntegration, function(req, res) {
+  models.User.findById(req.payload._id).then(function(user) {
+    if(!user){
+      return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
+    }
+
+    integrationsService.updateInstanceOfProjectIntegration(req.primaryParams.project_id,
       req.params.id, user, req.body, function(result){
         return res.status(result.code).json(result.message);
     });
