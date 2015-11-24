@@ -1074,5 +1074,437 @@
                "description": "Proyecto para la agencia de viajes",
                "state": "O"
 		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": true,
+               "active": true,
+               "ProjectId": "1",
+               "UserId": "1"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": true,
+               "active": true,
+               "ProjectId": "2",
+               "UserId": "1"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": true,
+               "active": true,
+               "ProjectId": "3",
+               "UserId": "1"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": true,
+               "active": true,
+               "ProjectId": "4",
+               "UserId": "1"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": true,
+               "active": true,
+               "ProjectId": "5",
+               "UserId": "1"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": true,
+               "active": true,
+               "ProjectId": "6",
+               "UserId": "1"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": true,
+               "active": true,
+               "ProjectId": "9",
+               "UserId": "1"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": true,
+               "active": true,
+               "ProjectId": "10",
+               "UserId": "1"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "1",
+               "UserId": "2"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "2",
+               "UserId": "2"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "3",
+               "UserId": "2"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "4",
+               "UserId": "2"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "5",
+               "UserId": "2"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "6",
+               "UserId": "2"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "9",
+               "UserId": "2"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "10",
+               "UserId": "2"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "1",
+               "UserId": "3"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "2",
+               "UserId": "3"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "3",
+               "UserId": "3"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "4",
+               "UserId": "3"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "5",
+               "UserId": "3"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "6",
+               "UserId": "3"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "9",
+               "UserId": "3"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "10",
+               "UserId": "3"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "1",
+               "UserId": "4"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "2",
+               "UserId": "4"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "3",
+               "UserId": "4"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "4",
+               "UserId": "4"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "5",
+               "UserId": "4"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "6",
+               "UserId": "4"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "9",
+               "UserId": "4"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "10",
+               "UserId": "4"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "1",
+               "UserId": "5"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "2",
+               "UserId": "5"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "3",
+               "UserId": "5"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "4",
+               "UserId": "5"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "5",
+               "UserId": "5"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "6",
+               "UserId": "5"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "9",
+               "UserId": "5"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "10",
+               "UserId": "5"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "1",
+               "UserId": "6"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "2",
+               "UserId": "6"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "3",
+               "UserId": "6"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "4",
+               "UserId": "6"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "5",
+               "UserId": "6"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "6",
+               "UserId": "6"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "9",
+               "UserId": "6"
+		}
+	},
+	       {
+           "model": "ProjectUser",
+           "data": {
+	       "isOwner": false,
+               "active": true,
+               "ProjectId": "10",
+               "UserId": "6"
+		}
 	}
 ]
