@@ -21,6 +21,7 @@ module.exports = function(sequelize, DataTypes) {
         classMethods:{
           associate: function(models) {
             ProjectIntegration.hasMany(models.GithubIntegration);
+            ProjectIntegration.hasMany(models.TrelloIntegration);
           }
         },
         indexes:[{
