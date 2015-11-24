@@ -200,6 +200,27 @@ module.exports.getProjectChannelsUpdates = function(projectId, userId, callback)
   });
 };
 
+
+/*
+* Store Github message in db
+* @message_content
+*
+*/
+module.exports.storeGithubMessage = function(message_content, channelId, integrationId) {
+
+      // create new Message instance
+      var message = models.Message.build({
+                                          content: message_content,
+                                          integrationId: integrationId,
+                                          MessageTypeId: 6,
+                                          ChannelId: channelId,
+                                          sentDateTimeUTC: new Date().getTime()
+                                        });
+      //saving message
+      message.save();
+};
+
+
 /*
 * Formats and orders messages to be returned by the service
 *
@@ -220,7 +241,8 @@ function formatMessages(messages){
                                   link: messages[y].link || "",
                                   user: messages[y].UserId,
                                   type: messages[y].MessageType.id,
-                                  date: messages[y].sentDateTimeUTC
+                                  date: messages[y].sentDateTimeUTC,
+                                  integrationId: messages[y].integrationId
                                 }
                               };
     }else{
@@ -230,7 +252,8 @@ function formatMessages(messages){
                                   user: messages[y].OriginUserId,
                                   destinationUser: messages[y].DestinationUserId,
                                   type: messages[y].MessageType.id,
-                                  date: messages[y].sentDateTimeUTC
+                                  date: messages[y].sentDateTimeUTC,
+                                  integrationId: messages[y].integrationId
                                 }
                               };
     }

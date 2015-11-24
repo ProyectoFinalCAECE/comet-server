@@ -14,13 +14,13 @@ module.exports = function(sequelize, DataTypes) {
     content: { type: DataTypes.STRING(content_length) },
     link: { type: DataTypes.STRING(link_length) },
     sentDateTimeUTC: { type: DataTypes.DATE, allowNull: false, defaultValue: new Date() },
+    integrationId: { type: DataTypes.INTEGER, allowNull: true }
   }, {
       classMethods:{
         associate: function(models) {
           Message.belongsTo(models.Channel);
           Message.belongsTo(models.User);
           Message.belongsTo(models.MessageType);
-          Message.belongsTo(models.ProjectIntegration, {constraints: false});
         },
         contentLength: function(){
           return 500;

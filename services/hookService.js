@@ -5,50 +5,65 @@
  * Module dependencies
 
  */
+
 var models  = require('../models');
-var Sequelize = require("sequelize");
-var env       = process.env.NODE_ENV || "development";
-var config    = require(__dirname + '/../config/sequelize.json')[env];
+var messagingService = require('../services/messagingService');
 var socket = require('../lib/socket');
 
 /*
 * webhook request processing
 */
-module.exports.processHook = function(req, token, integrationId) {
-
+module.exports.processHook = function(req, token, integrationId, callback) {
   switch (integrationId) {
-    case 2:
-      processsGitHubHook(req, token);
+    case 1:
+      processsGitHubHook(req, token, callback);
       break;
   }
-
 };
 
 /*
 * Github webhook request processing
 */
-function processsGitHubHook(req, token) {
+function processsGitHubHook(req, token, callback) {
+  var result = {};
+  result.status = 500;
 
-  console.log('####### processsGitHubHook', token);
   var eventType = req.headers['x-github-event'];
 
   // search the project integration table by token
-  //models.integrationDropbox.findOne({ where: { token: token } }).then(function(integrationProject) {
-  //  console.log('processsHookGitHub - registro', integrationProject);
-  //});
+  models.GithubIntegration.findOne({ where: { token: token } }).then(function(integrationProject) {
+    if(integrationProject === null || integrationProject === undefined){
+      return callback(result);
+    }
 
-  // merge the project integration config with the github event
+    // merge the project integration config with the github event
 
-  // build the event message
-  var eventMessage = parseGitHubEvent(eventType, req.body);
-  console.log('##### integration message', eventMessage);
+    // build the event message
+    var eventMessage = parseGitHubEvent(eventType, req.body);
 
-  // save
+    // save
+    messagingService.storeGithubMessage(JSON.stringify(eventMessage), integrationProject.ChannelId, integrationProject.id);
 
-  // broadcast
+    // broadcast
+    var message = {
+                    message: {
+                        text: JSON.stringify(eventMessage),
+                        type: 6,
+                        date: new Date().getTime(),
+                        integrationId: integrationProject.id
+                    }
+                  };
 
+    //looking for ProjectId of channel to broadcast notifications.
+    models.Channel.findById(integrationProject.ChannelId).then(function(channel){
 
-  console.log('####### processsGitHubHook - FIN #####');
+      //broadcast
+      socket.broadcastIntegrationMessage('Project_' + channel.ProjectId , integrationProject.ChannelId, message);
+
+      result.status = 200;
+      return callback(result);
+    });
+  });
 }
 
 /*
