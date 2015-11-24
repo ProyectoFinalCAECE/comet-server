@@ -1105,7 +1105,7 @@
 	       {
            "model": "ProjectUser",
            "data": {
-	       "isOwner": true,
+	       "isOwner": false,
                "active": true,
                "ProjectId": "4",
                "UserId": "1"
@@ -1114,7 +1114,7 @@
 	       {
            "model": "ProjectUser",
            "data": {
-	       "isOwner": true,
+	       "isOwner": false,
                "active": true,
                "ProjectId": "5",
                "UserId": "1"
@@ -1123,7 +1123,7 @@
 	       {
            "model": "ProjectUser",
            "data": {
-	       "isOwner": true,
+	       "isOwner": false,
                "active": true,
                "ProjectId": "6",
                "UserId": "1"
@@ -1132,7 +1132,7 @@
 	       {
            "model": "ProjectUser",
            "data": {
-	       "isOwner": true,
+	       "isOwner": false,
                "active": true,
                "ProjectId": "9",
                "UserId": "1"
@@ -1141,7 +1141,7 @@
 	       {
            "model": "ProjectUser",
            "data": {
-	       "isOwner": true,
+	       "isOwner": false,
                "active": true,
                "ProjectId": "10",
                "UserId": "1"
@@ -1177,7 +1177,7 @@
 	       {
            "model": "ProjectUser",
            "data": {
-	       "isOwner": false,
+	       "isOwner": true,
                "active": true,
                "ProjectId": "4",
                "UserId": "2"
@@ -1186,7 +1186,7 @@
 	       {
            "model": "ProjectUser",
            "data": {
-	       "isOwner": false,
+	       "isOwner": true,
                "active": true,
                "ProjectId": "5",
                "UserId": "2"
@@ -1267,7 +1267,7 @@
 	       {
            "model": "ProjectUser",
            "data": {
-	       "isOwner": false,
+	       "isOwner": true,
                "active": true,
                "ProjectId": "6",
                "UserId": "3"
@@ -1357,7 +1357,7 @@
 	       {
            "model": "ProjectUser",
            "data": {
-	       "isOwner": false,
+	       "isOwner": true,
                "active": true,
                "ProjectId": "10",
                "UserId": "4"
@@ -1366,7 +1366,7 @@
 	       {
            "model": "ProjectUser",
            "data": {
-	       "isOwner": false,
+	       "isOwner": true,
                "active": true,
                "ProjectId": "1",
                "UserId": "5"
