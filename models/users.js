@@ -44,10 +44,10 @@ module.exports = function(sequelize, DataTypes) {
            return this.hash === hash;
       },
       generateJWT: function() {
-        // expirates in 30 days
+        // expirates in 1 hour
         var today = new Date();
         var expiration = new Date(today);
-        expiration.setDate(today.getDate() + 30);
+        expiration.setDate(today.getDate() + 1/24);
 
         return jwt.sign({
             _id: this.id,
