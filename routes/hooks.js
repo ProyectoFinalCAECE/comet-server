@@ -20,7 +20,17 @@ router.post('/:token', function(req, res, next) {
     hookService.processHook(req, token, integrationId, function(result){
       return res.status(result.status).end();
     });
-    
+
+  }
+  catch (e) {
+    console.log('##### HOOK error #####', e);
+    return res.status(500).end();
+  }
+});
+
+router.get('/:token', function(req, res, next) {
+  try {
+      return res.status(200).end();
   }
   catch (e) {
     console.log('##### HOOK error #####', e);
