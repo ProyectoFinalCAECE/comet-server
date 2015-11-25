@@ -74,8 +74,6 @@ function processGitHubHook(req, token, callback) {
 */
 function processTrelloHook(req, token, callback) {
   var result = {};
-  console.log("token is: ", token);
-  console.log("req.body is: ", req.body);
 
   // search the project integration table by token
   models.TrelloIntegration.findOne({ where: { token: token } }).then(function(integrationProject) {
@@ -99,8 +97,6 @@ function processTrelloHook(req, token, callback) {
                         integrationId: integrationProject.id
                     }
                   };
-
-    console.log("message is: ", message);
 
     //looking for ProjectId of channel to broadcast notifications.
     models.Channel.findById(integrationProject.ChannelId).then(function(channel){
@@ -212,14 +208,29 @@ function parseGitHubEvent(type, payload) {
 */
 function parseTrelloEvent(type, payload) {
 
-  var message = null;
+  var message = {};
 
-  message = {
-    type: type,
-    board: payload.model.name,
-    user: payload.action.memberCreator.username,
-    data: payload.action.data
-  };
+  message.type = type;
+
+  if(payload.action.data.board){
+      message.board = payload.action.data.board.name;
+  }
+
+  if(payload.action.data.list){
+      message.list = payload.action.data.list.name;
+  }
+
+  if(payload.action.data.card){
+      message.card = payload.action.data.card.name;
+  }
+
+  if(payload.action.memberCreator){
+      message.user = payload.action.memberCreator.username;
+  }
+
+  if(payload.action.data.text){
+      message.text = payload.action.data.text;
+  }
 
   return message;
 }
