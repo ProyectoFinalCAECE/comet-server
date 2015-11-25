@@ -92,7 +92,7 @@ function processTrelloHook(req, token, callback) {
     var message = {
                     message: {
                         text: JSON.stringify(eventMessage),
-                        type: 6,
+                        type: 7,
                         date: new Date().getTime(),
                         integrationId: integrationProject.id
                     }
