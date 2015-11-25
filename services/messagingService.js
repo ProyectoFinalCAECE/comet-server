@@ -220,6 +220,24 @@ module.exports.storeGithubMessage = function(message_content, channelId, integra
       message.save();
 };
 
+/*
+* Store Trello message in db
+* @message_content
+*
+*/
+module.exports.storeTrelloMessage = function(message_content, channelId, integrationId) {
+
+      // create new Message instance
+      var message = models.Message.build({
+                                          content: message_content,
+                                          integrationId: integrationId,
+                                          MessageTypeId: 7,
+                                          ChannelId: channelId,
+                                          sentDateTimeUTC: new Date().getTime()
+                                        });
+      //saving message
+      message.save();
+};
 
 /*
 * Formats and orders messages to be returned by the service
