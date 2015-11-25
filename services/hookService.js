@@ -174,16 +174,15 @@ function parseGitHubEvent(type, payload) {
       break;
     }
     case 'issues': {
-      if (payload.action === 'opened') {
         message = {
           type: type,
+          action: payload.action,
           repository: payload.repository.full_name,
           user: payload.sender.login,
           issue: payload.issue.title,
           issue_number: payload.issue.number,
           issue_url: payload.issue.html_url
         };
-      }
       break;
     }
     case 'issue_comment': {
