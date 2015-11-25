@@ -74,23 +74,21 @@ function processGitHubHook(req, token, callback) {
 */
 function processTrelloHook(req, token, callback) {
   var result = {};
-  result.status = 200;
-  return callback(result);
-  //var eventType = req.headers['x-github-event'];
+  console.log("token is: ", token);
+  console.log("req.body is: ", req.body);
 
   // search the project integration table by token
-  /*models.GithubIntegration.findOne({ where: { token: token } }).then(function(integrationProject) {
+  models.TrelloIntegration.findOne({ where: { token: token } }).then(function(integrationProject) {
     if(integrationProject === null || integrationProject === undefined){
       return callback(result);
     }
 
-    // merge the project integration config with the github event
-
+    var eventType = req.body.action.type;
     // build the event message
-    var eventMessage = parseGitHubEvent(eventType, req.body);
+    var eventMessage = parseTrelloEvent(eventType, req.body);
 
     // save
-    messagingService.storeGithubMessage(JSON.stringify(eventMessage), integrationProject.ChannelId, integrationProject.id);
+    messagingService.storeTrelloMessage(JSON.stringify(eventMessage), integrationProject.ChannelId, integrationProject.id);
 
     // broadcast
     var message = {
@@ -102,6 +100,8 @@ function processTrelloHook(req, token, callback) {
                     }
                   };
 
+    console.log("message is: ", message);
+
     //looking for ProjectId of channel to broadcast notifications.
     models.Channel.findById(integrationProject.ChannelId).then(function(channel){
 
@@ -111,7 +111,10 @@ function processTrelloHook(req, token, callback) {
       result.status = 200;
       return callback(result);
     });
-  });*/
+
+    result.status = 200;
+    return callback(result);
+  });
 }
 
 /*
@@ -200,6 +203,23 @@ function parseGitHubEvent(type, payload) {
       break;
     }
   }
+
+  return message;
+}
+
+/*
+* Trello event parsing
+*/
+function parseTrelloEvent(type, payload) {
+
+  var message = null;
+
+  message = {
+    type: type,
+    board: payload.model.name,
+    user: payload.action.memberCreator.username,
+    data: payload.action.data
+  };
 
   return message;
 }
