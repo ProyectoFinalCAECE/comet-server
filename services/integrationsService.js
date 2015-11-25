@@ -93,11 +93,11 @@ module.exports.getActiveIntegrationsForProject = function(project_id, user, call
                         replacements: [project_id]})
       .then(function(fullProjectIntegrations) {
 
-
         for(var x in fullProjectIntegrations){
           integrations_to_be_returned.push(formatIntegrationForProjectsFromQuery(fullProjectIntegrations[x]));
         }
 
+        //looking for github puid among the integrations obtained
         var githubPuid = obtainGithubPuidFromIntegrationsToBeReturned(integrations_to_be_returned);
 
         sequelize.query('SELECT "GI".id as "GIid", "GI".name as "GIname", "GI".token as "GItoken" ,' +
@@ -110,11 +110,29 @@ module.exports.getActiveIntegrationsForProject = function(project_id, user, call
                           replacements: [githubPuid]})
         .then(function(githubDetails) {
 
+          //adding configurations details to github integration
           addGithubDetailsToIntegrationsToBeReturned(integrations_to_be_returned, githubDetails);
 
-          result.code = 200;
-          result.message = { integrations: integrations_to_be_returned };
-          return callback(result);
+          //looking for trello puid among the integrations obtained
+          var trelloPuid = obtainTrelloPuidFromIntegrationsToBeReturned(integrations_to_be_returned);
+
+          sequelize.query('SELECT "TI".id as "TIid", "TI".name as "TIname", "TI".token as "TItoken" ,' +
+                        ' "TI"."ChannelId" as "TIChannelId", "TI".active as "TIactive", ' +
+                        ' "TI"."createdAt" as "TIcreatedAt", "TI"."updatedAt" as "TIupdatedAt", ' +
+                        ' "TI"."ProjectIntegrationUid" as "TIProjectIntegrationUid" ' +
+                        ' FROM "TrelloIntegrations" AS "TI" ' +
+                        ' WHERE "TI"."ProjectIntegrationUid" = ?',
+                          { type: sequelize.QueryTypes.SELECT,
+                            replacements: [trelloPuid]})
+          .then(function(trelloDetails) {
+
+            //adding configurations details to Trello integration
+            addTrelloDetailsToIntegrationsToBeReturned(integrations_to_be_returned, trelloDetails);
+
+            result.code = 200;
+            result.message = { integrations: integrations_to_be_returned };
+            return callback(result);
+          });
         });
       });
     }
@@ -233,9 +251,12 @@ module.exports.getProjectIntegrationById = function(project_id, integration_id, 
               break;
             }
             case 'Trello': {
-              result.code = 200;
-              result.message = { integration: formatIntegrationForProjects(integrations[0]) };
-              return callback(result);
+              integrations[0].ProjectIntegration.getTrelloIntegrations().then(function(trello_integrations){
+                result.code = 200;
+                result.message = { integration: formatIntegrationForProjects(integrations[0], trello_integrations) };
+                return callback(result);
+              });
+              break;
             }
             case 'PingDom': {
               result.code = 200;
@@ -344,9 +365,46 @@ module.exports.createInstanceOfProjectIntegration = function(project_id, integra
                 break;
               }
               case 'Trello': {
-                result.code = 404;
-                result.message = { errors: { all: 'La integración requerida aún no puede ser configurada.'}};
-                return callback(result);
+                //Checking if Tuple Project-Integration-Channel does not exist already.
+                models.TrelloIntegration.findAll({ where: ['"TrelloIntegration"."ProjectIntegrationUid" = ? AND "TrelloIntegration"."ChannelId" = ?',
+                                                  integration_id, request_body.channelId ] }).then(function(project_integrations){
+
+                  if(project_integrations !== undefined && project_integrations.length > 0){
+                    result.code = 401;
+                    result.message = { errors: { all: 'Ya hay una configuracion para el Proyecto, Integración y Canal provistos.'}};
+                    return callback(result);
+                  }
+
+                  //New TrelloIntegration instance.
+                  var trelloIntegration = models.TrelloIntegration.build({
+                    name: request_body.name,
+                    token: request_body.token,
+                    active: true
+                  });
+
+                  //Adding Channel to TrelloIntegration instance.
+                  trelloIntegration.ChannelId = channels[0].id;
+
+                  //Adding ProjectIntegration to TrelloIntegration instance.
+                  trelloIntegration.ProjectIntegrationUid = integration_id;
+
+                  //Saving GithubIntegration instance.
+                  trelloIntegration.save().then(function(){
+                    result.code = 200;
+                    result.message = { trelloIntegration: {
+                                                            id: trelloIntegration.id,
+                                                            name: trelloIntegration.name,
+                                                            active: trelloIntegration.active,
+                                                            token: trelloIntegration.token,
+                                                            channelId: trelloIntegration.ChannelId,
+                                                            ProjectIntegrationId: trelloIntegration.ProjectIntegrationUid
+                                                          }
+                                    };
+                    return callback(result);
+                  });
+
+                });
+                break;
               }
               case 'PingDom': {
                 result.code = 404;
@@ -466,9 +524,55 @@ module.exports.updateInstanceOfProjectIntegration = function(project_id, integra
                 break;
               }
               case 'Trello': {
-                result.code = 404;
-                result.message = { errors: { all: 'La integración requerida aún no puede ser configurada.'}};
-                return callback(result);
+                //Checking if Tuple Project-Integration-Channel does not exist already.
+                models.TrelloIntegration.findAll({ where: ['"TrelloIntegration"."ProjectIntegrationUid" = ? AND "TrelloIntegration"."ChannelId" = ?',
+                                                  integration_id, request_body.channelId ] }).then(function(project_integrations){
+
+                  if(project_integrations === undefined || project_integrations.length === 0){
+                    result.code = 401;
+                    result.message = { errors: { all: 'No se encontró una configuracion para el Proyecto, Integración y Canal provistos.'}};
+                    return callback(result);
+                  }
+
+                  //Updating name
+                  if(request_body.name &&
+                    request_body.name.length > 0){
+                        project_integrations[0].name = request_body.name;
+                  }
+
+                  //Updating token
+                  if(request_body.token &&
+                    request_body.token.length > 0){
+                        project_integrations[0].token = request_body.token;
+                  }
+
+                  //Updating active
+                  if(request_body.active){
+                        project_integrations[0].active = request_body.active;
+                  }
+
+                  //Updating Channel
+                  if(request_body.newChannelId){
+                    project_integrations[0].ChannelId = request_body.newChannelId;
+                  }
+
+
+                  //Saving TrelloIntegration instance.
+                  project_integrations[0].save().then(function(){
+                    result.code = 200;
+                    result.message = { trelloIntegration: {
+                                                            id: project_integrations[0].id,
+                                                            name: project_integrations[0].name,
+                                                            active: project_integrations[0].active,
+                                                            token: project_integrations[0].token,
+                                                            channelId: project_integrations[0].ChannelId,
+                                                            ProjectIntegrationId: project_integrations[0].ProjectIntegrationUid
+                                                          }
+                                    };
+                    return callback(result);
+                  });
+                });
+                break;
               }
               case 'PingDom': {
                 result.code = 404;
@@ -530,10 +634,23 @@ function formatIntegrationForProjectsFromQuery(raw_row){
   return response;
 }
 
+/*
+* Retrieve Github Puid from integrations found.
+*/
 function obtainGithubPuidFromIntegrationsToBeReturned(integrations_to_be_returned){
   for(var x in integrations_to_be_returned){
-    console.log("integrations_to_be_returned[x].name is: ", integrations_to_be_returned[x].name);
     if(integrations_to_be_returned[x].name === "Github"){
+      return integrations_to_be_returned[x].projectIntegrationId;
+    }
+  }
+}
+
+/*
+* Retrieve Trello Puid from integrations found.
+*/
+function obtainTrelloPuidFromIntegrationsToBeReturned(integrations_to_be_returned){
+  for(var x in integrations_to_be_returned){
+    if(integrations_to_be_returned[x].name === "Trello"){
       return integrations_to_be_returned[x].projectIntegrationId;
     }
   }
@@ -558,6 +675,30 @@ function addGithubDetailsToIntegrationsToBeReturned(integrations_to_be_returned,
 
   for(var y in integrations_to_be_returned){
     if(integrations_to_be_returned[y].name === "Github"){
+      integrations_to_be_returned[y].configurations = configurations;
+      break;
+    }
+  }
+}
+
+function addTrelloDetailsToIntegrationsToBeReturned(integrations_to_be_returned, trelloDetails){
+  var configurations = [];
+
+  for(var x in trelloDetails){
+    configurations.push({
+      id: trelloDetails[x].TIid,
+      name: trelloDetails[x].TIname,
+      token: trelloDetails[x].TItoken,
+      active: trelloDetails[x].TIactive,
+      createdAt: trelloDetails[x].TIcreatedAt,
+      updatedAt: trelloDetails[x].TIupdatedAt,
+      ProjectIntegrationUid: trelloDetails[x].TIuid,
+      ChannelId: trelloDetails[x].TIChannelId,
+    });
+  }
+
+  for(var y in integrations_to_be_returned){
+    if(integrations_to_be_returned[y].name === "Trello"){
       integrations_to_be_returned[y].configurations = configurations;
       break;
     }
