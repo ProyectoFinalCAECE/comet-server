@@ -16,7 +16,10 @@ var socket = require('../lib/socket');
 module.exports.processHook = function(req, token, integrationId, callback) {
   switch (integrationId) {
     case 1:
-      processsGitHubHook(req, token, callback);
+      processGitHubHook(req, token, callback);
+      break;
+    case 2:
+      processTrelloHook(req, token, callback);
       break;
   }
 };
@@ -24,7 +27,7 @@ module.exports.processHook = function(req, token, integrationId, callback) {
 /*
 * Github webhook request processing
 */
-function processsGitHubHook(req, token, callback) {
+function processGitHubHook(req, token, callback) {
   var result = {};
   result.status = 500;
 
@@ -64,6 +67,51 @@ function processsGitHubHook(req, token, callback) {
       return callback(result);
     });
   });
+}
+
+/*
+* Trello webhook request processing
+*/
+function processTrelloHook(req, token, callback) {
+  var result = {};
+  result.status = 200;
+  return callback(result);
+  //var eventType = req.headers['x-github-event'];
+
+  // search the project integration table by token
+  /*models.GithubIntegration.findOne({ where: { token: token } }).then(function(integrationProject) {
+    if(integrationProject === null || integrationProject === undefined){
+      return callback(result);
+    }
+
+    // merge the project integration config with the github event
+
+    // build the event message
+    var eventMessage = parseGitHubEvent(eventType, req.body);
+
+    // save
+    messagingService.storeGithubMessage(JSON.stringify(eventMessage), integrationProject.ChannelId, integrationProject.id);
+
+    // broadcast
+    var message = {
+                    message: {
+                        text: JSON.stringify(eventMessage),
+                        type: 6,
+                        date: new Date().getTime(),
+                        integrationId: integrationProject.id
+                    }
+                  };
+
+    //looking for ProjectId of channel to broadcast notifications.
+    models.Channel.findById(integrationProject.ChannelId).then(function(channel){
+
+      //broadcast
+      socket.broadcastIntegrationMessage('Project_' + channel.ProjectId , integrationProject.ChannelId, message);
+
+      result.status = 200;
+      return callback(result);
+    });
+  });*/
 }
 
 /*
