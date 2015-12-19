@@ -120,7 +120,7 @@ router.post('/:id', auth, integrationValidator.validCreateProjectIntegration, fu
 });
 
 /*
-* Create a specific XXX_Integration for ProjectId by ProjectIntegrationId.
+* Update a specific XXX_Integration for ProjectId by ProjectIntegrationId.
 * Requires authentication header.
 * @projectId
 * @projectIntegrationId
@@ -136,6 +136,30 @@ router.put('/:id', auth, integrationValidator.validUpdateInstanceOfProjectIntegr
     }
 
     integrationsService.updateInstanceOfProjectIntegration(req.primaryParams.project_id,
+      req.params.id, user, req.body, function(result){
+        return res.status(result.code).json(result.message);
+    });
+  });
+});
+
+
+/*
+* Remove a specific XXX_Integration for ProjectId by ProjectIntegrationId.
+* Requires authentication header.
+* @projectId
+* @projectIntegrationId
+* @channelId
+* @name
+* @token
+*
+*/
+router.delete('/:id', auth, function(req, res) {
+  models.User.findById(req.payload._id).then(function(user) {
+    if(!user){
+      return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
+    }
+
+    integrationsService.disableInstanceOfProjectIntegration(req.primaryParams.project_id,
       req.params.id, user, req.body, function(result){
         return res.status(result.code).json(result.message);
     });
