@@ -75,8 +75,8 @@
            "model": "MessageType",
            "data": {
 	       "id": "8",
-               "description": "PingDom - Integration",
-               "character": "P"
+               "description": "StatusCake - Integration",
+               "character": "C"
            }
        },
        {
@@ -101,7 +101,7 @@
            "model": "Integration",
            "data": {
                 "id": "3",
-               "name": "PingDom",
+               "name": "StatusCake",
                "description": "Monitoreo de uptime y performance",
                "active": true
            }
