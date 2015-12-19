@@ -34,7 +34,7 @@ function processGitHubHook(req, token, callback) {
   var eventType = req.headers['x-github-event'];
 
   // search the project integration table by token
-  models.GithubIntegration.findOne({ where: { token: token } }).then(function(integrationProject) {
+  models.GithubIntegration.findOne({ where: { token: token, active: true } }).then(function(integrationProject) {
     if(integrationProject === null || integrationProject === undefined){
       return callback(result);
     }
@@ -76,7 +76,7 @@ function processTrelloHook(req, token, callback) {
   var result = {};
 
   // search the project integration table by token
-  models.TrelloIntegration.findOne({ where: { token: token } }).then(function(integrationProject) {
+  models.TrelloIntegration.findOne({ where: { token: token, active: true } }).then(function(integrationProject) {
     if(integrationProject === null || integrationProject === undefined){
       return callback(result);
     }
