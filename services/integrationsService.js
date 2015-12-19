@@ -419,6 +419,133 @@ module.exports.createInstanceOfProjectIntegration = function(project_id, integra
   });
 };
 
+
+/*
+* Disable a specific XXX_Integration for ProjectId by ProjectIntegrationId.
+* @projectId
+* @projectIntegrationId
+* @channelId
+* @name
+* @token
+*
+*/
+module.exports.disableInstanceOfProjectIntegration = function(project_id, integration_id, user, request_body, callback) {
+  var result = {};
+  result.code = 404;
+  result.message = { errors: { all: 'No se encontró ninguna Integración disponible.' } };
+
+  //Looking for Project
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', project_id, "B"], include: [{ model: models.Channel}]}).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      result.code = 404;
+      result.message = { errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}};
+      return callback(result);
+    }
+
+    //If user is active at retrieved Project
+    if(projects[0].ProjectUser.active === false){
+      result.code = 403;
+      result.message = { errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}};
+      return callback(result);
+    } else {
+      //If user is the owner of the Project
+      if(projects[0].ProjectUser.isOwner === false){
+        result.code = 403;
+        result.message = { errors: { all: 'El usuario no puede realizar la operación solicitada.'}};
+        return callback(result);
+      } else {
+
+        //Looking for Integration among retrieved Project's Integrations.
+        projects[0].getIntegrations({ where: ['"ProjectIntegration"."uid" = ?', integration_id] }).then(function(integrations){
+          if (integrations === undefined || integrations.length === 0) {
+            result.code = 404;
+            result.message = { errors: { all: 'No se puede encontrar ninguna Integración con el id provisto.'}};
+            return callback(result);
+          }
+
+          //Looking for Channel among retrieved Project's Channels.
+          projects[0].getChannels({ where: ['"Channel"."id" = ?', request_body.channelId ] }).then(function(channels){
+
+            if (channels === undefined || channels.length === 0) {
+              result.code = 404;
+              result.message = { errors: { all: 'No se puede encontrar ningun Canal con el id provisto.'}};
+              return callback(result);
+            }
+
+            switch (integrations[0].name) {
+              case 'Github': {
+                //Checking if Tuple Project-Integration-Channel does not exist already.
+                models.GithubIntegration.findAll({ where: ['"GithubIntegration"."ProjectIntegrationUid" = ? AND "GithubIntegration"."ChannelId" = ?',
+                                                  integration_id, request_body.channelId ] }).then(function(project_integrations){
+
+                  if(project_integrations === undefined || project_integrations.length === 0){
+                    result.code = 401;
+                    result.message = { errors: { all: 'No se encontró una configuracion para el Proyecto, Integración y Canal provistos.'}};
+                    return callback(result);
+                  }
+
+                  project_integrations[0].active = false;
+
+                  //Saving GithubIntegration instance.
+                  project_integrations[0].save().then(function(){
+                    result.code = 200;
+                    result.message = { githubIntegration: {
+                                                            id: project_integrations[0].id,
+                                                            name: project_integrations[0].name,
+                                                            active: project_integrations[0].active,
+                                                            token: project_integrations[0].token,
+                                                            channelId: project_integrations[0].ChannelId,
+                                                            ProjectIntegrationId: project_integrations[0].ProjectIntegrationUid
+                                                          }
+                                    };
+                    return callback(result);
+                  });
+                });
+                break;
+              }
+              case 'Trello': {
+                //Checking if Tuple Project-Integration-Channel does not exist already.
+                models.TrelloIntegration.findAll({ where: ['"TrelloIntegration"."ProjectIntegrationUid" = ? AND "TrelloIntegration"."ChannelId" = ?',
+                                                  integration_id, request_body.channelId ] }).then(function(project_integrations){
+
+                  if(project_integrations === undefined || project_integrations.length === 0){
+                    result.code = 401;
+                    result.message = { errors: { all: 'No se encontró una configuracion para el Proyecto, Integración y Canal provistos.'}};
+                    return callback(result);
+                  }
+
+                  project_integrations[0].active = false;
+
+                  //Saving TrelloIntegration instance.
+                  project_integrations[0].save().then(function(){
+                    result.code = 200;
+                    result.message = { trelloIntegration: {
+                                                            id: project_integrations[0].id,
+                                                            name: project_integrations[0].name,
+                                                            active: project_integrations[0].active,
+                                                            token: project_integrations[0].token,
+                                                            channelId: project_integrations[0].ChannelId,
+                                                            ProjectIntegrationId: project_integrations[0].ProjectIntegrationUid
+                                                          }
+                                    };
+                    return callback(result);
+                  });
+                });
+                break;
+              }
+              case 'PingDom': {
+                result.code = 404;
+                result.message = { errors: { all: 'La integración requerida aún no puede ser configurada.'}};
+                return callback(result);
+              }
+            }
+          });
+        });
+      }
+    }
+  });
+};
+
 /*
 * Update a specific XXX_Integration for ProjectId by ProjectIntegrationId.
 * @projectId
