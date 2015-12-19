@@ -105,7 +105,8 @@ module.exports.getActiveIntegrationsForProject = function(project_id, user, call
                       ' "GI"."createdAt" as "GIcreatedAt", "GI"."updatedAt" as "GIupdatedAt", ' +
                       ' "GI"."ProjectIntegrationUid" as "GIProjectIntegrationUid" ' +
                       ' FROM "GithubIntegrations" AS "GI" ' +
-                      ' WHERE "GI"."ProjectIntegrationUid" = ?',
+                      ' WHERE "GI"."ProjectIntegrationUid" = ?' +
+                      ' AND "GI".active = true',
                         { type: sequelize.QueryTypes.SELECT,
                           replacements: [githubPuid]})
         .then(function(githubDetails) {
@@ -121,7 +122,8 @@ module.exports.getActiveIntegrationsForProject = function(project_id, user, call
                         ' "TI"."createdAt" as "TIcreatedAt", "TI"."updatedAt" as "TIupdatedAt", ' +
                         ' "TI"."ProjectIntegrationUid" as "TIProjectIntegrationUid" ' +
                         ' FROM "TrelloIntegrations" AS "TI" ' +
-                        ' WHERE "TI"."ProjectIntegrationUid" = ?',
+                        ' WHERE "TI"."ProjectIntegrationUid" = ?' +
+                        ' AND "TI".active = true',
                           { type: sequelize.QueryTypes.SELECT,
                             replacements: [trelloPuid]})
           .then(function(trelloDetails) {
