@@ -260,7 +260,7 @@ module.exports.getProjectIntegrationById = function(project_id, integration_id, 
               });
               break;
             }
-            case 'PingDom': {
+            case 'StatusCake': {
               result.code = 200;
               result.message = { integration: formatIntegrationForProjects(integrations[0]) };
               return callback(result);
@@ -408,7 +408,7 @@ module.exports.createInstanceOfProjectIntegration = function(project_id, integra
                 });
                 break;
               }
-              case 'PingDom': {
+              case 'StatusCase': {
                 result.code = 404;
                 result.message = { errors: { all: 'La integración requerida aún no puede ser configurada.'}};
                 return callback(result);
@@ -535,7 +535,7 @@ module.exports.disableInstanceOfProjectIntegration = function(project_id, integr
                 });
                 break;
               }
-              case 'PingDom': {
+              case 'StatusCase': {
                 result.code = 404;
                 result.message = { errors: { all: 'La integración requerida aún no puede ser configurada.'}};
                 return callback(result);
@@ -703,7 +703,7 @@ module.exports.updateInstanceOfProjectIntegration = function(project_id, integra
                 });
                 break;
               }
-              case 'PingDom': {
+              case 'StatusCase': {
                 result.code = 404;
                 result.message = { errors: { all: 'La integración requerida aún no puede ser configurada.'}};
                 return callback(result);
