@@ -24,6 +24,7 @@ var sequelize = new Sequelize(config.database, config.username, config.password,
                                                                                       "idle": 10000
                                                                                     }
                                                                                 });
+var request = require('request');
 
 /*
 * Get available Integrations.
@@ -51,6 +52,44 @@ module.exports.getIntegrations = function(callback) {
       result.message = { integrations: integrations_to_be_returned };
       return callback(result);
 
+    });
+};
+
+/*
+* Sends a POST request to statuscake to verify provided credentials
+*/
+module.exports.authenticateStatusCakeAccount = function(cake_user, cake_token, callback) {
+
+    var result = {};
+    result.code = 500;
+    result.message = { errors: { all: 'Internal server error' } };
+
+    // Set the headers
+    var headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'API': cake_token,
+      'Username': cake_user
+    };
+
+    // Configure the request
+    var options = {
+        url: 'https://www.statuscake.com/App/Workfloor/API.Auth.php',
+        method: 'POST',
+        headers: headers,
+        form: {}
+    };
+
+    // Start the request
+    request(options, function (error, response, body) {
+        console.log("response is: ", response);
+        console.log("body is: ", body);
+        if (!error && response.statusCode === 200) {
+            // Print out the response body
+            console.log('Response: ' + body);
+            result.code = 200;
+            result.message = { statuscake: body };
+            callback(result);
+        }
     });
 };
 
