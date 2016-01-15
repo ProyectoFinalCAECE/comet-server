@@ -55,42 +55,119 @@ module.exports.getIntegrations = function(callback) {
     });
 };
 
-/*
-* Sends a POST request to statuscake to verify provided credentials
-*/
-module.exports.authenticateStatusCakeAccount = function(cake_user, cake_token, callback) {
+/**
+ * Performs an authentication request to StatusCake and evaluates the response.
+ * If successful, configures the integration. If not, returns an error.
+ *
+ * @param  {string}     cake_user
+ * @param  {string}     cake_token
+ * @param  {string}     name
+ * @param  {integer}    projectId
+ * @param  {integer}    channelId
+ * @param  {string}     validationToken
+ * @param  {User}       user
+ * @param  {integer}    integration_id
+ * @param  {Function}   callback
+ * @return {Function}   callback
+ */
+module.exports.configurateStatusCakeIntegration = function(cake_user, cake_token,
+  name, projectId, channelId, validationToken, user, integration_id, callback) {
+  var result = {};
+  result.code = 500;
+  result.message = { errors: { all: 'Internal server error' } };
 
-    var result = {};
-    result.code = 500;
-    result.message = { errors: { all: 'Internal server error' } };
+  authenticateStatusCakeAccount(cake_user, cake_token, function(res){
+    if(res.code !== 200)
+      return callback(res);
 
-    // Set the headers
-    var headers = {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'API': cake_token,
-      'Username': cake_user
-    };
+      var result = {};
+      result.code = 404;
+      result.message = { errors: { all: 'No se encontró ninguna Integración disponible.' } };
 
-    // Configure the request
-    var options = {
-        url: 'https://www.statuscake.com/App/Workfloor/API.Auth.php',
-        method: 'POST',
-        headers: headers,
-        form: {}
-    };
-
-    // Start the request
-    request(options, function (error, response, body) {
-        console.log("response is: ", response);
-        console.log("body is: ", body);
-        if (!error && response.statusCode === 200) {
-            // Print out the response body
-            console.log('Response: ' + body);
-            result.code = 200;
-            result.message = { statuscake: body };
-            callback(result);
+      //Looking for Project
+      user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', projectId, "B"], include: [{ model: models.Channel}]}).then(function(projects){
+        if (projects === undefined || projects.length === 0) {
+          result.code = 404;
+          result.message = { errors: { all: 'No se puede encontrar ningun proyecto con el id provisto.'}};
+          return callback(result);
         }
+
+        //If user is active at retrieved Project
+        if(projects[0].ProjectUser.active === false){
+          result.code = 403;
+          result.message = { errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}};
+          return callback(result);
+        } else {
+          //If user is the owner of the Project
+          if(projects[0].ProjectUser.isOwner === false){
+            result.code = 403;
+            result.message = { errors: { all: 'El usuario no puede realizar la operación solicitada.'}};
+            return callback(result);
+          } else {
+
+            //Looking for Integration among retrieved Project's Integrations.
+            projects[0].getIntegrations({ where: ['"ProjectIntegration"."uid" = ?', integration_id] }).then(function(integrations){
+              if (integrations === undefined || integrations.length === 0) {
+                result.code = 404;
+                result.message = { errors: { all: 'No se puede encontrar ninguna Integración con el id provisto.'}};
+                return callback(result);
+              }
+
+              //Looking for Channel among retrieved Project's Channels.
+              projects[0].getChannels({ where: ['"Channel"."id" = ?', channelId ] }).then(function(channels){
+
+                if (channels === undefined || channels.length === 0) {
+                  result.code = 404;
+                  result.message = { errors: { all: 'No se puede encontrar ningun Canal con el id provisto.'}};
+                  return callback(result);
+                }
+
+                //Checking if Tuple Project-Integration-Channel does not exist already.
+                models.StatusCakeIntegration.findAll({ where: ['"StatusCakeIntegration"."ProjectIntegrationUid" = ? AND "StatusCakeIntegration"."ChannelId" = ?',
+                                                    integration_id, channelId ] }).then(function(project_integrations){
+
+                    if(project_integrations !== undefined && project_integrations.length > 0){
+                      result.code = 401;
+                      result.message = { errors: { all: 'Ya hay una configuracion para el Proyecto, Integración y Canal provistos.'}};
+                      return callback(result);
+                    }
+
+                    //New StatusCakeIntegration instance.
+                    var statusCakeIntegration = models.StatusCakeIntegration.build({
+                      name: name,
+                      token: validationToken,
+                      active: true,
+                      cakeUser: cake_user,
+                      cakeToken: cake_token
+                    });
+
+                    //Adding Channel to StatusCakeIntegration instance.
+                    statusCakeIntegration.ChannelId = channels[0].id;
+
+                    //Adding ProjectIntegration to StatusCakeIntegration instance.
+                    statusCakeIntegration.ProjectIntegrationUid = integration_id;
+
+                    //Saving StatusCakeIntegration instance.
+                    statusCakeIntegration.save().then(function(){
+                      result.code = 200;
+                      result.message = { statusCakeIntegration: {
+                                                              id: statusCakeIntegration.id,
+                                                              name: statusCakeIntegration.name,
+                                                              active: statusCakeIntegration.active,
+                                                              token: statusCakeIntegration.token,
+                                                              channelId: statusCakeIntegration.ChannelId,
+                                                              ProjectIntegrationId: statusCakeIntegration.ProjectIntegrationUid
+                                                            }
+                                      };
+                      return callback(result);
+                    });
+                  });
+              });
+            });
+        }
+      }
     });
+  });
 };
 
 /*
@@ -170,9 +247,27 @@ module.exports.getActiveIntegrationsForProject = function(project_id, user, call
             //adding configurations details to Trello integration
             addTrelloDetailsToIntegrationsToBeReturned(integrations_to_be_returned, trelloDetails);
 
-            result.code = 200;
-            result.message = { integrations: integrations_to_be_returned };
-            return callback(result);
+            //looking for statuscake puid among the integrations obtained
+            var statuscakePuid = obtainStatusCakePuidFromIntegrationsToBeReturned(integrations_to_be_returned);
+
+            sequelize.query('SELECT "STI".id as "STIid", "STI".name as "STIname", "STI".token as "STItoken" ,' +
+                          ' "STI"."ChannelId" as "STIChannelId", "STI".active as "STIactive", ' +
+                          ' "STI"."createdAt" as "STIcreatedAt", "STI"."updatedAt" as "STIupdatedAt", ' +
+                          ' "STI"."ProjectIntegrationUid" as "STIProjectIntegrationUid" ' +
+                          ' FROM "StatusCakeIntegrations" AS "STI" ' +
+                          ' WHERE "STI"."ProjectIntegrationUid" = ?' +
+                          ' AND "STI".active = true',
+                            { type: sequelize.QueryTypes.SELECT,
+                              replacements: [statuscakePuid]})
+              .then(function(statusCakeDetails) {
+
+                //adding configurations details to StatusCake integration
+                addStatusCakeDetailsToIntegrationsToBeReturned(integrations_to_be_returned, statusCakeDetails);
+
+                result.code = 200;
+                result.message = { integrations: integrations_to_be_returned };
+                return callback(result);
+              });
           });
         });
       });
@@ -300,9 +395,12 @@ module.exports.getProjectIntegrationById = function(project_id, integration_id, 
               break;
             }
             case 'StatusCake': {
-              result.code = 200;
-              result.message = { integration: formatIntegrationForProjects(integrations[0]) };
-              return callback(result);
+              integrations[0].ProjectIntegration.getStatusCakeIntegrations().then(function(statuscake_integrations){
+                result.code = 200;
+                result.message = { integration: formatIntegrationForProjects(integrations[0], statuscake_integrations) };
+                return callback(result);
+              });
+              break;
             }
           }
         });
@@ -447,9 +545,9 @@ module.exports.createInstanceOfProjectIntegration = function(project_id, integra
                 });
                 break;
               }
-              case 'StatusCase': {
+              case 'StatusCake': {
                 result.code = 404;
-                result.message = { errors: { all: 'La integración requerida aún no puede ser configurada.'}};
+                result.message = { errors: { all: 'Por favor utilice el endpoint correspondiente para configurar una integracion con StatusCake.'}};
                 return callback(result);
               }
             }
@@ -574,10 +672,35 @@ module.exports.disableInstanceOfProjectIntegration = function(project_id, integr
                 });
                 break;
               }
-              case 'StatusCase': {
-                result.code = 404;
-                result.message = { errors: { all: 'La integración requerida aún no puede ser configurada.'}};
-                return callback(result);
+              case 'StatusCake': {
+                //Checking if Tuple Project-Integration-Channel does not exist already.
+                models.StatusCakeIntegration.findAll({ where: ['"StatusCakeIntegration"."ProjectIntegrationUid" = ? AND "StatusCakeIntegration"."ChannelId" = ?',
+                                                  integration_id, request_body.channelId ] }).then(function(project_integrations){
+
+                  if(project_integrations === undefined || project_integrations.length === 0){
+                    result.code = 401;
+                    result.message = { errors: { all: 'No se encontró una configuracion para el Proyecto, Integración y Canal provistos.'}};
+                    return callback(result);
+                  }
+
+                  project_integrations[0].active = false;
+
+                  //Saving StatusCakeIntegration instance.
+                  project_integrations[0].save().then(function(){
+                    result.code = 200;
+                    result.message = { statusCakeIntegration: {
+                                                            id: project_integrations[0].id,
+                                                            name: project_integrations[0].name,
+                                                            active: project_integrations[0].active,
+                                                            token: project_integrations[0].token,
+                                                            channelId: project_integrations[0].ChannelId,
+                                                            ProjectIntegrationId: project_integrations[0].ProjectIntegrationUid
+                                                          }
+                                    };
+                    return callback(result);
+                  });
+                });
+                break;
               }
             }
           });
@@ -742,10 +865,65 @@ module.exports.updateInstanceOfProjectIntegration = function(project_id, integra
                 });
                 break;
               }
-              case 'StatusCase': {
-                result.code = 404;
-                result.message = { errors: { all: 'La integración requerida aún no puede ser configurada.'}};
-                return callback(result);
+              case 'StatusCake': {
+                //Checking if Tuple Project-Integration-Channel does not exist already.
+                models.StatusCakeIntegration.findAll({ where: ['"StatusCakeIntegration"."ProjectIntegrationUid" = ? AND "StatusCakeIntegration"."ChannelId" = ?',
+                                                  integration_id, request_body.channelId ] }).then(function(project_integrations){
+
+                  if(project_integrations === undefined || project_integrations.length === 0){
+                    result.code = 401;
+                    result.message = { errors: { all: 'No se encontró una configuracion para el Proyecto, Integración y Canal provistos.'}};
+                    return callback(result);
+                  }
+
+                  //Updating name
+                  if(request_body.name &&
+                    request_body.name.length > 0){
+                        project_integrations[0].name = request_body.name;
+                  }
+
+                  //Updating token
+                  if(request_body.token &&
+                    request_body.token.length > 0){
+                        project_integrations[0].token = request_body.token;
+                  }
+
+                  //Updating active
+                  if(request_body.active){
+                        project_integrations[0].active = request_body.active;
+                  }
+
+                  //Updating Channel
+                  if(request_body.newChannelId){
+                    project_integrations[0].ChannelId = request_body.newChannelId;
+                  }
+
+                  //Updating cakeUser
+                  if(request_body.cakeUser){
+                    project_integrations[0].cakeUser = request_body.cakeUser;
+                  }
+
+                  //Updating cakeToken
+                  if(request_body.cakeToken){
+                    project_integrations[0].cakeToken = request_body.cakeToken;
+                  }
+
+                  //Saving StatusCakeIntegration instance.
+                  project_integrations[0].save().then(function(){
+                    result.code = 200;
+                    result.message = { statusCakeIntegration: {
+                                                            id: project_integrations[0].id,
+                                                            name: project_integrations[0].name,
+                                                            active: project_integrations[0].active,
+                                                            token: project_integrations[0].token,
+                                                            channelId: project_integrations[0].ChannelId,
+                                                            ProjectIntegrationId: project_integrations[0].ProjectIntegrationUid
+                                                          }
+                                    };
+                    return callback(result);
+                  });
+                });
+                break;
               }
             }
           });
@@ -824,6 +1002,16 @@ function obtainTrelloPuidFromIntegrationsToBeReturned(integrations_to_be_returne
   }
 }
 
+/*
+* Retrieve StatusCake Puid from integrations found.
+*/
+function obtainStatusCakePuidFromIntegrationsToBeReturned(integrations_to_be_returned){
+  for(var x in integrations_to_be_returned){
+    if(integrations_to_be_returned[x].name === "StatusCake"){
+      return integrations_to_be_returned[x].projectIntegrationId;
+    }
+  }
+}
 
 function addGithubDetailsToIntegrationsToBeReturned(integrations_to_be_returned, githubDetails){
   var configurations = [];
@@ -871,4 +1059,72 @@ function addTrelloDetailsToIntegrationsToBeReturned(integrations_to_be_returned,
       break;
     }
   }
+}
+
+function addStatusCakeDetailsToIntegrationsToBeReturned(integrations_to_be_returned, statusCakeDetails){
+  var configurations = [];
+
+  for(var x in statusCakeDetails){
+    configurations.push({
+      id: statusCakeDetails[x].STIid,
+      name: statusCakeDetails[x].STIname,
+      token: statusCakeDetails[x].STItoken,
+      active: statusCakeDetails[x].STIactive,
+      createdAt: statusCakeDetails[x].STIcreatedAt,
+      updatedAt: statusCakeDetails[x].STIupdatedAt,
+      ProjectIntegrationUid: statusCakeDetails[x].STIuid,
+      ChannelId: statusCakeDetails[x].STIChannelId,
+    });
+  }
+
+  for(var y in integrations_to_be_returned){
+    if(integrations_to_be_returned[y].name === "StatusCake"){
+      integrations_to_be_returned[y].configurations = configurations;
+      break;
+    }
+  }
+}
+
+/**
+ * Sends a POST request to StatusCake in order to authorize provided credentials
+ * @param  {string}   cake_user
+ * @param  {string}   cake_token
+ * @param  {Function} callback
+ * @return {Function} callback
+ */
+function authenticateStatusCakeAccount(cake_user, cake_token, callback){
+  var result = {};
+  result.code = 500;
+  result.message = { errors: { all: 'Internal server error' } };
+
+  // Set the headers
+  var headers = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'API': cake_token,
+    'Username': cake_user
+  };
+
+  // Configure the request
+  var options = {
+      url: 'https://www.statuscake.com/App/Workfloor/API.Auth.php',
+      method: 'POST',
+      headers: headers,
+      form: {}
+  };
+
+  // Start the request
+  request(options, function (error, response, body) {
+      console.log("body is: ", body);
+      if (!error && response.statusCode === 200) {
+          // Print out the response body
+          console.log('Response: ' + body);
+          result.code = 200;
+          result.message = { statuscake: body };
+          if(JSON.parse(body).Success === false){
+            console.log('error signing into StatusCake');
+            result.code = 404;
+          }
+      }
+      callback(result);
+  });
 }

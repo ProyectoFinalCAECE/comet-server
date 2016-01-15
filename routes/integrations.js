@@ -119,20 +119,6 @@ router.post('/:id', auth, integrationValidator.validCreateProjectIntegration, fu
   });
 });
 
-
-router.post('/statuscake/auth', auth, function(req, res) {
-  models.User.findById(req.payload._id).then(function(user) {
-    if(!user){
-      return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
-    }
-
-    integrationsService.authenticateStatusCakeAccount(req.body.cake_user,
-      req.body.cake_token, function(result){
-        return res.status(result.code).json(result.message);
-    });
-  });
-});
-
 /*
 * Update a specific XXX_Integration for ProjectId by ProjectIntegrationId.
 * Requires authentication header.
@@ -175,6 +161,25 @@ router.delete('/:id', auth, function(req, res) {
 
     integrationsService.disableInstanceOfProjectIntegration(req.primaryParams.project_id,
       req.params.id, user, req.body, function(result){
+        return res.status(result.code).json(result.message);
+    });
+  });
+});
+
+/*
+* Endpoint to configure statuscake integration
+*
+*
+*/
+router.post('/statuscake/auth/:id', auth, function(req, res) {
+  models.User.findById(req.payload._id).then(function(user) {
+    if(!user){
+      return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
+    }
+
+    integrationsService.configurateStatusCakeIntegration(req.body.cake_user,
+      req.body.cake_token, req.body.name, req.primaryParams.project_id,
+      req.body.channelId, req.body.validationToken, user, req.params.id, function(result){
         return res.status(result.code).json(result.message);
     });
   });
