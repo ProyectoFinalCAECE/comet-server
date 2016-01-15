@@ -21,6 +21,11 @@ module.exports.processHook = function(req, token, integrationId, callback) {
     case 2:
       processTrelloHook(req, token, callback);
       break;
+    case 3:
+        processStatusCakeHook(req, token, callback);
+        break;
+    default:
+      callback();
   }
 };
 
@@ -111,6 +116,54 @@ function processTrelloHook(req, token, callback) {
     result.status = 200;
     return callback(result);
   });
+}
+
+/*
+* StatusCake webhook request processing
+*/
+function processStatusCakeHook(req, token, callback) {
+  var result = {};
+  result.status = 500;
+
+  // search the project integration table by token
+  models.StatusCakeIntegration.findOne({ where: { token: token, active: true } }).then(function(integrationProject) {
+    if(integrationProject === null || integrationProject === undefined){
+      return callback(result);
+    }
+
+    // build the event message
+    var eventMessage = parseStatusCakeEvent(req.body);
+
+    // save
+    messagingService.storeStatusCakeMessage(JSON.stringify(eventMessage), integrationProject.ChannelId, integrationProject.id);
+
+    // broadcast
+    var message = {
+                    message: {
+                        text: JSON.stringify(eventMessage),
+                        type: 8,
+                        date: new Date().getTime(),
+                        integrationId: integrationProject.id
+                    }
+                  };
+
+    //looking for ProjectId of channel to broadcast notifications.
+    models.Channel.findById(integrationProject.ChannelId).then(function(channel){
+
+      //broadcast
+      socket.broadcastIntegrationMessage('Project_' + channel.ProjectId , integrationProject.ChannelId, message);
+
+      result.status = 200;
+      return callback(result);
+    });
+  });
+}
+
+/*
+* StatusCake event parsing
+*/
+function parseStatusCakeEvent(req){
+  return "Hardcoded message for StatusCake";
 }
 
 /*
