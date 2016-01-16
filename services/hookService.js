@@ -22,8 +22,8 @@ module.exports.processHook = function(req, token, integrationId, callback) {
       processTrelloHook(req, token, callback);
       break;
     case 3:
-        processStatusCakeHook(req, token, callback);
-        break;
+      processStatusCakeHook(req, token, callback);
+      break;
     default:
       callback();
   }
@@ -48,6 +48,12 @@ function processGitHubHook(req, token, callback) {
 
     // build the event message
     var eventMessage = parseGitHubEvent(eventType, req.body);
+
+    // message not parsed
+    if (eventMessage === null) {
+      result.status = 200;
+      return callback(result);
+    }
 
     // save
     messagingService.storeGithubMessage(JSON.stringify(eventMessage), integrationProject.ChannelId, integrationProject.id);
@@ -79,6 +85,7 @@ function processGitHubHook(req, token, callback) {
 */
 function processTrelloHook(req, token, callback) {
   var result = {};
+  result.status = 500;
 
   // search the project integration table by token
   models.TrelloIntegration.findOne({ where: { token: token, active: true } }).then(function(integrationProject) {
@@ -87,8 +94,15 @@ function processTrelloHook(req, token, callback) {
     }
 
     var eventType = req.body.action.type;
+
     // build the event message
     var eventMessage = parseTrelloEvent(eventType, req.body);
+
+    // message not parsed
+    if (eventMessage === null) {
+      result.status = 200;
+      return callback(result);
+    }
 
     // save
     messagingService.storeTrelloMessage(JSON.stringify(eventMessage), integrationProject.ChannelId, integrationProject.id);
@@ -271,26 +285,64 @@ function parseTrelloEvent(type, payload) {
 
   var message = {};
 
-  message.type = type;
+  switch (type) {
+    case 'createCard':
+    case 'deleteCard':
+    case 'commentCard':
+    case 'addMemberToCard':
+    case 'updateCard':
+    case 'createList':
+    case 'updateList':
 
-  if(payload.action.data.board){
-      message.board = payload.action.data.board.name;
-  }
+      message.type = type;
 
-  if(payload.action.data.list){
-      message.list = payload.action.data.list.name;
-  }
+      if (payload.action.data.board) {
+          message.board = payload.action.data.board;
+      }
 
-  if(payload.action.data.card){
-      message.card = payload.action.data.card.name;
-  }
+      if (payload.action.data.list) {
+          message.list = payload.action.data.list;
+      }
 
-  if(payload.action.memberCreator){
-      message.user = payload.action.memberCreator.username;
-  }
+      if (payload.action.data.card) {
+          message.card = payload.action.data.card;
+      }
 
-  if(payload.action.data.text){
-      message.text = payload.action.data.text;
+      if (payload.action.memberCreator) {
+          message.user = payload.action.memberCreator.username;
+      }
+
+      // for "addMemberXX" events
+      if (payload.action.member) {
+          message.member = payload.action.member;
+      }
+
+      if (payload.action.data.text) {
+          message.text = payload.action.data.text;
+      }
+
+      if (payload.action.old && payload.action.old.name) {
+          message.oldName = payload.action.old.name;
+      }
+
+      if (type === 'updateList') {
+        if (message.list.closed) {
+          message.type = 'archiveList';
+        }
+        else {
+          if (payload.action.old.name) {
+            message.type = 'renameList';
+          }
+          else {
+            // we only care for the archive and rename events on lists
+            message = null;
+          }
+        }
+      }
+
+      break;
+    default:
+      message = null;
   }
 
   return message;
