@@ -41,7 +41,8 @@
     "socketio-jwt":"4.3.2",
     "socket.io-redis":"0.1.4",
     "socket.io-emitter":"0.2.0",
-    "request":"2.67.0"
+    "request":"2.67.0",
+    "async":"1.5.2"
   },
   "devDependencies": {
     "bluebird": "^2.9.33",
