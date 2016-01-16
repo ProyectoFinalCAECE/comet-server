@@ -200,43 +200,61 @@ module.exports.getProjectChannelsUpdates = function(projectId, userId, callback)
   });
 };
 
-
-/*
-* Store Github message in db
-* @message_content
-*
-*/
+/**
+ * Store Github message in db
+ * @param  {string} message_content
+ * @param  {integer} channelId
+ * @param  {integer} integrationId
+ * @return void
+ */
 module.exports.storeGithubMessage = function(message_content, channelId, integrationId) {
 
       // create new Message instance
-      var message = models.Message.build({
-                                          content: message_content,
-                                          integrationId: integrationId,
-                                          MessageTypeId: 6,
-                                          ChannelId: channelId,
-                                          sentDateTimeUTC: new Date().getTime()
-                                        });
-      //saving message
-      message.save();
+      models.Message.build({
+        content: message_content,
+        integrationId: integrationId,
+        MessageTypeId: 6,
+        ChannelId: channelId,
+        sentDateTimeUTC: new Date().getTime()
+      }).save();
 };
 
-/*
-* Store Trello message in db
-* @message_content
-*
-*/
+/**
+ * Store Trello message in db
+ * @param  {string} message_content
+ * @param  {integer} channelId
+ * @param  {integer} integrationId
+ * @return void
+ */
 module.exports.storeTrelloMessage = function(message_content, channelId, integrationId) {
 
       // create new Message instance
-      var message = models.Message.build({
-                                          content: message_content,
-                                          integrationId: integrationId,
-                                          MessageTypeId: 7,
-                                          ChannelId: channelId,
-                                          sentDateTimeUTC: new Date().getTime()
-                                        });
-      //saving message
-      message.save();
+      models.Message.build({
+        content: message_content,
+        integrationId: integrationId,
+        MessageTypeId: 7,
+        ChannelId: channelId,
+        sentDateTimeUTC: new Date().getTime()
+      }).save();
+};
+
+/**
+ * Store StatusCake message in db
+ * @param  {string} message_content
+ * @param  {integer} channelId
+ * @param  {integer} integrationId
+ * @return void
+ */
+module.exports.storeStatusCakeMessage = function(message_content, channelId, integrationId) {
+
+      // create new Message instance
+      models.Message.build({
+        content: message_content,
+        integrationId: integrationId,
+        MessageTypeId: 8,
+        ChannelId: channelId,
+        sentDateTimeUTC: new Date().getTime()
+      }).save();
 };
 
 /*
