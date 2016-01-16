@@ -123,7 +123,9 @@ module.exports.configurateStatusCakeIntegration = function(cake_user, cake_token
                 }
 
                 //Checking if Tuple Project-Integration-Channel does not exist already.
-                models.StatusCakeIntegration.findAll({ where: ['"StatusCakeIntegration"."ProjectIntegrationUid" = ? AND "StatusCakeIntegration"."ChannelId" = ?',
+                models.StatusCakeIntegration.findAll({ where: ['"StatusCakeIntegration"."ProjectIntegrationUid" = ? ' +
+                                                                ' AND "StatusCakeIntegration"."ChannelId" = ?' +
+                                                                ' AND "StatusCakeIntegration"."active" = true',
                                                     integration_id, channelId ] }).then(function(project_integrations){
 
                     if(project_integrations !== undefined && project_integrations.length > 0){
@@ -464,7 +466,9 @@ module.exports.createInstanceOfProjectIntegration = function(project_id, integra
             switch (integrations[0].name) {
               case 'Github': {
                 //Checking if Tuple Project-Integration-Channel does not exist already.
-                models.GithubIntegration.findAll({ where: ['"GithubIntegration"."ProjectIntegrationUid" = ? AND "GithubIntegration"."ChannelId" = ?',
+                models.GithubIntegration.findAll({ where: ['"GithubIntegration"."ProjectIntegrationUid" = ? '+
+                                                            ' AND "GithubIntegration"."ChannelId" = ? ' +
+                                                            ' AND "GithubIntegration"."active" = true',
                                                   integration_id, request_body.channelId ] }).then(function(project_integrations){
 
                   if(project_integrations !== undefined && project_integrations.length > 0){
@@ -505,7 +509,9 @@ module.exports.createInstanceOfProjectIntegration = function(project_id, integra
               }
               case 'Trello': {
                 //Checking if Tuple Project-Integration-Channel does not exist already.
-                models.TrelloIntegration.findAll({ where: ['"TrelloIntegration"."ProjectIntegrationUid" = ? AND "TrelloIntegration"."ChannelId" = ?',
+                models.TrelloIntegration.findAll({ where: ['"TrelloIntegration"."ProjectIntegrationUid" = ? ' +
+                                                            ' AND "TrelloIntegration"."ChannelId" = ?' +
+                                                            ' AND "TrelloIntegration"."active" = true',
                                                   integration_id, request_body.channelId ] }).then(function(project_integrations){
 
                   if(project_integrations !== undefined && project_integrations.length > 0){
