@@ -177,9 +177,9 @@ router.post('/statuscake/auth/:id', auth, function(req, res) {
       return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
     }
 
-    integrationsService.configurateStatusCakeIntegration(req.body.cake_user,
-      req.body.cake_token, req.body.name, req.primaryParams.project_id,
-      req.body.channelId, req.body.validationToken, user, req.params.id, function(result){
+    integrationsService.configurateStatusCakeIntegration(req.body.cakeUser,
+      req.body.cakeToken, req.body.name, req.primaryParams.project_id,
+      req.body.channelId, req.body.token, user, req.params.id, function(result){
         return res.status(result.code).json(result.message);
     });
   });

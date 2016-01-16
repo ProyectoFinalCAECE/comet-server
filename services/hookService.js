@@ -164,6 +164,8 @@ function processStatusCakeHook(req, token, callback) {
 */
 function parseStatusCakeEvent(req){
   return "Hardcoded message for StatusCake";
+
+  //URL=http%3A%2F%2F4c57dc5d.ngrok.io&Token=e194b521c5b37e215f3deeb43cdc1da3&Name=n%20rok&StatusCode=404&Status=Down
 }
 
 /*
