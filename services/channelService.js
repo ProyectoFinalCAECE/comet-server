@@ -11,6 +11,7 @@ var Sequelize = require("sequelize");
 var env       = process.env.NODE_ENV || "development";
 var config    = require(__dirname + '/../config/sequelize.json')[env];
 var socket = require('../lib/socket');
+var async = require('async');
 
 /*
 * Create new Channel and and associates project members if provided.
@@ -226,6 +227,10 @@ module.exports.deleteChannel = function(project_id, channel_id, user, callback) 
     } else {
       //deleting channel
       channels[0].block(user.id);
+
+      //deactivating channel's integrations (async)
+      deactivateIntegrations(channels[0].id);
+
       channels[0].save().then(function(){
         result.code = 200;
         result.message = {};
@@ -260,6 +265,10 @@ module.exports.closeChannel = function(project_id, channel_id, user, callback) {
     } else {
       //deleting channel
       channels[0].close(user.id);
+
+      //deactivating channel's integrations (async)
+      deactivateIntegrations(channels[0].id);
+
       channels[0].save().then(function(){
 
         var data = {
@@ -282,6 +291,58 @@ module.exports.closeChannel = function(project_id, channel_id, user, callback) {
     }
   });
 };
+
+function deactivateIntegrations(channelId){
+
+  //deactivating GithubIntegrations
+  models.GithubIntegration.findAll({ where: ['"ChannelId" = ?', channelId]}).then(function(github_integrations){
+    if (github_integrations !== undefined || github_integrations.length > 0) {
+
+      //for each user, call saveUserToCache function.
+      async.each(github_integrations, deactivateIntegration, function(err){
+        if(err)
+          throw new Error(err);
+      });
+    }
+  });
+
+
+  //deactivating TrelloIntegrations
+  models.TrelloIntegration.findAll({ where: ['"ChannelId" = ?', channelId]}).then(function(trello_integrations){
+    if (trello_integrations !== undefined || trello_integrations.length > 0) {
+
+      //for each user, call saveUserToCache function.
+      async.each(trello_integrations, deactivateIntegration, function(err){
+        if(err)
+          throw new Error(err);
+      });
+    }
+  });
+  //deactivating StatusCake
+  models.StatusCakeIntegration.findAll({ where: ['"ChannelId" = ?', channelId]}).then(function(statuscake_integrations){
+    if (statuscake_integrations !== undefined || statuscake_integrations.length > 0) {
+
+      //for each user, call saveUserToCache function.
+      async.each(statuscake_integrations, deactivateIntegration, function(err){
+        if(err)
+          throw new Error(err);
+      });
+    }
+  });
+}
+
+/**
+ * deactivate provided integration
+ * @param  integration
+ * @param  Function callback
+ * @return Function callback
+ */
+function deactivateIntegration(integration, callback){
+  integration.active = false;
+  integration.save(function(){
+    callback();
+  });
+}
 
 /*
 *
@@ -341,7 +402,7 @@ module.exports.updateChannel = function(body, project_id, channel_id, user, call
       result.message = { errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}};
       return callback(result);
     }
-    
+
     if(channels[0].ChannelUser.active === false){
       result.code = 403;
       result.message = { errors: { all: 'El usuario no puede acceder al canal solicitado.'}};
