@@ -23,7 +23,7 @@ module.exports = function(sequelize, DataTypes) {
           Message.belongsTo(models.MessageType);
         },
         contentLength: function(){
-          return 500;
+          return content_length;
         }
       },
       indexes:[{
