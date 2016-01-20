@@ -20,15 +20,6 @@ var bodyParser = require('body-parser');
 
 require('./config/passport');
 
-var routes = require('./routes/index');
-var users  = require('./routes/users');
-var accounts  = require('./routes/accounts');
-var projects  = require('./routes/projects');
-var channels  = require('./routes/channels');
-var messages  = require('./routes/messages');
-var integrations  = require('./routes/integrations');
-var hooks  = require('./routes/hooks');
-
 var app = express();
 
 // view engine setup
@@ -47,18 +38,21 @@ var passPrimaryParams = function(req, res, next) {
 };
 
 // routes
-app.use('/', routes);
-app.use('/users/', users);
-app.use('/accounts/', accounts);
-app.use('/projects/', projects);
+app.use('/', require('./routes/index'));
+app.use('/users/', require('./routes/users'));
+app.use('/accounts/', require('./routes/accounts'));
+app.use('/projects/', require('./routes/projects'));
 app.use('/projects/:project_id/channels', passPrimaryParams);
-app.use('/projects/:project_id/channels', channels);
+app.use('/projects/:project_id/channels', require('./routes/channels'));
 app.use('/projects/:project_id/channels/:channel_id/messages', passPrimaryParams);
-app.use('/projects/:project_id/channels/:channel_id/messages', messages);
-app.use('/integrations', integrations);
-app.use('/hooks/', hooks);
+app.use('/projects/:project_id/channels/:channel_id/messages', require('./routes/messages'));
 app.use('/projects/:project_id/integrations', passPrimaryParams);
+
+var integrations  = require('./routes/integrations');
+
 app.use('/projects/:project_id/integrations', integrations);
+app.use('/integrations', integrations);
+app.use('/hooks/', require('./routes/hooks'));
 
 //static route to serve account profile images
 app.use('/static', express.static('avatar_images'));
