@@ -7,6 +7,7 @@
  */
 
 var express = require('express');
+var expressSanitizer = require('express-sanitizer');
 var path = require('path');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
@@ -28,6 +29,7 @@ app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
+app.use(expressSanitizer());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
@@ -53,6 +55,9 @@ var integrations  = require('./routes/integrations');
 app.use('/projects/:project_id/integrations', integrations);
 app.use('/integrations', integrations);
 app.use('/hooks/', require('./routes/hooks'));
+app.use('/search/projects/:project_id', passPrimaryParams);
+app.use('/search/projects/:project_id', require('./routes/search'));
+app.use('/search/projects/:project_id/channels/:channel_id/messages', passPrimaryParams);
 
 //static route to serve account profile images
 app.use('/static', express.static('avatar_images'));
