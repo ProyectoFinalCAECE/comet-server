@@ -28,10 +28,10 @@ var sequelize = new Sequelize(config.database, config.username, config.password,
  * searchs messages that contain provided text in db.
  * @param  {integer}   project_id
  * @param  {string}   text_to_search
- * @param  {User}   user
- * @param  {Function} callback
- * @param  {integer}   channel_id
- * @return {list}                  messages list
+ * @param  {User}    user
+ * @param  {Function}   callback
+ * @param  {integer}    channel_id
+ * @return {list}   messages list
  */
 module.exports.searchMessage = function(project_id, text_to_search, user, callback, channel_id) {
 
