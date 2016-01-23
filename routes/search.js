@@ -42,7 +42,7 @@ router.get('/messages', auth, searchValidator.validSearchMessageInProject, funct
  * @param  {Function} searchValidator.validSearchMessageInChannel
  * @param  {Function} callback
  */
-router.get('/messages/channels/:channel_id/messages', auth, searchValidator.validSearchMessageInChannel, function(req, res) {
+router.get('/messages/channels/:channel_id', auth, searchValidator.validSearchMessageInChannel, function(req, res) {
   models.User.findById(req.payload._id).then(function(user) {
     if(!user){
       return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
@@ -50,6 +50,24 @@ router.get('/messages/channels/:channel_id/messages', auth, searchValidator.vali
     searchService.searchMessage(req.primaryParams.project_id, req.params.q, user, function(result){
       return res.status(result.code).json(result.message);
     }, req.primaryParams.channel_id);
+  });
+});
+
+/**
+ * Endpoint to search for Users in a project.
+ * @param  {} '/users'
+ * @param  {} auth
+ * @param  {Function} searchValidator.validSearchUserInProject
+ * @param  {Function} callback
+ */
+router.get('/users', auth, searchValidator.validSearchUserInProject, function(req, res){
+  models.User.findById(req.payload._id).then(function(user) {
+    if(!user){
+      return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
+    }
+    searchService.searchUserInProject(req.primaryParams.project_id, req.query.q, user, function(result){
+      return res.status(result.code).json(result.message);
+    });
   });
 });
 

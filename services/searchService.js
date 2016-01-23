@@ -24,6 +24,14 @@ var sequelize = new Sequelize(config.database, config.username, config.password,
       }
     });
 
+var user_search_query = 'SELECT "U".id, "U".alias, "U"."firstName", "U"."lastName", "U".email' +
+                        ' FROM "Users" AS "U"' +
+                        ' WHERE "U".id IN (' +
+	                      '  SELECT "PU"."UserId" FROM "ProjectUsers" AS "PU" WHERE "PU"."ProjectId"= ? AND "PU".active = true' +
+	                      ' )' +
+                        ' AND "U".active = true' +
+                        ' AND to_tsvector("firstName"||\' \'||"email"||\' \'||"alias"||\' \'||"lastName") @@ to_tsquery(?)';
+
 /**
  * searchs messages that contain provided text in db.
  * @param  {integer}   project_id
@@ -35,4 +43,41 @@ var sequelize = new Sequelize(config.database, config.username, config.password,
  */
 module.exports.searchMessage = function(project_id, text_to_search, user, callback, channel_id) {
 
+};
+
+/**
+ * searchs Users whose email, username, firstname or last name matches that contain provided text in db.
+ * @param  {[type]}   project_id [description]
+ * @param  {[type]}   user_text  [description]
+ * @param  {[type]}   user       [description]
+ * @param  {Function} callback   [description]
+ * @return {[type]}              [description]
+ */
+module.exports.searchUserInProject = function(project_id, user_text, user, callback) {
+  var result = {};
+
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', project_id, "B"] }).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      result.code = 404;
+      result.message = { errors: { all: 'No se puede encontrar ningún proyecto con el id provisto.'}};
+      return callback(result);
+    }
+
+    if(projects[0].ProjectUser.active === false){
+      result.code = 403;
+      result.message = { errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}};
+      return callback(result);
+    } else {
+
+      //look for active users in project, that match the search parameter.
+      sequelize.query(user_search_query,
+                      { type: sequelize.QueryTypes.SELECT,
+                        replacements: [project_id, user_text]})
+      .then(function(usersSearchResult) {
+          result.code = 200;
+          result.message = { users: usersSearchResult };
+          return callback(result);
+        });
+    }
+  });
 };
