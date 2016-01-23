@@ -24,7 +24,7 @@ var sequelize = new Sequelize(config.database, config.username, config.password,
       }
     });
 
-var user_search_query = 'SELECT "U".id, "U".alias, "U"."firstName", "U"."lastName", "U".email' +
+var user_search_query = 'SELECT "U".id, "U".alias, "U"."firstName", "U"."lastName", "U".email, "U"."profilePicture"' +
                         ' FROM "Users" AS "U"' +
                         ' WHERE "U".id IN (' +
 	                      '  SELECT "PU"."UserId" FROM "ProjectUsers" AS "PU" WHERE "PU"."ProjectId"= ? AND "PU".active = true' +
