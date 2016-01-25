@@ -24,7 +24,7 @@
     "passport-local": "^1.0.0",
     "pg": "^4.4.1",
     "pg-hstore": "^2.3.2",
-    "sequelize": "^3.3.2",
+    "sequelize": "^3.18.0",
     "sequelize-cli": "^1.7.4",
     "serve-favicon": "~2.3.0",
     "avatar-generator":"1.0.6",

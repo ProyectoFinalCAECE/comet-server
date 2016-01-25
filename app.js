@@ -54,8 +54,8 @@ app.use('/projects/:project_id/integrations', integrations);
 app.use('/integrations', integrations);
 app.use('/hooks/', require('./routes/hooks'));
 app.use('/search/projects/:project_id', passPrimaryParams);
-app.use('/search/projects/:project_id', require('./routes/search'));
 app.use('/search/projects/:project_id/messages/channels/:channel_id', passPrimaryParams);
+app.use('/search/projects/:project_id', require('./routes/search'));
 
 //static route to serve account profile images
 app.use('/static', express.static('avatar_images'));
