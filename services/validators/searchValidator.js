@@ -56,7 +56,7 @@ module.exports.validSearchMessageInChannel = function(req, res, next) {
   if (!req.primaryParams.project_id || !validator.isNumeric(req.primaryParams.project_id))
     errors.project_id = 'Por favor ingrese el id de proyecto.';
 
-  if (!req.primaryParams.channel_id || !validator.isNumeric(req.primaryParams.channel_id))
+  if (!req.primaryParams.channel_id)
     errors.channel_id = 'Por favor ingrese el id de canal.';
 
   if(!req.query.q ||

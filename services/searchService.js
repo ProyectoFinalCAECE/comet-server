@@ -39,15 +39,41 @@ var user_search_query = 'SELECT "U".id, "U".alias, "U"."firstName", "U"."lastNam
                         ' AND to_tsvector("firstName"||\' \'||"email"||\' \'||"alias"||\' \'||"lastName") @@ to_tsquery(?)';
 
 /**
- * query to search for Channel's messages
+ * query to search for messages at common Channels
  * @type {String}
  */
-var messages_search_query = 'SELECT "M".id, "M".content, "M"."sentDateTimeUTC", "M"."UserId", "M"."MessageTypeId", "M"."ChannelId"' +
+var messages_search_common_channel_query = 'SELECT "M".id, "M".content, "M"."sentDateTimeUTC", "M"."UserId", "M"."MessageTypeId", "M"."ChannelId"' +
                             ' FROM "Messages" AS "M"' +
                             ' WHERE "M"."ChannelId" IN (:channel_ids) ' +
                             ' AND "M"."MessageTypeId" = 1 ' +
                             ' AND to_tsvector(\'spanish\', content) @@ to_tsquery(\'spanish\', :text) ' +
                             ' ORDER BY "M"."sentDateTimeUTC" DESC';
+
+/**
+ * query to search for messages at direct Channels
+ * @type {String}
+ */
+var messages_search_direct_channel_query = 'SELECT "PM".id, "PM".content, "PM".channel, "PM"."sentDateTimeUTC", "PM"."ProjectId", ' +
+                            '"PM"."OriginUserId", "PM"."DestinationUserId", "PM"."MessageTypeId"' +
+                            ' FROM "PrivateMessages" AS "PM"' +
+                            ' WHERE "PM"."MessageTypeId" = 1' +
+                            ' AND "PM"."ProjectId" = :project_id' +
+                            ' AND ("PM"."OriginUserId" = :origin_user_id OR "PM"."DestinationUserId" = :destination_user_id)' +
+                            ' AND to_tsvector(\'spanish\', content) @@ to_tsquery(\'spanish\', :text)' +
+                            ' ORDER BY "PM"."sentDateTimeUTC" DESC';
+
+/**
+ * query to search for messages at a single direct Channels
+ * @type {String}
+ */
+var messages_search_direct_single_channel_query = 'SELECT "PM".id, "PM".content, "PM".channel, "PM"."sentDateTimeUTC", "PM"."ProjectId", ' +
+                            ' "PM"."OriginUserId", "PM"."DestinationUserId", "PM"."MessageTypeId" ' +
+                            ' FROM "PrivateMessages" AS "PM" ' +
+                            ' WHERE "PM"."MessageTypeId" = 1 ' +
+                            ' AND "PM"."ProjectId" = :project_id ' +
+                            ' AND "PM".channel = :channel_name ' +
+                            ' AND to_tsvector(\'spanish\', content) @@ to_tsquery(\'spanish\', :text) ' +
+                            ' ORDER BY "PM"."sentDateTimeUTC" DESC';
 
 /**
  * searchs messages that contain provided text in db.
@@ -60,6 +86,14 @@ var messages_search_query = 'SELECT "M".id, "M".content, "M"."sentDateTimeUTC", 
  */
 module.exports.searchMessage = function(project_id, text_to_search, user, callback, channel_id) {
   var result = {};
+
+  result.message = {
+    project: {
+      channels: {
+
+      }
+    }
+  };
 
   user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', project_id, "B"] }).then(function(projects){
     if (projects === undefined || projects.length === 0) {
@@ -74,30 +108,81 @@ module.exports.searchMessage = function(project_id, text_to_search, user, callba
       return callback(result);
     } else {
 
-      getChannelsIdsToScan(projects[0], user, function(channels_ids){
+      //If parameter is not a number (and exists), it's a direct channel's name.
+      if(channel_id && isNaN(channel_id)){
 
-        if (channels_ids.length === 0){
-          result.code = 404;
-          result.message = { errors: { all: 'No se puede encontrar ningún canal con el id provisto.'}};
-          return callback(result);
-        }
-
-        //look for channel's messages that match the search parameter.
-        sequelize.query(messages_search_query,
+        //look for a single direct channel's messages that match the search parameter
+        sequelize.query(messages_search_direct_single_channel_query,
                         {
                           type: sequelize.QueryTypes.SELECT,
                           replacements: {
-                            channel_ids: channels_ids,
+                            project_id: project_id,
+                            channel_name: channel_id,
                             text: text_to_search
                           },
                             escapeValues: false
                         })
-        .then(function(textSearchResult) {
-            result.code = 200;
-            result.message = generateTextSearchResult(textSearchResult);
+        .then(function(textSearchResultDirect) {
+
+          result.code = 200;
+
+          //Adding search results to service response.
+          result.message.project.channels['direct'] = getDirectChannelBodyForTextSearchResult(textSearchResultDirect);
+
+          return callback(result);
+        });
+      } else {
+        getChannelsIdsToScan(projects[0], user, function(channels_ids){
+
+          if (channels_ids.length === 0){
+            result.code = 404;
+            result.message = { errors: { all: 'No se puede encontrar ningún canal con el id provisto.'}};
             return callback(result);
-          });
-      }, channel_id);
+          }
+
+          //look for channel's messages that match the search parameter.
+          sequelize.query(messages_search_common_channel_query,
+                          {
+                            type: sequelize.QueryTypes.SELECT,
+                            replacements: {
+                              channel_ids: channels_ids,
+                              text: text_to_search
+                            },
+                              escapeValues: false
+                          })
+          .then(function(textSearchResult) {
+
+              result.code = 200;
+              //Adding search results to service response.
+              result.message.project.channels['common'] = getChannelBodyForTextSearchResult(textSearchResult);
+
+              if(channels_ids.length > 1){
+
+                //Must look for messages that match the search parameter in direct channels too.
+                sequelize.query(messages_search_direct_channel_query,
+                                {
+                                  type: sequelize.QueryTypes.SELECT,
+                                  replacements: {
+                                    project_id: project_id,
+                                    origin_user_id: user.id,
+                                    destination_user_id: user.id,
+                                    text: text_to_search
+                                  },
+                                    escapeValues: false
+                                })
+                .then(function(textSearchResultDirect) {
+
+                  //Adding search results to service response.
+                  result.message.project.channels['direct'] = getDirectChannelBodyForTextSearchResult(textSearchResultDirect);
+
+                  return callback(result);
+                });
+              } else {
+                return callback(result);
+              }
+            });
+        }, channel_id);
+      }
     }
   });
 };
@@ -248,20 +333,7 @@ function getChannelsIdsToScan(project, user, callback, channel_id){
 }
 
 /**
- * Create text search service response body.
- * @param  {Array} resultsSet
- * @return {Json}
- */
-function generateTextSearchResult(resultsSet){
-  return {
-    project: {
-      channels:getChannelBodyForTextSearchResult(resultsSet)
-    }
-  };
-}
-
-/**
- * Create channels collection for text search service response body.
+ * Create common channels collection for text search service response body.
  * @param  {Array} resultsSet
  * @return {Json}
  */
@@ -269,7 +341,7 @@ function getChannelBodyForTextSearchResult(resultsSet){
   var channels = [];
   if(resultsSet.length > 0){
     for(var x in resultsSet){
-      var current_channel = retrieveChannelFromArray(channels, resultsSet[x].ChannelId);
+      var current_channel = retrieveCommonChannelFromArray(channels, resultsSet[x].ChannelId);
       current_channel.messages.push({
                                       id: resultsSet[x].id,
                                       text: resultsSet[x].content,
@@ -285,13 +357,40 @@ function getChannelBodyForTextSearchResult(resultsSet){
 }
 
 /**
- * Looks for channel with provided ID among already existent channels in array.
+ * Create direct channels collection for text search service response body.
+ * @param  {Array} resultsSet
+ * @return {Json}
+ */
+function getDirectChannelBodyForTextSearchResult(resultsSet){
+  var directs = [];
+  if(resultsSet.length > 0){
+    for(var x in resultsSet){
+      var current_direct = retrieveDirectChannelFromArray(directs, resultsSet[x].channel);
+      current_direct.messages.push({
+                                      id: resultsSet[x].id,
+                                      content: resultsSet[x].content,
+                                      OriginUserId: resultsSet[x].OriginUserId,
+                                      DestinationUserId: resultsSet[x].DestinationUserId,
+                                      ProjectId: resultsSet[x].ProjectId,
+                                      MessageTypeId: resultsSet[x].MessageTypeId,
+                                      channel: resultsSet[x].channel,
+                                      sentDateTimeUTC: resultsSet[x].sentDateTimeUTC
+                                    });
+
+      directs.push(current_direct);
+    }
+  }
+  return directs;
+}
+
+/**
+ * Looks for channel with provided ID among already existent common channels in array.
  * If not found, creates a new structure for the channel id.
  * @param  {Array} channels
  * @param  {Integer} channelId
  * @return {Hash}
  */
-function retrieveChannelFromArray(channels, channelId){
+function retrieveCommonChannelFromArray(channels, channelId){
     var index = arrayObjectIndexOf(channels, channelId, "id");
     if(index > -1){
       return channels.splice(index, 1)[0];
@@ -301,6 +400,25 @@ function retrieveChannelFromArray(channels, channelId){
         messages: []
       };
     }
+}
+
+/**
+ * Looks for channel with provided name among already existent direct channels in array.
+ * If not found, creates a new structure for the channel name.
+ * @param  {Array} channels
+ * @param  {String} channelName
+ * @return {Hash}
+ */
+function retrieveDirectChannelFromArray(channels, channelName){
+  var index = arrayObjectIndexOf(channels, channelName, "id");
+  if(index > -1){
+    return channels.splice(index, 1)[0];
+  } else {
+    return {
+      id: channelName,
+      messages: []
+    };
+  }
 }
 
 /**
