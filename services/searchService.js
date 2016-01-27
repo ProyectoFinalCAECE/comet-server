@@ -111,6 +111,11 @@ module.exports.searchMessage = function(project_id, text_to_search, user, callba
       //If parameter is not a number (and exists), it's a direct channel's name.
       if(channel_id && isNaN(channel_id)){
 
+        if (!userBelongsToDirectChannel(user.id, channel_id)){
+          result.code = 404;
+          result.message = { errors: { all: 'No se puede encontrar ningún canal con el id provisto.'}};
+          return callback(result);
+        }
         //look for a single direct channel's messages that match the search parameter
         sequelize.query(messages_search_direct_single_channel_query,
                         {
@@ -224,6 +229,15 @@ module.exports.searchUserInProject = function(project_id, user_text, user, callb
   });
 };
 
+/**
+ * Determines if a user belongs to a provided Direct channel
+ * @param  {Integer} user_id
+ * @param  {String} channel_name
+ * @return {Boolean}
+ */
+function userBelongsToDirectChannel(user_id, channel_name){
+  return (channel_name.split("_").indexOf(user_id.toString()) > -1);
+}
 /*
 *Given a set of Users, returns the one whose id is equal to the provided one
 *
