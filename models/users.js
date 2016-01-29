@@ -24,14 +24,15 @@ module.exports = function(sequelize, DataTypes) {
     email: { type: DataTypes.STRING, unique: true, validate: { isEmail: true } },
     hash: { type: DataTypes.STRING },
     salt: { type: DataTypes.STRING },
-    lastName: { type: DataTypes.STRING },
-    firstName: { type: DataTypes.STRING },
-    alias: { type: DataTypes.STRING },
+    lastName: { type: DataTypes.STRING(30) },
+    firstName: { type: DataTypes.STRING(20) },
+    alias: { type: DataTypes.STRING(50) },
     profilePicture: { type: DataTypes.STRING, allowNull: true },
     confirmed: { type: DataTypes.BOOLEAN, defaultValue: false },
     isAdministrator: { type: DataTypes.BOOLEAN, defaultValue: false },
     active: { type: DataTypes.BOOLEAN, defaultValue: true },
-    severedAt: { type: DataTypes.DATE, allowNull: true }
+    severedAt: { type: DataTypes.DATE, allowNull: true },
+    searchable_text: {type: DataTypes.STRING(512), allowNull: true}
   }, {
     instanceMethods: {
       setPassword: function(password){
@@ -62,6 +63,13 @@ module.exports = function(sequelize, DataTypes) {
 
         //setting alias
         this.alias = this.firstName.toLowerCase() + this.lastName.toLowerCase();
+
+        //creating searchable text
+        this.searchable_text =
+          this.firstName+' '+
+          this.lastName+' '+
+          this.alias+' '+
+          this.email.slice(0,this.email.indexOf('@'));
 
         var random = Math.random();
 
@@ -102,6 +110,10 @@ module.exports = function(sequelize, DataTypes) {
         name: 'user_mail_idx',
         method: 'BTREE',
         fields: ['email']
+      },{
+        name: 'user_fulltextsearch_idx',
+        fields: [sequelize.fn('to_tsvector', "spanish", sequelize.literal("searchable_text"))],
+        using: 'GIN'
       }]
     }
   );
