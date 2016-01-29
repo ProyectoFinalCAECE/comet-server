@@ -28,4 +28,16 @@ router.get('/', auth, function(req, res) {
   });
 });
 
+/**
+ * Retrieves direct or common channel's messages by id, and set of side messages too.
+ * @param  {Integer} '/:id'
+ * @param  {Function} auth
+ * @return {List}
+ */
+router.get('/:id', auth, function(req, res) {
+  messagingService.retrieveMessagesById(req.params.id, req.query.limit, req.query.direction, function(result){
+    return res.status(result.code).json(result.message);
+  }, req.query.isDirect);
+});
+
 module.exports = router;
