@@ -25,6 +25,52 @@ var sequelize = new Sequelize(config.database, config.username, config.password,
                                                                                     }
                                                                                 });
 
+/**
+ * query to retrieve forwards messages from message with provided id on a common channel
+ * @type {String}
+ */
+var common_channel_messages_forwards = ' SELECT "M".* ' +
+                                        ' FROM "Messages" AS "M"' +
+                                        ' WHERE "M".id > :message_id' +
+                                        ' AND "M"."ChannelId" = :channel_id' +
+                                        ' ORDER BY "M"."sentDateTimeUTC" ASC' +
+                                        ' LIMIT :limit;';
+
+/**
+* query to retrieve backwards messages from message with provided id on a common channel
+* @type {String}
+*/
+var common_channel_messages_backwards = ' SELECT "M".* ' +
+                                        ' FROM "Messages" AS "M"' +
+                                        ' WHERE "M".id < :message_id' +
+                                        ' AND "M"."ChannelId" = :channel_id' +
+                                        ' ORDER BY "M"."sentDateTimeUTC" DESC' +
+                                        ' LIMIT :limit;';
+
+/**
+ * query to retrieve forwards messages from message with provided id on a direct channel
+ * @type {String}
+ */
+var direct_channel_messages_forwards = 'SELECT "PM".*' +
+                                        ' FROM "PrivateMessages" AS "PM"' +
+                                        ' WHERE "PM".id > :message_id' +
+                                        ' AND "PM".channel = :channel_id' +
+                                        ' AND "PM"."ProjectId" = :project_id' +
+                                        ' ORDER BY "PM"."sentDateTimeUTC" ASC' +
+                                        ' LIMIT :limit;';
+
+/**
+* query to retrieve forwards messages from message with provided id on a direct channel
+* @type {String}
+*/
+var direct_channel_messages_backwards = 'SELECT "PM".*' +
+                                        ' FROM "PrivateMessages" AS "PM"' +
+                                        ' WHERE "PM".id < :message_id' +
+                                        ' AND "PM".channel = :channel_id' +
+                                        ' AND "PM"."ProjectId" = :project_id' +
+                                        ' ORDER BY "PM"."sentDateTimeUTC" ASC' +
+                                        ' LIMIT :limit;';
+
 //Max project name and description text lengths
 //should be consts but it's use is not allowed under strict mode... yet.
 //var NameLenght = 40;
@@ -257,6 +303,102 @@ module.exports.storeStatusCakeMessage = function(message_content, channelId, int
       }).save();
 };
 
+module.exports.retrieveMessagesById = function(message_id, limit, direction,
+  channel_id, project_id, callback) {
+
+  var result = {};
+
+  //Setting default limit.
+  if(!limit){
+    limit = 10;
+  }
+
+  if(!direction){
+    direction = "forwards";
+  }
+
+  if(isNaN(channel_id)){
+
+    if(direction === "forwards"){
+      sequelize.query(direct_channel_messages_forwards,
+                      {
+                        type: sequelize.QueryTypes.SELECT,
+                        replacements: {
+                          message_id: message_id,
+                          limit: limit,
+                          channel_id: channel_id,
+                          project_id: project_id
+                        },
+                          escapeValues: false
+                      })
+      .then(function(messagesResult) {
+        result.code = 200;
+        result.message = {
+                          messages: formatMessagesForRetrievalById(messagesResult)
+                        };
+        return callback(result);
+      });
+    } else {
+      sequelize.query(direct_channel_messages_backwards,
+                      {
+                        type: sequelize.QueryTypes.SELECT,
+                        replacements: {
+                          message_id: message_id,
+                          limit: limit,
+                          channel_id: channel_id,
+                          project_id: project_id
+                        },
+                          escapeValues: false
+                      })
+      .then(function(messagesResult) {
+        result.code = 200;
+        result.message = {
+                          messages: formatMessagesForRetrievalById(messagesResult)
+                        };
+        return callback(result);
+      });
+    }
+  } else {
+      if(direction === "forwards"){
+
+        sequelize.query(common_channel_messages_forwards,
+                        {
+                          type: sequelize.QueryTypes.SELECT,
+                          replacements: {
+                            message_id: message_id,
+                            limit: limit,
+                            channel_id: channel_id
+                          },
+                            escapeValues: false
+                        })
+        .then(function(messagesResult) {
+          result.code = 200;
+          result.message = {
+                            messages: formatMessagesForRetrievalById(messagesResult)
+                          };
+          return callback(result);
+        });
+      } else {
+        sequelize.query(common_channel_messages_backwards,
+                        {
+                          type: sequelize.QueryTypes.SELECT,
+                          replacements: {
+                            message_id: message_id,
+                            limit: limit,
+                            channel_id: channel_id
+                          },
+                            escapeValues: false
+                        })
+        .then(function(messagesResult) {
+          result.code = 200;
+          result.message = {
+                            messages: formatMessagesForRetrievalById(messagesResult)
+                          };
+          return callback(result);
+        });
+      }
+    }
+};
 /*
 * Formats and orders messages to be returned by the service
 *
@@ -288,6 +430,47 @@ function formatMessages(messages){
                                   user: messages[y].OriginUserId,
                                   destinationUser: messages[y].DestinationUserId,
                                   type: messages[y].MessageType.id,
+                                  date: messages[y].sentDateTimeUTC,
+                                  integrationId: messages[y].integrationId
+                                }
+                              };
+    }
+    messages_to_be_returned.push(message);
+  }
+  return messages_to_be_returned;
+}
+
+/*
+* Formats and orders messages to be returned by the service
+*
+*/
+function formatMessagesForRetrievalById(messages){
+  var messages_to_be_returned = [];
+  if (messages === undefined || messages.length === 0) {
+    return messages_to_be_returned;
+  }
+
+  var y;
+  for (y in messages) {
+    var message = {};
+    if(messages[y].link !== undefined){
+      message = { message: {
+                                  id: messages[y].id,
+                                  text: messages[y].content,
+                                  link: messages[y].link || "",
+                                  user: messages[y].UserId,
+                                  type: messages[y].MessageTypeId,
+                                  date: messages[y].sentDateTimeUTC,
+                                  integrationId: messages[y].integrationId
+                                }
+                              };
+    }else{
+      message = { message: {
+                                  id: messages[y].id,
+                                  text: messages[y].content,
+                                  user: messages[y].OriginUserId,
+                                  destinationUser: messages[y].DestinationUserId,
+                                  type: messages[y].MessageTypeId,
                                   date: messages[y].sentDateTimeUTC,
                                   integrationId: messages[y].integrationId
                                 }
