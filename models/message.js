@@ -30,6 +30,10 @@ module.exports = function(sequelize, DataTypes) {
         name: 'message_channel_idx',
         method: 'BTREE',
         fields: ['ChannelId']
+      },{
+        name: 'message_fulltextsearch_idx',
+        fields: [sequelize.fn('to_tsvector', "spanish", sequelize.literal("content"))],
+        using: 'GIST'
       }]
   });
 
