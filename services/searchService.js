@@ -36,7 +36,7 @@ var user_search_query = 'SELECT "U".id, "U".alias, "U"."firstName", "U"."lastNam
 	                      '  SELECT "PU"."UserId" FROM "ProjectUsers" AS "PU" WHERE "PU"."ProjectId"= ? AND "PU".active = true' +
 	                      ' )' +
                         ' AND "U".active = true' +
-                        ' AND to_tsvector("firstName"||\' \'||"email"||\' \'||"alias"||\' \'||"lastName") @@ to_tsquery(?)';
+                        ' AND to_tsvector("searchable_text") @@ to_tsquery(?)';
 
 /**
  * query to search for messages at common Channels
