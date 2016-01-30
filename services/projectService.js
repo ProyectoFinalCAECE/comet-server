@@ -12,6 +12,7 @@ var validator = require('validator');
 var jwt = require('jsonwebtoken');
 var site_config = require('../config/site_config.json');
 var socket = require('../lib/socket');
+var winston = require('winston');
 
 //Max project name and description text lengths
 //should be consts but it's use is not allowed under strict mode... yet.
@@ -605,7 +606,7 @@ function sendInvitations(addresses, project_name, project_id, owner_name){
                                                                                   project_id)
                                                 );
       } else {
-        console.log('discarding: ' + addresses[x].address);
+        winston.info('discarding: ' + addresses[x].address);
       }
     }
   }

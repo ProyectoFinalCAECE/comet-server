@@ -9,6 +9,7 @@
 var models  = require('../models');
 var messagingService = require('../services/messagingService');
 var socket = require('../lib/socket');
+var winston = require('winston');
 
 /*
 * webhook request processing
@@ -177,8 +178,8 @@ function processStatusCakeHook(req, token, callback) {
 * StatusCake event parsing
 */
 function parseStatusCakeEvent(req_body){
-  console.log("into parseStatusCakeEvent");
-  console.log("req_body: ", req_body);
+  winston.info("into parseStatusCakeEvent");
+  winston.info("req_body: ", req_body);
   return {
     type: req_body.Status,
     resource: req_body.URL,

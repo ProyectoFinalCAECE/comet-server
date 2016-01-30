@@ -13,6 +13,7 @@ var validator = require("email-validator");
 var router  = express.Router();
 var accountService  = require('../services/accountService');
 var multer  = require('multer');
+var winston = require('winston');
 
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -312,12 +313,12 @@ router.post('/image', auth, upload.single('profilePicture'), function(req, res) 
                           });
           });
         }, function (err) {
-            console.log(err);
+            winston.info(err);
             return res.status(500).json({ message: 'Error procesando la imagen. Intente nuevamente más tarde.'});
           }
         );
       }, function (err) {
-          console.log(err);
+          winston.info(err);
           return res.status(500).json({ message: 'Error procesando la imagen. Intente nuevamente más tarde.'});
         }
       );

@@ -8,6 +8,7 @@
 var express = require('express');
 var hookService  = require('../services/hookService');
 var router  = express.Router();
+var winston = require('winston');
 /*
 *
 */
@@ -22,7 +23,7 @@ router.post('/:token', function(req, res, next) {
 
   }
   catch (e) {
-    console.log('##### HOOK error #####', e);
+    winston.info('##### HOOK error #####', e);
     return res.status(500).end();
   }
 });
@@ -32,7 +33,7 @@ router.get('/:token', function(req, res, next) {
       return res.status(200).end();
   }
   catch (e) {
-    console.log('##### HOOK error #####', e);
+    winston.info('##### HOOK error #####', e);
     return res.status(500).end();
   }
 });

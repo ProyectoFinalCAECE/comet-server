@@ -25,6 +25,7 @@ var sequelize = new Sequelize(config.database, config.username, config.password,
                                                                                     }
                                                                                 });
 var request = require('request');
+var winston = require('winston');
 
 /*
 * Get available Integrations.
@@ -1118,14 +1119,14 @@ function authenticateStatusCakeAccount(cake_user, cake_token, callback){
 
   // Start the request
   request(options, function (error, response, body) {
-      console.log("body is: ", body);
+      winston.info("body is: ", body);
       if (!error && response.statusCode === 200) {
           // Print out the response body
-          console.log('Response: ' + body);
+          winston.info('Response: ' + body);
           result.code = 200;
           result.message = { statuscake: body };
           if(JSON.parse(body).Success === false){
-            console.log('error signing into StatusCake');
+            winston.info('error signing into StatusCake');
             result.code = 404;
           }
       }

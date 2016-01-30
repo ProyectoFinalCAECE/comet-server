@@ -14,6 +14,7 @@ var jwt = require('express-jwt');
 var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 var passport = require('passport');
 var validator = require("email-validator");
+var winston = require('winston');
 
 /*
 * Logs in an User with provided credentials and returns a session token.
@@ -51,7 +52,7 @@ router.post('/login', function(req, res, next) {
   // login using passport
   passport.authenticate('local', function (err, user, info) {
     if (err) {
-      console.log(err);
+      winston.info(err);
       return next (err);
     }
 

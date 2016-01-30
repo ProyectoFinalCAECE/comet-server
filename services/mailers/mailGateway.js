@@ -9,6 +9,7 @@
 var nodemailer = require('nodemailer');
 var mailer_config = require('../../config/mailer.json');
 var site_config = require('../../config/site_config.json');
+var winston = require('winston');
 
 /*
 * Sends mail basing on the options retrieved from the mailer_config file (config/mailer.json) and the provided parameters.
@@ -40,11 +41,11 @@ module.exports.genericMailer = function(receiver, subject, text, html){
 
     transporter.sendMail(mailOptions, function(error, info){
       if(error){
-        return console.log(error);
+        return winston.info(error);
       }
-        console.log('Message sent: ' + info.response);
+        winston.info('Message sent: ' + info.response);
       });
   } else {
-    console.log('Mails not enabled by config file.');
+    winston.info('Mails not enabled by config file.');
   }
 };
