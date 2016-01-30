@@ -1,6 +1,7 @@
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var models  = require('../models');
+var winston = require('winston');
 
 // login using Passport - Local Strategy
 // reads request's parameters values
@@ -35,7 +36,7 @@ passport.use(new LocalStrategy({
       return done(null, user);
 
     }).catch(function(err) {
-        console.log('error at passport login:' + err);
+        winston.info('error at passport login:' + err);
         return done(err);
     });
   }

@@ -24,6 +24,7 @@ var sequelize = new Sequelize(config.database, config.username, config.password,
                                                                                       "idle": 10000
                                                                                     }
                                                                                 });
+var winston = require('winston');
 
 /**
  * query to retrieve forwards messages from message with provided id on a common channel
@@ -218,12 +219,12 @@ module.exports.getProjectChannelsUpdates = function(projectId, userId, callback)
                     { type: sequelize.QueryTypes.SELECT,
                       replacements: [userId, projectId, disconnectedAt]})
     .then(function(channel_with_updates) {
-      console.log("channel_with_updates is: " + JSON.stringify(channel_with_updates));
+      winston.info("channel_with_updates is: " + JSON.stringify(channel_with_updates));
       var x;
       for(x in channel_with_updates){
         result.channels_with_updates.push({'id':channel_with_updates[x].ChannelId});
       }
-      console.log("result is: " + JSON.stringify(result));
+      winston.info("result is: " + JSON.stringify(result));
 
       //looking for direct messages sent to project's users after last connection date.
       sequelize.query('SELECT DISTINCT "OriginUserId" ' +
@@ -234,12 +235,12 @@ module.exports.getProjectChannelsUpdates = function(projectId, userId, callback)
                       { type: sequelize.QueryTypes.SELECT,
                         replacements: [userId, projectId, disconnectedAt]})
       .then(function(users_with_updates) {
-        console.log("users_with_updates is: " + JSON.stringify(users_with_updates));
+        winston.info("users_with_updates is: " + JSON.stringify(users_with_updates));
         var x;
         for(x in users_with_updates){
           result.users_with_updates.push({'id':users_with_updates[x].OriginUserId});
         }
-        console.log("result is: " + JSON.stringify(result));
+        winston.info("result is: " + JSON.stringify(result));
         return callback(result);
       });
     });

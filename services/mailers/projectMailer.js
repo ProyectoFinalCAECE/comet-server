@@ -10,6 +10,7 @@ var mailGateway = require('../mailers/mailGateway');
 var project_invitation_mailer_template_dir = path.join(__dirname, '../..', '/views/templates/project_invitation_email');
 var site_config = require('../../config/site_config.json');
 var EmailTemplate = require('email-templates').EmailTemplate;
+var winston = require('winston');
 
  /*
  * Sends Invitation to Project mail to provided email accounts.
@@ -27,7 +28,7 @@ var EmailTemplate = require('email-templates').EmailTemplate;
 
    project_invitation_mailer_template.render(locals, function (err, results) {
      if (err) {
-       console.log(err);
+       winston.info(err);
        return err;
      }
 

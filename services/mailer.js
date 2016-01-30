@@ -18,6 +18,7 @@ var goodbye_mailer_template_dir = path.join(__dirname, '..', '/views/templates/g
 var password_recovery_mailer_template_dir = path.join(__dirname, '..', '/views/templates/password_recovery_email');
 var account_recovery_mailer_template_dir = path.join(__dirname, '..', '/views/templates/account_recovery_email');
 var welcome__and_account_confirmation_mailer_template_dir = path.join(__dirname, '..', '/views/templates/welcome_and_account_confirmation_email');
+var winston = require('winston');
 
 /*
 * Sends Welcome and account confirmation email to provided email account, with expirable token.
@@ -34,7 +35,7 @@ module.exports.sendWelcomeAndAccountConfirmationMail = function(receiver, token)
 
   welcome__and_account_confirmation_mailer_template.render(locals, function (err, results) {
     if (err) {
-      console.log(err);
+      winston.info(err);
       return err;
     }
 
@@ -59,7 +60,7 @@ module.exports.sendGoodbyeMail = function(receiver) {
 
   goodbye_mailer_template.render(locals, function (err, results) {
     if (err) {
-      console.log(err);
+      winston.info(err);
       return err;
     }
 
@@ -85,7 +86,7 @@ module.exports.sendPasswordRecoveryMail = function(receiver, token) {
 
   password_recovery_mailer_template.render(locals, function (err, results) {
     if (err) {
-      console.log(err);
+      winston.info(err);
       return err;
     }
 
@@ -111,7 +112,7 @@ module.exports.sendAccountConfirmationMail = function(receiver, token) {
 
   account_confirmation_mailer_template.render(locals, function (err, results) {
     if (err) {
-      console.log(err);
+      winston.info(err);
       return err;
     }
 
@@ -137,7 +138,7 @@ module.exports.sendAccountRecoveryMail = function(receiver, token) {
 
   account_recovery_mailer_template.render(locals, function (err, results) {
     if (err) {
-      console.log(err);
+      winston.info(err);
       return err;
     }
 
@@ -179,11 +180,11 @@ function genericMailer(receiver, subject, text, html){
         };
         transporter.sendMail(mailOptions, function(error, info){
           if(error){
-            return console.log(error);
+            return winston.info(error);
           }
-          console.log('Message sent: ' + info.response);
+          winston.info('Message sent: ' + info.response);
         });
     } else {
-      console.log('Mails not enabled by config file.');
+      winston.info('Mails not enabled by config file.');
     }
 }
