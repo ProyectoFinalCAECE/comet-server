@@ -29,7 +29,8 @@ router.get('/messages', auth, searchValidator.validSearchMessageInProject, funct
     if(!user){
       return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
     }
-    searchService.searchMessage(req.primaryParams.project_id, req.query.q, user, function(result){
+    searchService.searchMessage(req.primaryParams.project_id, req.query.q, user,
+      req.query.limit, req.query.last_id, function(result){
       return res.status(result.code).json(result.message);
     });
   });
@@ -47,7 +48,8 @@ router.get('/messages/channels/:channel_id', auth, searchValidator.validSearchMe
     if(!user){
       return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
     }
-    searchService.searchMessage(req.primaryParams.project_id, req.query.q, user, function(result){
+    searchService.searchMessage(req.primaryParams.project_id, req.query.q, user,
+      req.query.limit, req.query.last_id, function(result){
       return res.status(result.code).json(result.message);
     }, req.primaryParams.channel_id);
   });

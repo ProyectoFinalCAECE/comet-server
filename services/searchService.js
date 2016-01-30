@@ -39,7 +39,7 @@ var user_search_query = 'SELECT "U".id, "U".alias, "U"."firstName", "U"."lastNam
                         ' AND to_tsvector("searchable_text") @@ to_tsquery(?)';
 
 /**
- * query to search for messages at common Channels
+ * query to search for messages at common Channels for requests with :last_id paramater.
  * @type {String}
  */
 var messages_search_common_channel_query = 'SELECT "M".id, "M".content, "M"."sentDateTimeUTC", "M"."UserId", "M"."MessageTypeId", "M"."ChannelId"' +
@@ -47,10 +47,26 @@ var messages_search_common_channel_query = 'SELECT "M".id, "M".content, "M"."sen
                             ' WHERE "M"."ChannelId" IN (:channel_ids) ' +
                             ' AND "M"."MessageTypeId" = 1 ' +
                             ' AND to_tsvector(\'spanish\', content) @@ to_tsquery(\'spanish\', :text) ' +
-                            ' ORDER BY "M"."sentDateTimeUTC" DESC';
+                            ' AND "M"."sentDateTimeUTC" < (SELECT "ME"."sentDateTimeUTC" FROM "Messages" AS "ME" WHERE "ME".id = :last_id) ' +
+                            ' ORDER BY "M"."sentDateTimeUTC" DESC' +
+                            ' LIMIT :limit;';
 
 /**
- * query to search for messages at direct Channels
+ * query to search for messages at common Channels for requests without :last_id paramater.
+ * @type {String}
+ */
+ var messages_search_common_channel_query_first = 'SELECT "M".id, "M".content, "M"."sentDateTimeUTC", "M"."UserId", "M"."MessageTypeId", "M"."ChannelId"' +
+                            ' FROM "Messages" AS "M"' +
+                            ' WHERE "M"."ChannelId" IN (:channel_ids) ' +
+                            ' AND "M"."MessageTypeId" = 1 ' +
+                            ' AND to_tsvector(\'spanish\', content) @@ to_tsquery(\'spanish\', :text) ' +
+                            ' AND "M"."sentDateTimeUTC" < (SELECT "ME"."sentDateTimeUTC" FROM "Messages" AS "ME" WHERE "ME".id = ' +
+                            ' (SELECT MAX("MES".ID) FROM "Messages" AS "MES" WHERE "MES"."ChannelId" IN (:channel_ids)))' +
+                            ' ORDER BY "M"."sentDateTimeUTC" DESC' +
+                            ' LIMIT :limit;';
+
+/**
+ * query to search for messages at direct Channels for requests with :last_id paramater.
  * @type {String}
  */
 var messages_search_direct_channel_query = 'SELECT "PM".id, "PM".content, "PM".channel, "PM"."sentDateTimeUTC", "PM"."ProjectId", ' +
@@ -60,10 +76,28 @@ var messages_search_direct_channel_query = 'SELECT "PM".id, "PM".content, "PM".c
                             ' AND "PM"."ProjectId" = :project_id' +
                             ' AND ("PM"."OriginUserId" = :origin_user_id OR "PM"."DestinationUserId" = :destination_user_id)' +
                             ' AND to_tsvector(\'spanish\', content) @@ to_tsquery(\'spanish\', :text)' +
-                            ' ORDER BY "PM"."sentDateTimeUTC" DESC';
+                            ' AND "PM"."sentDateTimeUTC" < (SELECT "PME"."sentDateTimeUTC" FROM "PrivateMessages" AS "PME" WHERE "PME".id = :last_id)' +
+                            ' ORDER BY "PM"."sentDateTimeUTC" DESC' +
+                            ' LIMIT :limit;';
 
 /**
- * query to search for messages at a single direct Channels
+* query to search for messages at direct Channels for requests without :last_id paramater.
+* @type {String}
+*/
+var messages_search_direct_channel_query_first = 'SELECT "PM".id, "PM".content, "PM".channel, "PM"."sentDateTimeUTC", "PM"."ProjectId", ' +
+                            '"PM"."OriginUserId", "PM"."DestinationUserId", "PM"."MessageTypeId"' +
+                            ' FROM "PrivateMessages" AS "PM"' +
+                            ' WHERE "PM"."MessageTypeId" = 1' +
+                            ' AND "PM"."ProjectId" = :project_id' +
+                            ' AND ("PM"."OriginUserId" = :origin_user_id OR "PM"."DestinationUserId" = :destination_user_id)' +
+                            ' AND to_tsvector(\'spanish\', content) @@ to_tsquery(\'spanish\', :text)' +
+                            ' AND "PM"."sentDateTimeUTC" < (SELECT "PME"."sentDateTimeUTC" FROM "PrivateMessages" AS "PME" WHERE "PME".id = ' +
+                            ' (SELECT MAX("PMES".ID) FROM "PrivateMessages" AS "PMES" WHERE "PMES"."ProjectId" = :project_id AND ("PMES"."OriginUserId" = :origin_user_id OR "PMES"."DestinationUserId" = :destination_user_id)))' +
+                            ' ORDER BY "PM"."sentDateTimeUTC" DESC' +
+                            ' LIMIT :limit;';
+
+/**
+ * query to search for messages at a single direct Channels for requests with :last_id paramater.
  * @type {String}
  */
 var messages_search_direct_single_channel_query = 'SELECT "PM".id, "PM".content, "PM".channel, "PM"."sentDateTimeUTC", "PM"."ProjectId", ' +
@@ -73,8 +107,25 @@ var messages_search_direct_single_channel_query = 'SELECT "PM".id, "PM".content,
                             ' AND "PM"."ProjectId" = :project_id ' +
                             ' AND "PM".channel = :channel_name ' +
                             ' AND to_tsvector(\'spanish\', content) @@ to_tsquery(\'spanish\', :text) ' +
-                            ' ORDER BY "PM"."sentDateTimeUTC" DESC';
+                            ' AND "PM"."sentDateTimeUTC" < (SELECT "PME"."sentDateTimeUTC" FROM "PrivateMessages" AS "PME" WHERE "PME".id = :last_id)' +
+                            ' ORDER BY "PM"."sentDateTimeUTC" DESC ' +
+                            ' LIMIT :limit;';
 
+/**
+* query to search for messages at a single direct Channels for requests without :last_id paramater.
+* @type {String}
+*/
+var messages_search_direct_single_channel_query_first = 'SELECT "PM".id, "PM".content, "PM".channel, "PM"."sentDateTimeUTC", "PM"."ProjectId", ' +
+                            ' "PM"."OriginUserId", "PM"."DestinationUserId", "PM"."MessageTypeId" ' +
+                            ' FROM "PrivateMessages" AS "PM" ' +
+                            ' WHERE "PM"."MessageTypeId" = 1 ' +
+                            ' AND "PM"."ProjectId" = :project_id ' +
+                            ' AND "PM".channel = :channel_name ' +
+                            ' AND to_tsvector(\'spanish\', content) @@ to_tsquery(\'spanish\', :text) ' +
+                            ' AND "PM"."sentDateTimeUTC" < (SELECT "PME"."sentDateTimeUTC" FROM "PrivateMessages" AS "PME" WHERE "PME".id = ' +
+                            ' (SELECT MAX("PMES".ID) FROM "PrivateMessages" AS "PMES" WHERE "PMES"."ProjectId" = :project_id AND "PMES".channel = :channel_name))' +
+                            ' ORDER BY "PM"."sentDateTimeUTC" DESC ' +
+                            ' LIMIT :limit;';
 /**
  * searchs messages that contain provided text in db.
  * @param  {integer}   project_id
@@ -84,7 +135,7 @@ var messages_search_direct_single_channel_query = 'SELECT "PM".id, "PM".content,
  * @param  {integer}    channel_id
  * @return {list}   messages list
  */
-module.exports.searchMessage = function(project_id, text_to_search, user, callback, channel_id) {
+module.exports.searchMessage = function(project_id, text_to_search, user, limit, last_id, callback, channel_id) {
   var result = {};
 
   result.message = {
@@ -94,6 +145,18 @@ module.exports.searchMessage = function(project_id, text_to_search, user, callba
       }
     }
   };
+
+  //Initialize limit
+  if(!limit || isNaN(limit) || limit < 1){
+    limit = 25;
+  }
+
+  var first_query = false;
+
+  //Initialize last_id
+  if(!last_id || isNaN(last_id) || last_id < 1){
+    first_query = true;
+  }
 
   user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', project_id, "B"] }).then(function(projects){
     if (projects === undefined || projects.length === 0) {
@@ -116,26 +179,52 @@ module.exports.searchMessage = function(project_id, text_to_search, user, callba
           result.message = { errors: { all: 'No se puede encontrar ningún canal con el id provisto.'}};
           return callback(result);
         }
-        //look for a single direct channel's messages that match the search parameter
-        sequelize.query(messages_search_direct_single_channel_query,
-                        {
-                          type: sequelize.QueryTypes.SELECT,
-                          replacements: {
-                            project_id: project_id,
-                            channel_name: channel_id,
-                            text: text_to_search
-                          },
-                            escapeValues: false
-                        })
-        .then(function(textSearchResultDirect) {
+        if(first_query){
+          //look for a single direct channel's messages that match the search parameter
+          sequelize.query(messages_search_direct_single_channel_query_first,
+                          {
+                            type: sequelize.QueryTypes.SELECT,
+                            replacements: {
+                              project_id: project_id,
+                              channel_name: channel_id,
+                              text: text_to_search,
+                              limit: limit
+                            },
+                              escapeValues: false
+                          })
+          .then(function(textSearchResultDirect) {
 
-          result.code = 200;
+            result.code = 200;
 
-          //Adding search results to service response.
-          result.message.project.channels['direct'] = getDirectChannelBodyForTextSearchResult(textSearchResultDirect);
+            //Adding search results to service response.
+            result.message.project.channels['direct'] = getDirectChannelBodyForTextSearchResult(textSearchResultDirect);
 
-          return callback(result);
-        });
+            return callback(result);
+          });
+        }else{
+          //look for a single direct channel's messages that match the search parameter
+          sequelize.query(messages_search_direct_single_channel_query,
+                          {
+                            type: sequelize.QueryTypes.SELECT,
+                            replacements: {
+                              project_id: project_id,
+                              channel_name: channel_id,
+                              text: text_to_search,
+                              limit: limit,
+                              last_id: last_id
+                            },
+                              escapeValues: false
+                          })
+          .then(function(textSearchResultDirect) {
+
+            result.code = 200;
+
+            //Adding search results to service response.
+            result.message.project.channels['direct'] = getDirectChannelBodyForTextSearchResult(textSearchResultDirect);
+
+            return callback(result);
+          });
+        }
       } else {
         getChannelsIdsToScan(projects[0], user, function(channels_ids){
 
@@ -145,47 +234,97 @@ module.exports.searchMessage = function(project_id, text_to_search, user, callba
             return callback(result);
           }
 
-          //look for channel's messages that match the search parameter.
-          sequelize.query(messages_search_common_channel_query,
-                          {
-                            type: sequelize.QueryTypes.SELECT,
-                            replacements: {
-                              channel_ids: channels_ids,
-                              text: text_to_search
-                            },
-                              escapeValues: false
-                          })
-          .then(function(textSearchResult) {
+          if(first_query){
+            //look for channel's messages that match the search parameter.
+            sequelize.query(messages_search_common_channel_query_first,
+                            {
+                              type: sequelize.QueryTypes.SELECT,
+                              replacements: {
+                                channel_ids: channels_ids,
+                                text: text_to_search,
+                                limit: limit
+                              },
+                                escapeValues: false
+                            })
+            .then(function(textSearchResult) {
 
-              result.code = 200;
-              //Adding search results to service response.
-              result.message.project.channels['common'] = getChannelBodyForTextSearchResult(textSearchResult);
+                result.code = 200;
+                //Adding search results to service response.
+                result.message.project.channels['common'] = getChannelBodyForTextSearchResult(textSearchResult);
 
-              if(channels_ids.length > 1){
+                if(channels_ids.length > 1){
 
-                //Must look for messages that match the search parameter in direct channels too.
-                sequelize.query(messages_search_direct_channel_query,
-                                {
-                                  type: sequelize.QueryTypes.SELECT,
-                                  replacements: {
-                                    project_id: project_id,
-                                    origin_user_id: user.id,
-                                    destination_user_id: user.id,
-                                    text: text_to_search
-                                  },
-                                    escapeValues: false
-                                })
-                .then(function(textSearchResultDirect) {
+                  //Must look for messages that match the search parameter in direct channels too.
+                  sequelize.query(messages_search_direct_channel_query_first,
+                                  {
+                                    type: sequelize.QueryTypes.SELECT,
+                                    replacements: {
+                                      project_id: project_id,
+                                      origin_user_id: user.id,
+                                      destination_user_id: user.id,
+                                      text: text_to_search,
+                                      limit: limit
+                                    },
+                                      escapeValues: false
+                                  })
+                  .then(function(textSearchResultDirect) {
 
-                  //Adding search results to service response.
-                  result.message.project.channels['direct'] = getDirectChannelBodyForTextSearchResult(textSearchResultDirect);
+                    //Adding search results to service response.
+                    result.message.project.channels['direct'] = getDirectChannelBodyForTextSearchResult(textSearchResultDirect);
 
+                    return callback(result);
+                  });
+                } else {
                   return callback(result);
-                });
-              } else {
-                return callback(result);
-              }
-            });
+                }
+              });
+          } else {
+            //look for channel's messages that match the search parameter.
+            sequelize.query(messages_search_common_channel_query,
+                            {
+                              type: sequelize.QueryTypes.SELECT,
+                              replacements: {
+                                channel_ids: channels_ids,
+                                text: text_to_search,
+                                limit: limit,
+                                last_id: last_id
+                              },
+                                escapeValues: false
+                            })
+            .then(function(textSearchResult) {
+
+                result.code = 200;
+                //Adding search results to service response.
+                result.message.project.channels['common'] = getChannelBodyForTextSearchResult(textSearchResult);
+
+                if(channels_ids.length > 1){
+
+                  //Must look for messages that match the search parameter in direct channels too.
+                  sequelize.query(messages_search_direct_channel_query,
+                                  {
+                                    type: sequelize.QueryTypes.SELECT,
+                                    replacements: {
+                                      project_id: project_id,
+                                      origin_user_id: user.id,
+                                      destination_user_id: user.id,
+                                      text: text_to_search,
+                                      limit: limit,
+                                      last_id: last_id
+                                    },
+                                      escapeValues: false
+                                  })
+                  .then(function(textSearchResultDirect) {
+
+                    //Adding search results to service response.
+                    result.message.project.channels['direct'] = getDirectChannelBodyForTextSearchResult(textSearchResultDirect);
+
+                    return callback(result);
+                  });
+                } else {
+                  return callback(result);
+                }
+              });
+          }
         }, channel_id);
       }
     }

@@ -309,11 +309,11 @@ module.exports.retrieveMessagesById = function(message_id, limit, direction,
   var result = {};
 
   //Setting default limit.
-  if(!limit){
+  if(!limit || isNaN(limit) || limit < 1){
     limit = 10;
   }
 
-  if(!direction){
+  if(!direction || (direction !== "forwards" && direction !== "backwards")){
     direction = "forwards";
   }
 
