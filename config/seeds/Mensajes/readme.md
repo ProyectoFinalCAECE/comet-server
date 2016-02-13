@@ -11,4 +11,6 @@ Procedimiento:
 - Extraer /comet-server/config/seeds/Mensajes/messages.dump.tar.gz en alguna carpeta de la VM
 - En la consola de la VM, en la carpeta donde se extrajo el archivo, ejecutar: psql -f messages.backup -U postgres comet
 - Nuevamente desde pgAdmin, Renombrar "messages" a "Messages"
+- Actualizar la identidad desde Sequences > Messages_id_seq poniendo el valor actual en 1.000.000
 - Levantar comer-server
+
