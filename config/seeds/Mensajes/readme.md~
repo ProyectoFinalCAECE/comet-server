@@ -1,0 +1,13 @@
+---------------------------------------------
+Insertar 1.000.000 de registros en "Messages"
+---------------------------------------------
+
+Requisitos:
+- Tener canales con id de 6 a 9 inclusive (no importan los proyectos).
+- Tener un usuario con id 1
+
+Procedimiento:
+- Eliminar la tabla actual "Messages"
+-
+- En la consola de la VM ejecutar: psql -f messages.backup -U postgres comet
+- Renombrar "messages" a "Messages"
