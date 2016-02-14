@@ -135,13 +135,12 @@ var messages_search_direct_single_channel_query_first = 'SELECT "PM".id, "PM".co
  * @param  {integer}    channel_id
  * @return {list}   messages list
  */
-module.exports.searchMessage = function(project_id, text_to_search, user, limit, last_id, callback, channel_id) {
+module.exports.searchMessage = function(project_id, text_to_search, user, limit, last_id, callback, channel_id, inDirect) {
   var result = {};
 
   result.message = {
     project: {
       channels: {
-
       }
     }
   };
@@ -201,7 +200,7 @@ module.exports.searchMessage = function(project_id, text_to_search, user, limit,
 
             return callback(result);
           });
-        }else{
+        } else {
           //look for a single direct channel's messages that match the search parameter
           sequelize.query(messages_search_direct_single_channel_query,
                           {
@@ -235,95 +234,99 @@ module.exports.searchMessage = function(project_id, text_to_search, user, limit,
           }
 
           if(first_query){
-            //look for channel's messages that match the search parameter.
-            sequelize.query(messages_search_common_channel_query_first,
-                            {
-                              type: sequelize.QueryTypes.SELECT,
-                              replacements: {
-                                channel_ids: channels_ids,
-                                text: text_to_search,
-                                limit: limit
-                              },
-                                escapeValues: false
-                            })
-            .then(function(textSearchResult) {
+
+            if(inDirect){
+              //Must look for messages that match the search parameter in direct channels.
+              sequelize.query(messages_search_direct_channel_query_first,
+                              {
+                                type: sequelize.QueryTypes.SELECT,
+                                replacements: {
+                                  project_id: project_id,
+                                  origin_user_id: user.id,
+                                  destination_user_id: user.id,
+                                  text: text_to_search,
+                                  limit: limit
+                                },
+                                  escapeValues: false
+                              })
+              .then(function(textSearchResultDirect) {
 
                 result.code = 200;
                 //Adding search results to service response.
-                result.message.project.channels['common'] = getChannelBodyForTextSearchResult(textSearchResult);
+                result.message.project.channels['direct'] = getDirectChannelBodyForTextSearchResult(textSearchResultDirect);
 
-                if(channels_ids.length > 1){
-
-                  //Must look for messages that match the search parameter in direct channels too.
-                  sequelize.query(messages_search_direct_channel_query_first,
-                                  {
-                                    type: sequelize.QueryTypes.SELECT,
-                                    replacements: {
-                                      project_id: project_id,
-                                      origin_user_id: user.id,
-                                      destination_user_id: user.id,
-                                      text: text_to_search,
-                                      limit: limit
-                                    },
-                                      escapeValues: false
-                                  })
-                  .then(function(textSearchResultDirect) {
-
-                    //Adding search results to service response.
-                    result.message.project.channels['direct'] = getDirectChannelBodyForTextSearchResult(textSearchResultDirect);
-
-                    return callback(result);
-                  });
-                } else {
-                  return callback(result);
-                }
+                return callback(result);
               });
+            } else {
+              //look for channel's messages that match the search parameter.
+              sequelize.query(messages_search_common_channel_query_first,
+                              {
+                                type: sequelize.QueryTypes.SELECT,
+                                replacements: {
+                                  channel_ids: channels_ids,
+                                  text: text_to_search,
+                                  limit: limit
+                                },
+                                  escapeValues: false
+                              })
+              .then(function(textSearchResult) {
+
+                  result.code = 200;
+                  //Adding search results to service response.
+                  result.message.project.channels['common'] = getChannelBodyForTextSearchResult(textSearchResult);
+
+                  return callback(result);
+                });
+            }
           } else {
-            //look for channel's messages that match the search parameter.
-            sequelize.query(messages_search_common_channel_query,
-                            {
-                              type: sequelize.QueryTypes.SELECT,
-                              replacements: {
-                                channel_ids: channels_ids,
-                                text: text_to_search,
-                                limit: limit,
-                                last_id: last_id
-                              },
-                                escapeValues: false
-                            })
-            .then(function(textSearchResult) {
+
+            if(inDirect){
+
+              //Must look for messages that match the search parameter in direct channels
+              sequelize.query(messages_search_direct_channel_query,
+                              {
+                                type: sequelize.QueryTypes.SELECT,
+                                replacements: {
+                                  project_id: project_id,
+                                  origin_user_id: user.id,
+                                  destination_user_id: user.id,
+                                  text: text_to_search,
+                                  limit: limit,
+                                  last_id: last_id
+                                },
+                                  escapeValues: false
+                              })
+              .then(function(textSearchResultDirect) {
 
                 result.code = 200;
                 //Adding search results to service response.
-                result.message.project.channels['common'] = getChannelBodyForTextSearchResult(textSearchResult);
+                result.message.project.channels['direct'] = getDirectChannelBodyForTextSearchResult(textSearchResultDirect);
 
-                if(channels_ids.length > 1){
-
-                  //Must look for messages that match the search parameter in direct channels too.
-                  sequelize.query(messages_search_direct_channel_query,
-                                  {
-                                    type: sequelize.QueryTypes.SELECT,
-                                    replacements: {
-                                      project_id: project_id,
-                                      origin_user_id: user.id,
-                                      destination_user_id: user.id,
-                                      text: text_to_search,
-                                      limit: limit,
-                                      last_id: last_id
-                                    },
-                                      escapeValues: false
-                                  })
-                  .then(function(textSearchResultDirect) {
-
-                    //Adding search results to service response.
-                    result.message.project.channels['direct'] = getDirectChannelBodyForTextSearchResult(textSearchResultDirect);
-
-                    return callback(result);
-                  });
-                } else {
-                  return callback(result);
-                }
+                return callback(result);
               });
+            } else {
+              //look for channel's messages that match the search parameter.
+              sequelize.query(messages_search_common_channel_query,
+                              {
+                                type: sequelize.QueryTypes.SELECT,
+                                replacements: {
+                                  channel_ids: channels_ids,
+                                  text: text_to_search,
+                                  limit: limit,
+                                  last_id: last_id
+                                },
+                                  escapeValues: false
+                              })
+              .then(function(textSearchResult) {
+
+                  result.code = 200;
+                  //Adding search results to service response.
+                  result.message.project.channels['common'] = getChannelBodyForTextSearchResult(textSearchResult);
+
+                  return callback(result);
+
+                });
+            }
           }
         }, channel_id);
       }

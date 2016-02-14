@@ -32,7 +32,7 @@ router.get('/messages', auth, searchValidator.validSearchMessageInProject, funct
     searchService.searchMessage(req.primaryParams.project_id, req.query.q, user,
       req.query.limit, req.query.last_id, function(result){
       return res.status(result.code).json(result.message);
-    });
+    }, undefined, req.query.in_direct);
   });
 });
 
@@ -51,7 +51,7 @@ router.get('/messages/channels/:channel_id', auth, searchValidator.validSearchMe
     searchService.searchMessage(req.primaryParams.project_id, req.query.q, user,
       req.query.limit, req.query.last_id, function(result){
       return res.status(result.code).json(result.message);
-    }, req.primaryParams.channel_id);
+    }, req.primaryParams.channel_id, req.query.in_direct);
   });
 });
 
