@@ -235,7 +235,7 @@ module.exports.searchMessage = function(project_id, text_to_search, user, limit,
 
           if(first_query){
 
-            if(inDirect){
+            if(inDirect === 'true'){
               //Must look for messages that match the search parameter in direct channels.
               sequelize.query(messages_search_direct_channel_query_first,
                               {
@@ -280,7 +280,7 @@ module.exports.searchMessage = function(project_id, text_to_search, user, limit,
             }
           } else {
 
-            if(inDirect){
+            if(inDirect === 'true'){
 
               //Must look for messages that match the search parameter in direct channels
               sequelize.query(messages_search_direct_channel_query,
