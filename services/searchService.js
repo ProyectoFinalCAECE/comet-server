@@ -47,7 +47,7 @@ var messages_search_common_channel_query = 'SELECT "M".id, "M".content, "M"."sen
                             ' WHERE "M"."ChannelId" IN (:channel_ids) ' +
                             ' AND "M"."MessageTypeId" = 1 ' +
                             ' AND to_tsvector(\'spanish\', content) @@ to_tsquery(\'spanish\', :text) ' +
-                            ' AND "M"."sentDateTimeUTC" <= (SELECT "ME"."sentDateTimeUTC" FROM "Messages" AS "ME" WHERE "ME".id = :last_id) ' +
+                            ' AND "M"."sentDateTimeUTC" < (SELECT "ME"."sentDateTimeUTC" FROM "Messages" AS "ME" WHERE "ME".id = :last_id) ' +
                             ' ORDER BY "M"."sentDateTimeUTC" DESC' +
                             ' LIMIT :limit;';
 
@@ -76,7 +76,7 @@ var messages_search_direct_channel_query = 'SELECT "PM".id, "PM".content, "PM".c
                             ' AND "PM"."ProjectId" = :project_id' +
                             ' AND ("PM"."OriginUserId" = :origin_user_id OR "PM"."DestinationUserId" = :destination_user_id)' +
                             ' AND to_tsvector(\'spanish\', content) @@ to_tsquery(\'spanish\', :text)' +
-                            ' AND "PM"."sentDateTimeUTC" <= (SELECT "PME"."sentDateTimeUTC" FROM "PrivateMessages" AS "PME" WHERE "PME".id = :last_id)' +
+                            ' AND "PM"."sentDateTimeUTC" < (SELECT "PME"."sentDateTimeUTC" FROM "PrivateMessages" AS "PME" WHERE "PME".id = :last_id)' +
                             ' ORDER BY "PM"."sentDateTimeUTC" DESC' +
                             ' LIMIT :limit;';
 
@@ -107,7 +107,7 @@ var messages_search_direct_single_channel_query = 'SELECT "PM".id, "PM".content,
                             ' AND "PM"."ProjectId" = :project_id ' +
                             ' AND "PM".channel = :channel_name ' +
                             ' AND to_tsvector(\'spanish\', content) @@ to_tsquery(\'spanish\', :text) ' +
-                            ' AND "PM"."sentDateTimeUTC" <= (SELECT "PME"."sentDateTimeUTC" FROM "PrivateMessages" AS "PME" WHERE "PME".id = :last_id)' +
+                            ' AND "PM"."sentDateTimeUTC" < (SELECT "PME"."sentDateTimeUTC" FROM "PrivateMessages" AS "PME" WHERE "PME".id = :last_id)' +
                             ' ORDER BY "PM"."sentDateTimeUTC" DESC ' +
                             ' LIMIT :limit;';
 
