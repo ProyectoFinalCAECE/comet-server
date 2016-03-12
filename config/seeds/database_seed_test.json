@@ -1506,5 +1506,594 @@
                "ProjectId": "1010",
                "UserId": "1006"
 		}
-	}
+	},
+  {
+      "model": "Channel",
+      "data": {
+        "id":"1",
+        "name": "Clientes",
+        "type": "S",
+        "description": "Conversaciones relativas a los clientes del proyecto",
+        "state": "O",
+        "ProjectId": "1001"
+      }
+    },
+    {
+      "model": "Channel",
+      "data": {
+        "id":"2",
+        "name": "Inversores",
+        "type": "S",
+        "description": "Conversaciones relativas a los inversores del proyecto",
+        "state": "O",
+        "ProjectId": "1001"
+      }
+    },
+    {
+      "model": "Channel",
+      "data": {
+        "id":"3",
+        "name": "Ideas para nuevos features",
+        "type": "S",
+        "description": "Conversaciones relativas al nuevas funcionalidades del proyecto",
+        "state": "O",
+        "ProjectId": "1001"
+      }
+    },
+    {
+      "model": "Channel",
+      "data": {
+        "id":"4",
+        "name": "Backend",
+        "type": "P",
+        "description": "Conversaciones relativas al desarrollo del backend del proyecto",
+        "state": "O",
+        "ProjectId": "1002"
+      }
+    },
+    {
+      "model": "Channel",
+      "data": {
+        "id":"5",
+        "name": "UX/UI",
+        "type": "S",
+        "description": "Conversaciones relativas al diseño visual del proyecto",
+        "state": "O",
+        "ProjectId": "1002"
+      }
+    },{
+      "model": "Channel",
+      "data": {
+        "id":"6",
+        "name": "Seed de datos",
+        "type": "S",
+        "description": "Poblado de base de datos con informacion por defecto",
+        "state": "O",
+        "ProjectId": "1003"
+      }
+    },
+      {
+      "model": "Channel",
+      "data": {
+        "id":"7",
+        "name": "Test funcional",
+        "type": "P",
+        "description": "Canal para conversaciones relativas al testing funcional",
+        "state": "O",
+        "ProjectId": "1004"
+      }
+      },
+      {
+      "model": "Channel",
+      "data": {
+        "id":"8",
+        "name": "Test unitario",
+        "type": "S",
+        "description": "Canal para conversaciones relativas al testing unitario de features",
+        "state": "O",
+        "ProjectId": "1004"
+      }
+    },
+    {
+      "model": "Channel",
+      "data": {
+        "id":"9",
+        "name": "Test unitario",
+        "type": "S",
+        "description": "Canal para conversaciones relativas al testing unitario de features",
+        "state": "O",
+        "ProjectId": "1004"
+      }
+    },
+    {
+      "model": "Channel",
+      "data": {
+        "id":"10",
+        "name": "End to End test",
+        "type": "S",
+        "description": "E2E testing",
+        "state": "O",
+        "ProjectId": "1010"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1001",
+        "ChannelId": "1"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1001",
+        "ChannelId": "2"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1001",
+        "ChannelId": "3"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1001",
+        "ChannelId": "4"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1001",
+        "ChannelId": "5"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1001",
+        "ChannelId": "6"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1001",
+        "ChannelId": "7"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1001",
+        "ChannelId": "8"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1001",
+        "ChannelId": "9"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1001",
+        "ChannelId": "10"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1002",
+        "ChannelId": "1"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1002",
+        "ChannelId": "2"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1002",
+        "ChannelId": "3"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1002",
+        "ChannelId": "4"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1002",
+        "ChannelId": "5"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1002",
+        "ChannelId": "6"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1002",
+        "ChannelId": "7"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1002",
+        "ChannelId": "8"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1002",
+        "ChannelId": "9"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1002",
+        "ChannelId": "10"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1003",
+        "ChannelId": "1"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1003",
+        "ChannelId": "2"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1003",
+        "ChannelId": "3"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1003",
+        "ChannelId": "4"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1003",
+        "ChannelId": "5"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1003",
+        "ChannelId": "6"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1003",
+        "ChannelId": "7"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1003",
+        "ChannelId": "8"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1003",
+        "ChannelId": "9"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1003",
+        "ChannelId": "10"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1004",
+        "ChannelId": "1"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1004",
+        "ChannelId": "2"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1004",
+        "ChannelId": "3"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1004",
+        "ChannelId": "4"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1004",
+        "ChannelId": "5"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1004",
+        "ChannelId": "6"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1004",
+        "ChannelId": "7"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1004",
+        "ChannelId": "8"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1004",
+        "ChannelId": "9"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1004",
+        "ChannelId": "10"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1005",
+        "ChannelId": "1"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1005",
+        "ChannelId": "2"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1005",
+        "ChannelId": "3"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1005",
+        "ChannelId": "4"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1005",
+        "ChannelId": "5"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1005",
+        "ChannelId": "6"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1005",
+        "ChannelId": "7"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1005",
+        "ChannelId": "8"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1005",
+        "ChannelId": "9"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1005",
+        "ChannelId": "10"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1006",
+        "ChannelId": "1"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1006",
+        "ChannelId": "2"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1006",
+        "ChannelId": "3"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1006",
+        "ChannelId": "4"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1006",
+        "ChannelId": "5"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1006",
+        "ChannelId": "6"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1006",
+        "ChannelId": "7"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1006",
+        "ChannelId": "8"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1006",
+        "ChannelId": "9"
+      }
+    },
+    {
+      "model": "ChannelUser",
+      "data": {
+        "active": true,
+        "UserId": "1006",
+        "ChannelId": "10"
+      }
+    }
 ]
