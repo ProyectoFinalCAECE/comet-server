@@ -23,6 +23,7 @@
     "express-force-ssl": "^0.3.0",
     "express-jwt": "^3.0.1",
     "grunt": "^0.4.5",
+    "grunt-run": "^0.5.2",
     "jade": "~1.11.0",
     "jsonwebtoken": "^5.0.4",
     "morgan": "~1.6.1",
