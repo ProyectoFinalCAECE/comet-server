@@ -10,6 +10,9 @@ module.exports = function(grunt) {
       },
       advance_sq: {
         exec: './scripts/advance_sequences.sh',
+      },
+      insert_project_integration_records:{
+        exec: './scripts/insert_projectintegration_records.sh'
       }
     },
     fixtures: {
