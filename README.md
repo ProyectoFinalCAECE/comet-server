@@ -14,7 +14,8 @@
 
 ## Build & development
 
-1) Add execute permission to scripts/start.sh, run `chmod a+x scripts/start.sh`
+1) Add execute permission to scripts/start.sh, run `chmod a+x scripts/start.sh`.
+
 2) Run `npm start` to start application. This will also create the database structure for the first time.
 
 ## Testing
@@ -28,16 +29,29 @@ Gruntfile includes a task to populate database tables basing located at /config/
 To add new records to the db:
 
 0) Make sure you've run `npm start` at least once to create the database structure. Other way next steps will fail.
-1) Run `npm install -g grunt-cli` to install grunt's command line interface. (if you didn't do it before)
+
+1) Run `npm install -g grunt-cli` to install grunt's command line interface. (if you didn't do it before).
+
 2) Add content to database_seed.json providing a valid json.
+
 3) Truncate db tables if neccessary, as seed does not remove anything. Just adds missing records.
+
 4) Move to Gruntfile directory.
+
 5) Run `grunt fixtures:import_default_data`.
+
 6) Add execute permission to scripts/advance_sequences.sh, run `chmod a+x scripts/advance_sequences.sh`
+
 7) Run `grunt run:advance_sq`.
 
 ## Seeds with test data
 
 0) Make sure you've run `npm start` at least once to create the database structure. Other way next steps will fail.
+
 1) Move to Gruntfile directory.
+
 2) Run `grunt fixtures:import_test_data`.
+
+3) Add execute permission to scripts/insert_projectintegration_records.sh, run `chmod a+x scripts/insert_projectintegration_records.sh`
+
+4) Run `grunt run:insert_project_integration_records`.
