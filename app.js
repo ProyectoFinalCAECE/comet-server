@@ -12,6 +12,8 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var winston = require('winston');
+// Added helmet to force use of SSL/HTTPS
+var helmet = require('helmet');
 
 winston.add(winston.transports.File, {
                                         filename: 'comet.log',
@@ -37,6 +39,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(helmet());
 
 //declare a function that will pass primary router's params to the request
 var passPrimaryParams = function(req, res, next) {
