@@ -13,6 +13,9 @@ module.exports = function(grunt) {
       },
       insert_project_integration_records:{
         exec: './scripts/insert_projectintegration_records.sh'
+      },
+      create_searcheable_text_for_users:{
+        exec: './scripts/create_searcheable_text_for_users.sh'
       }
     },
     fixtures: {

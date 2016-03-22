@@ -55,3 +55,7 @@ To add new records to the db:
 3) Add execute permission to scripts/insert_projectintegration_records.sh, run `chmod a+x scripts/insert_projectintegration_records.sh`
 
 4) Run `grunt run:insert_project_integration_records`.
+
+5) Add execute permission to scripts/create_searcheable_text_for_users.sh, run `chmod a+x scripts/create_searcheable_text_for_users.sh`
+
+4) Run `grunt run:create_searcheable_text_for_users`.
