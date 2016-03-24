@@ -36,6 +36,7 @@ module.exports = function(sequelize, DataTypes) {
         associate: function(models) {
           Channel.belongsTo(models.Project);
           Channel.belongsToMany(models.User, { through: models.ChannelUser });
+          Channel.hasMany(models.Call);
         },
         nameLength: function(){
           return 50;
