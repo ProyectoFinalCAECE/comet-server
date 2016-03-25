@@ -7,6 +7,8 @@
  */
 
 var models  = require('../models');
+var messagingService = require('../services/messagingService');
+var socket = require('../lib/socket');
 
 /**
  * Function to store a new call record at the database
@@ -85,7 +87,26 @@ module.exports.createNewCall = function(project_id, channel_id, user, req_body, 
                       members: members
                   };
 
-                  // SAVE MESSAGE
+                  var data_to_store = {
+                    id: data.id,
+                    summary: data.summary,
+                    ChannelId: data.ChannelId
+                  };
+
+                  // Saving message
+                  messagingService.storeVideocallMessage(JSON.stringify(data_to_store), call.ChannelId, call.UserId);
+
+                  // broadcast message
+                  var message = {
+                                  message: {
+                                      text: JSON.stringify(data),
+                                      type: 9,
+                                      date: new Date().getTime()
+                                  }
+                                };
+
+                  //broadcast
+                  socket.broadcastVideocallMessage('Project_' + projects[0].id, call.ChannelId, message);
 
                   result.code = 200;
                   result.message = data;
@@ -137,9 +158,9 @@ module.exports.updateCall = function(project_id, channel_id, user, call_id, req_
 
           //saving updated call
           calls[0].save().then(function(){
-            // SAVE MEMBERS
+            // UPDATE MEMBERS  -- > REPLACE OLD MEMBERS WITH NEW ONES
 
-            // SAVE MESSAGE
+            // UPDATE MESSAGE
 
             result.code = 200;
             result.message = calls[0];
