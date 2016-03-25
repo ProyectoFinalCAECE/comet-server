@@ -47,25 +47,43 @@ var passPrimaryParams = function(req, res, next) {
     next();
 };
 
-// routes
+/**
+ * routes
+ */
+
+//Users routes
 app.use('/', require('./routes/index'));
 app.use('/users/', require('./routes/users'));
 app.use('/accounts/', require('./routes/accounts'));
+
+//Projects routes
 app.use('/projects/', require('./routes/projects'));
+
+//Channels routes
 app.use('/projects/:project_id/channels', passPrimaryParams);
 app.use('/projects/:project_id/channels', require('./routes/channels'));
+
+//Messages routes
 app.use('/projects/:project_id/channels/:channel_id/messages', passPrimaryParams);
 app.use('/projects/:project_id/channels/:channel_id/messages', require('./routes/messages'));
-app.use('/projects/:project_id/integrations', passPrimaryParams);
 
+//Integrations routes
 var integrations  = require('./routes/integrations');
-
+app.use('/projects/:project_id/integrations', passPrimaryParams);
 app.use('/projects/:project_id/integrations', integrations);
 app.use('/integrations', integrations);
+
+//Hook routes
 app.use('/hooks/', require('./routes/hooks'));
+
+//Search routes
 app.use('/search/projects/:project_id', passPrimaryParams);
 app.use('/search/projects/:project_id/messages/channels/:channel_id', passPrimaryParams);
 app.use('/search/projects/:project_id', require('./routes/search'));
+
+//Calls routes
+app.use('/projects/:project_id/channels/:channel_id/calls', passPrimaryParams);
+app.use('/projects/:project_id/channels/:channel_id/calls', require('./routes/calls'));
 
 //static route to serve account profile images
 app.use('/static', express.static('avatar_images'));
