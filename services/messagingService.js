@@ -315,7 +315,7 @@ module.exports.storeVideocallMessage = function(message_content, channelId, user
       // create new Message instance
       models.Message.build({
         content: message_content,
-        MessageTypeId: 9,
+        MessageTypeId: 10,
         ChannelId: channelId,
         UserId: userId,
         sentDateTimeUTC: new Date().getTime()
