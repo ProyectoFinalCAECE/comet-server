@@ -46,15 +46,6 @@ module.exports.validNewCall = function(req, res, next) {
   if (!req.primaryParams.channel_id || !validator.isNumeric(req.primaryParams.channel_id))
     errors.channel_id = 'Por favor ingrese el id de canal.';
 
-  if (!req.body.start_hour || req.body.start_hour.length === 0)
-    errors.start_hour = 'Por favor ingrese la hora de inicio.';
-
-  if (!req.body.end_hour || req.body.end_hour.length === 0)
-    errors.end_hour = 'Por favor ingrese la hora de finalizacion.';
-
-  if (!req.body.summary || req.body.summary.length === 0)
-      errors.summary = 'Por favor ingrese la minuta.';
-
   if (Object.keys(errors).length > 0)
     return res.status(400).json({ errors: errors });
 
@@ -76,16 +67,6 @@ module.exports.validUpdateCall = function(req, res, next){
 
   if (!req.primaryParams.channel_id || !validator.isNumeric(req.primaryParams.channel_id))
     errors.channel_id = 'Por favor ingrese el id de canal.';
-
-    if (!req.body.start_hour || req.body.start_hour.length === 0)
-      errors.start_hour = 'Por favor ingrese la hora de inicio.';
-
-    if (!req.body.end_hour || req.body.end_hour.length === 0)
-      errors.end_hour = 'Por favor ingrese la hora de finalizacion.';
-
-    if (!req.body.summary || req.body.summary.length === 0)
-        errors.summary = 'Por favor ingrese la minuta.';
-
 
   if (Object.keys(errors).length > 0)
     return res.status(400).json({ errors: errors });
