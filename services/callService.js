@@ -352,7 +352,9 @@ module.exports.addCallSummary = function(project_id, channel_id, user, call_id, 
               result.message = { errors: { all: 'El usuario no puede modificar la llamada solicitada.'}};
               return callback(result);
             } else {
+
               calls[0].summary = summary;
+              calls[0].endHour = new Date().getTime();
 
               //saving updated call
               calls[0].save().then(function(){
