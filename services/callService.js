@@ -307,6 +307,92 @@ module.exports.addCallMember = function(project_id, channel_id, user, call_id, c
 };
 
 /**
+ * Add a summary to a call
+ * @param  {integer}   project_id
+ * @param  {integer}   channel_id
+ * @param  {User}   user
+ * @param  {integer}   call_id
+ * @param  {string}   summary
+ * @param  {integer}   member
+ * @param  {Function} callback
+ */
+module.exports.addCallSummary = function(project_id, channel_id, user, call_id, summary, callback) {
+  var result = {};
+
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', project_id, "B"] }).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      result.code = 404;
+      result.message = { errors: { all: 'No se puede encontrar ningún proyecto con el id provisto.'}};
+      return callback(result);
+    }
+
+    if(projects[0].ProjectUser.active === false){
+      result.code = 403;
+      result.message = { errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}};
+      return callback(result);
+    } else {
+
+      //Looking for Channel among retrieved Project's Channels.
+      projects[0].getChannels({ where: ['"Channel"."id" = ?', channel_id ] }).then(function(channels){
+
+        if (channels === undefined || channels.length === 0) {
+          result.code = 404;
+          result.message = { errors: { all: 'No se puede encontrar ningun Canal con el id provisto.'}};
+          return callback(result);
+        }
+
+        channels[0].getCalls({ where: ['"Call"."id" = ?', call_id ] }).then(function(calls){
+          if (calls === undefined || calls.length === 0) {
+            result.code = 404;
+            result.message = { errors: { all: 'No se puede encontrar ninguna Videollamada con el id provisto.'}};
+            return callback(result);
+          } else {
+            if(parseInt(calls[0].UserId) !== user.id){
+              result.code = 403;
+              result.message = { errors: { all: 'El usuario no puede modificar la llamada solicitada.'}};
+              return callback(result);
+            } else {
+              calls[0].summary = summary;
+
+              //saving updated call
+              calls[0].save().then(function(){
+                calls[0].getMembers().then(function(members){
+                  if(!members){
+                    members = [];
+                  }
+
+                  var data = {
+                      id: calls[0].id,
+                      summary: calls[0].summary,
+                      startHour: calls[0].startHour,
+                      endHour: calls[0].endHour,
+                      frontendId: calls[0].frontendId,
+                      createdAt: calls[0].createdAt,
+                      updatedAt: calls[0].updatedAt,
+                      ChannelId: calls[0].ChannelId,
+                      OwnerId: calls[0].UserId,
+                      members: members
+                  };
+
+                  // UPDATE MESSAGE
+                  // Updating message
+                  //  messagingService.updateVideocallMessage(JSON.stringify(data_to_store), calls[0].ChannelId, calls[0].UserId);
+
+                  result.code = 200;
+                  result.message = data;
+                  return callback(result);
+                });
+              });
+            }
+          }
+        });
+      });
+    }
+  });
+};
+
+
+/**
  * Save Call Members
  * @param  {array}   members
  * @param  {integer}   call_id

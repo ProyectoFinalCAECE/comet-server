@@ -61,7 +61,7 @@ router.post('/', auth, callValidator.validNewCall, function(req, res){
  * @param  {Function} callValidator.validAddCallMember
  * @param  {Function} callback
  */
-router.put('/:id/member', auth, callValidator.validAddCallMember, function(req, res){
+router.put('/:id/members', auth, callValidator.validAddCallMember, function(req, res){
   models.User.findById(req.payload._id).then(function(user) {
     if(!user){
       return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
@@ -70,6 +70,25 @@ router.put('/:id/member', auth, callValidator.validAddCallMember, function(req, 
       return res.status(result.code).json(result.message);
     });
   });
+});
+
+/**
+ * Endpoint to add a summary to a preexistent call.
+ * @param  {} '/:id'
+ * @param  {} auth
+ * @param  {Function} callValidator.validAddCallSummary
+ * @param  {Function} callback
+ */
+
+router.put('/:id/summary', auth, callValidator.validAddCallSummary, function(req, res){
+ models.User.findById(req.payload._id).then(function(user) {
+   if(!user){
+     return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
+   }
+   callService.addCallSummary(req.primaryParams.project_id, req.primaryParams.channel_id, user, req.params.id, req.body.summary, function(result){
+     return res.status(result.code).json(result.message);
+   });
+ });
 });
 
 /**
