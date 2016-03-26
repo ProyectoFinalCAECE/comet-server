@@ -88,6 +88,14 @@
            }
        },
        {
+        "model": "MessageType",
+        "data": {
+	      "id": "10",
+               "description": "Videoconferencia - Minuta",
+               "character": "M"
+           }
+       },
+       {
            "model": "Integration",
            "data": {
                 "id": "1",
