@@ -35,6 +35,7 @@ router.get('/', auth, callValidator.validRetrieveCalls, function(req, res){
     });
   });
 });
+
 /**
  * Endpoint to store a new call.
  * @param  {} '/'
@@ -48,6 +49,24 @@ router.post('/', auth, callValidator.validNewCall, function(req, res){
       return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
     }
     callService.createNewCall(req.primaryParams.project_id, req.primaryParams.channel_id, user, req.body, function(result){
+      return res.status(result.code).json(result.message);
+    });
+  });
+});
+
+/**
+ * Endpoint to add curently logged user as a member to a preexistent call.
+ * @param  {} '/:id'
+ * @param  {} auth
+ * @param  {Function} callValidator.validAddCallMember
+ * @param  {Function} callback
+ */
+router.put('/:id/member', auth, callValidator.validAddCallMember, function(req, res){
+  models.User.findById(req.payload._id).then(function(user) {
+    if(!user){
+      return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
+    }
+    callService.addCallMember(req.primaryParams.project_id, req.primaryParams.channel_id, user, req.params.id, function(result){
       return res.status(result.code).json(result.message);
     });
   });
@@ -70,4 +89,5 @@ router.put('/:id', auth, callValidator.validUpdateCall, function(req, res){
     });
   });
 });
+
 module.exports = router;
