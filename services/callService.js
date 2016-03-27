@@ -444,6 +444,63 @@ module.exports.retrieveCalls = function(project_id, channel_id, user, callback) 
 };
 
 /**
+ * Retrieve a call and its members by id.
+ * @param  {integer}   project_id
+ * @param  {integer}   channel_id
+ * @param  {User}   user
+ * @param  {integer}   call_id
+ * @param  {Function} callback
+ */
+module.exports.retrieveCallById = function(project_id, channel_id, user, call_id, callback) {
+  var result = {};
+  if (isNaN(call_id)) {
+    result.code = 404;
+    result.message = { errors: { all: 'Por favor ingrese un id válido.'}};
+    return callback(result);
+  } else {
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', project_id, "B"] }).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      result.code = 404;
+      result.message = { errors: { all: 'No se puede encontrar ningún proyecto con el id provisto.'}};
+      return callback(result);
+    }
+
+    if(projects[0].ProjectUser.active === false){
+      result.code = 403;
+      result.message = { errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}};
+      return callback(result);
+    } else {
+
+      models.Call.find({ where: ['"id" = ? AND "ChannelId" = ?', call_id, channel_id], include: [models.CallMember] }).then(function(call){
+        if (call === undefined || call === null) {
+          result.code = 404;
+          result.message = { errors: { all: 'No se puede encontrar ninguna Videollamada para el id provisto.'}};
+          return callback(result);
+        }
+        
+        var response = {
+                        id: call.id,
+                        summary: call.summary,
+                        startHour: call.startHour,
+                        endHour: call.endHour,
+                        frontendId: call.frontendId,
+                        createdAt: call.createdAt,
+                        updatedAt: call.updatedAt,
+                        ChannelId: call.ChannelId,
+                        OwnerId: call.UserId,
+                        members: call.CallMembers
+                      };
+
+        result.code = 200;
+        result.message = response;
+        return callback(result);
+      });
+    }
+  });
+  }
+};
+
+/**
  * Given a set of calls, formats them to match the expected output.
  * @param  {array}   calls
  * @param  {Function} callback
