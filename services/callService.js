@@ -69,7 +69,7 @@ module.exports.createNewCall = function(project_id, channel_id, user, req_body, 
               // (must do it this way in order to return members within the service response)
               associateCallMembers(req_body.members, call.id, function(){
 
-                call.getMembers().then(function(members){
+                call.getCallMembers().then(function(members){
                   if(!members){
                     members = [];
                   }
@@ -179,7 +179,7 @@ module.exports.updateCall = function(project_id, channel_id, user, call_id, req_
             // (must do it this way in order to return members within the service response)
             removePreexistentMembers(call_id, associateCallMembers(req_body.members, calls[0].id, function() {
 
-                calls[0].getMembers().then(function(members){
+                calls[0].getCallMembers().then(function(members){
                   if(!members){
                     members = [];
                   }
@@ -260,7 +260,7 @@ module.exports.addCallMember = function(project_id, channel_id, user, call_id, c
             return callback(result);
           }
 
-          calls[0].getMembers().then(function(members){
+          calls[0].getCallMembers().then(function(members){
 
             var members_to_add = [];
 
@@ -276,7 +276,7 @@ module.exports.addCallMember = function(project_id, channel_id, user, call_id, c
 
             associateCallMembers(members_to_add, calls[0].id, function() {
 
-                calls[0].getMembers().then(function(members){
+                calls[0].getCallMembers().then(function(members){
                   if(!members){
                     members = [];
                   }
@@ -358,7 +358,7 @@ module.exports.addCallSummary = function(project_id, channel_id, user, call_id, 
 
               //saving updated call
               calls[0].save().then(function(){
-                calls[0].getMembers().then(function(members){
+                calls[0].getCallMembers().then(function(members){
                   if(!members){
                     members = [];
                   }
@@ -393,6 +393,156 @@ module.exports.addCallSummary = function(project_id, channel_id, user, call_id, 
   });
 };
 
+/**
+ * Returns all the calls of a channel, and the members of each one.
+ * @param  {integer}   project_id
+ * @param  {integer}   channel_id
+ * @param  {User}   user
+ * @param  {Function} callback
+ */
+module.exports.retrieveCalls = function(project_id, channel_id, user, callback) {
+  var result = {};
+
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', project_id, "B"] }).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      result.code = 404;
+      result.message = { errors: { all: 'No se puede encontrar ningún proyecto con el id provisto.'}};
+      return callback(result);
+    }
+
+    if(projects[0].ProjectUser.active === false){
+      result.code = 403;
+      result.message = { errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}};
+      return callback(result);
+    } else {
+
+      //Looking for Channel among retrieved Project's Channels.
+      projects[0].getChannels({ where: ['"Channel"."id" = ?', channel_id ] }).then(function(channels){
+
+        if (channels === undefined || channels.length === 0) {
+          result.code = 404;
+          result.message = { errors: { all: 'No se puede encontrar ningun Canal con el id provisto.'}};
+          return callback(result);
+        }
+
+        models.Call.findAll({ where: ['"ChannelId" = ?', channel_id], include: [models.CallMember] }).then(function(calls){
+          if (calls === undefined) {
+            result.code = 404;
+            result.message = { errors: { all: 'No se puede encontrar ninguna Videollamada para el canal provisto.'}};
+            return callback(result);
+          }
+
+          formatCallSet(calls, function(formattedCalls){
+            result.code = 200;
+            result.message = formattedCalls;
+            return callback(result);
+          });
+        });
+      });
+    }
+  });
+};
+
+/**
+ * Retrieve a call and its members by id.
+ * @param  {integer}   project_id
+ * @param  {integer}   channel_id
+ * @param  {User}   user
+ * @param  {integer}   call_id
+ * @param  {Function} callback
+ */
+module.exports.retrieveCallById = function(project_id, channel_id, user, call_id, callback) {
+  var result = {};
+  if (isNaN(call_id)) {
+    result.code = 404;
+    result.message = { errors: { all: 'Por favor ingrese un id válido.'}};
+    return callback(result);
+  } else {
+  user.getProjects({ where: ['"ProjectUser"."ProjectId" = ? AND "Project"."state" != ?', project_id, "B"] }).then(function(projects){
+    if (projects === undefined || projects.length === 0) {
+      result.code = 404;
+      result.message = { errors: { all: 'No se puede encontrar ningún proyecto con el id provisto.'}};
+      return callback(result);
+    }
+
+    if(projects[0].ProjectUser.active === false){
+      result.code = 403;
+      result.message = { errors: { all: 'El usuario no puede acceder al proyecto solicitado.'}};
+      return callback(result);
+    } else {
+
+      models.Call.find({ where: ['"id" = ? AND "ChannelId" = ?', call_id, channel_id], include: [models.CallMember] }).then(function(call){
+        if (call === undefined || call === null) {
+          result.code = 404;
+          result.message = { errors: { all: 'No se puede encontrar ninguna Videollamada para el id provisto.'}};
+          return callback(result);
+        }
+        
+        var response = {
+                        id: call.id,
+                        summary: call.summary,
+                        startHour: call.startHour,
+                        endHour: call.endHour,
+                        frontendId: call.frontendId,
+                        createdAt: call.createdAt,
+                        updatedAt: call.updatedAt,
+                        ChannelId: call.ChannelId,
+                        OwnerId: call.UserId,
+                        members: call.CallMembers
+                      };
+
+        result.code = 200;
+        result.message = response;
+        return callback(result);
+      });
+    }
+  });
+  }
+};
+
+/**
+ * Given a set of calls, formats them to match the expected output.
+ * @param  {array}   calls
+ * @param  {Function} callback
+ */
+function formatCallSet(calls, callback){
+  var formattedCalls = [];
+  var x;
+  for(x in calls){
+    formattedCalls.push({
+                          id: calls[x].id,
+                          summary: calls[x].summary,
+                          startHour: calls[x].startHour,
+                          endHour: calls[x].endHour,
+                          frontendId: calls[x].frontendId,
+                          createdAt: calls[x].createdAt,
+                          updatedAt: calls[x].updatedAt,
+                          ChannelId: calls[x].ChannelId,
+                          OwnerId: calls[x].UserId,
+                          members: calls[x].CallMembers
+                      });
+  }
+
+  //Ordering calls
+  formattedCalls.sort(compare);
+
+  return callback(formattedCalls);
+}
+
+/**
+ * Compares two calls and returns them ordered
+ * @param  {[type]} a [description]
+ * @param  {[type]} b [description]
+ * @return {[type]}   [description]
+ */
+function compare(a,b) {
+  if (a.createdAt < b.createdAt)
+    return -1;
+  else if (a.createdAt > b.createdAt)
+    return 1;
+  else
+    return 0;
+}
 
 /**
  * Save Call Members
@@ -445,7 +595,7 @@ function associateCallMembers(members, call_id, callback) {
 function removePreexistentMembers(call_id, callback) {
   models.Call.findById(call_id).then(function(call){
     if(call){
-      call.getMembers().then(function(members){
+      call.getCallMembers().then(function(members){
         if(members){
           var x;
           for(x in members){

@@ -37,6 +37,24 @@ router.get('/', auth, callValidator.validRetrieveCalls, function(req, res){
 });
 
 /**
+ * Endpoint to retrieve a certain call by id.
+ * @param  {} '/'
+ * @param  {} auth
+ * @param  {Function} callValidator.validRetrieveCalls
+ * @return {Function} callback
+ */
+router.get('/:id', auth, callValidator.validRetrieveCalls, function(req, res){
+  models.User.findById(req.payload._id).then(function(user) {
+    if(!user){
+      return res.status(404).json({ errors: { all: 'No se encontró usuario asociado al token provisto.'}});
+    }
+    callService.retrieveCallById(req.primaryParams.project_id, req.primaryParams.channel_id, user, req.params.id, function(result){
+      return res.status(result.code).json(result.message);
+    });
+  });
+});
+
+/**
  * Endpoint to store a new call.
  * @param  {} '/'
  * @param  {} auth
