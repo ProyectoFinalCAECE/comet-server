@@ -19,7 +19,7 @@ module.exports = function(sequelize, DataTypes) {
         associate: function(models) {
           Call.belongsTo(models.Channel);
           Call.belongsTo(models.User);
-          Call.hasMany(models.CallMember, {as: 'Members'});
+          Call.hasMany(models.CallMember);
         },
         summaryLength: function(){
           return summary_length;
