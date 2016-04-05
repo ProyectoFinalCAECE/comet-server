@@ -151,13 +151,6 @@ module.exports.updateCall = function(project_id, channel_id, user, call_id, req_
             return callback(result);
           }
 
-
-          if (req_body.summary)
-            calls[0].summary = req_body.summary;
-
-          if (req_body.start_hour)
-            calls[0].startHour = req_body.start_hour;
-
           if (req_body.end_hour)
             calls[0].endHour = req_body.end_hour;
 
@@ -477,7 +470,7 @@ module.exports.retrieveCallById = function(project_id, channel_id, user, call_id
           result.message = { errors: { all: 'No se puede encontrar ninguna Videollamada para el id provisto.'}};
           return callback(result);
         }
-        
+
         var response = {
                         id: call.id,
                         summary: call.summary,
