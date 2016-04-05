@@ -49,7 +49,7 @@ module.exports.createNewCall = function(project_id, channel_id, user, req_body, 
           startHour: new Date().getTime(),
           ChannelId: channels[0].id,
           UserId: user.id,
-          frontendId: req_body.frontendId
+          frontendId: req_body.frontend_id
         });
 
         //saving new call
@@ -154,57 +154,42 @@ module.exports.updateCall = function(project_id, channel_id, user, call_id, req_
           if (req_body.end_hour)
             calls[0].endHour = req_body.end_hour;
 
+          if (req_body.frontend_id)
+            calls[0].frontendId = req_body.frontend_id;
+
           //saving updated call
           calls[0].save().then(function(){
-            // UPDATE MEMBERS  -- > REPLACE OLD MEMBERS WITH NEW ONES
+            calls[0].getCallMembers().then(function(members){
+              if(!members){
+                members = [];
+              }
 
-            if(!req_body.members){
-              req_body.members = [];
-            }
+              var data = {
+                  id: calls[0].id,
+                  summary: calls[0].summary,
+                  startHour: calls[0].startHour,
+                  endHour: calls[0].endHour,
+                  frontendId: calls[0].frontendId,
+                  createdAt: calls[0].createdAt,
+                  updatedAt: calls[0].updatedAt,
+                  ChannelId: calls[0].ChannelId,
+                  OwnerId: calls[0].UserId,
+                  members: members
+              };
 
-            //Adding current user to Call Members array.
-            req_body.members.push(user.id);
+              var data_to_store = {
+                callId: data.id,
+                frontendId: calls[0].frontendId
+              };
 
-            //Removing duplicates
-            req_body.members = req_body.members.filter( onlyUnique );
+              // UPDATE MESSAGE
+              // Updating message
+            //  messagingService.updateVideocallMessage(JSON.stringify(data_to_store), calls[0].ChannelId, calls[0].UserId);
 
-            // Save Members
-            // (must do it this way in order to return members within the service response)
-            removePreexistentMembers(call_id, associateCallMembers(req_body.members, calls[0].id, function() {
-
-                calls[0].getCallMembers().then(function(members){
-                  if(!members){
-                    members = [];
-                  }
-
-                  var data = {
-                      id: calls[0].id,
-                      summary: calls[0].summary,
-                      startHour: calls[0].startHour,
-                      endHour: calls[0].endHour,
-                      frontendId: calls[0].frontendId,
-                      createdAt: calls[0].createdAt,
-                      updatedAt: calls[0].updatedAt,
-                      ChannelId: calls[0].ChannelId,
-                      OwnerId: calls[0].UserId,
-                      members: members
-                  };
-
-                  var data_to_store = {
-                    callId: data.id,
-                    frontendId: calls[0].frontendId
-                  };
-
-                  // UPDATE MESSAGE
-                  // Updating message
-                //  messagingService.updateVideocallMessage(JSON.stringify(data_to_store), calls[0].ChannelId, calls[0].UserId);
-
-                  result.code = 200;
-                  result.message = data;
-                  return callback(result);
-                });
-              })
-            );
+              result.code = 200;
+              result.message = data;
+              return callback(result);
+              });
           });
         });
       });
