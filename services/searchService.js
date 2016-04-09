@@ -36,7 +36,8 @@ var user_search_query = 'SELECT "U".id, "U".alias, "U"."firstName", "U"."lastNam
 	                      '  SELECT "PU"."UserId" FROM "ProjectUsers" AS "PU" WHERE "PU"."ProjectId"= ? AND "PU".active = true' +
 	                      ' )' +
                         ' AND "U".active = true' +
-                        ' AND to_tsvector("searchable_text") @@ to_tsquery(?)';
+                        ' AND to_tsvector("searchable_text") @@ to_tsquery(?)' +
+                        ' AND "U".id <> ?';
 
 /**
  * query to search for messages at common Channels for requests with :last_id paramater.
@@ -361,7 +362,7 @@ module.exports.searchUserInProject = function(project_id, user_text, user, callb
       //look for active users in project, that match the search parameter.
       sequelize.query(user_search_query,
                       { type: sequelize.QueryTypes.SELECT,
-                        replacements: [project_id, user_text]})
+                        replacements: [project_id, user_text, user.id]})
       .then(function(usersSearchResult) {
           result.code = 200;
           result.message = { users: usersSearchResult };
