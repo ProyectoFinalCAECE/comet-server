@@ -7,8 +7,6 @@
  */
 
 var models  = require('../models');
-var messagingService = require('../services/messagingService');
-var socket = require('../lib/socket');
 
 /**
  * Function to store a new call record at the database
@@ -87,26 +85,6 @@ module.exports.createNewCall = function(project_id, channel_id, user, req_body, 
                       members: members
                   };
 
-                  var data_to_store = {
-                    callId: data.id,
-                    frontendId: call.frontendId
-                  };
-
-                  // Saving message
-                  messagingService.storeVideocallMessage(JSON.stringify(data_to_store), call.ChannelId, call.UserId);
-
-                  // broadcast message
-                  var message = {
-                                  message: {
-                                      text: JSON.stringify(data),
-                                      type: 10,
-                                      date: new Date().getTime()
-                                  }
-                                };
-
-                  //broadcast
-                  socket.broadcastVideocallMessage('Project_' + projects[0].id, call.ChannelId, message);
-
                   result.code = 200;
                   result.message = data;
                   return callback(result);
@@ -176,15 +154,6 @@ module.exports.updateCall = function(project_id, channel_id, user, call_id, req_
                   OwnerId: calls[0].UserId,
                   members: members
               };
-
-              var data_to_store = {
-                callId: data.id,
-                frontendId: calls[0].frontendId
-              };
-
-              // UPDATE MESSAGE
-              // Updating message
-            //  messagingService.updateVideocallMessage(JSON.stringify(data_to_store), calls[0].ChannelId, calls[0].UserId);
 
               result.code = 200;
               result.message = data;
@@ -353,10 +322,6 @@ module.exports.addCallSummary = function(project_id, channel_id, user, call_id, 
                       OwnerId: calls[0].UserId,
                       members: members
                   };
-
-                  // UPDATE MESSAGE
-                  // Updating message
-                  //  messagingService.updateVideocallMessage(JSON.stringify(data_to_store), calls[0].ChannelId, calls[0].UserId);
 
                   result.code = 200;
                   result.message = data;
@@ -562,31 +527,6 @@ function associateCallMembers(members, call_id, callback) {
   } else {
     return callback();
   }
-}
-
-/**
- * Given a call id, retrieves the Call object and removes the members it could have.
- * @param  {[type]}   call_id  [description]
- * @param  {Function} callback [description]
- * @return {[type]}            [description]
- */
-function removePreexistentMembers(call_id, callback) {
-  models.Call.findById(call_id).then(function(call){
-    if(call){
-      call.getCallMembers().then(function(members){
-        if(members){
-          var x;
-          for(x in members){
-            members[x].destroy();
-          }
-        } else {
-          return callback();
-        }
-      });
-    } else {
-      return callback();
-    }
-  });
 }
 
 /**

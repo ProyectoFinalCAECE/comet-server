@@ -304,24 +304,6 @@ module.exports.storeStatusCakeMessage = function(message_content, channelId, int
       }).save();
 };
 
-/**
- * Store Videocall message in db
- * @param  {string} message_content
- * @param  {integer} channelId
- * @return void
- */
-module.exports.storeVideocallMessage = function(message_content, channelId, userId) {
-
-      // create new Message instance
-      models.Message.build({
-        content: message_content,
-        MessageTypeId: 10,
-        ChannelId: channelId,
-        UserId: userId,
-        sentDateTimeUTC: new Date().getTime()
-      }).save();
-};
-
 module.exports.retrieveMessagesById = function(message_id, limit, direction,
   channel_id, project_id, callback) {
 
