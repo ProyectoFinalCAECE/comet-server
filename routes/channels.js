@@ -72,11 +72,11 @@ router.get('/', auth, channelValidator.validGetByChannel, function(req, res) {
 });
 
 /*
-*Allows Project's User to add other Project's Users to a Project's Channel.
+* Allows Project's User to add other Project's Users to a Project's Channel.
 * @project_id
 * @id
 * @members
-*
+* TODO: Should be POST not PUT
 */
 router.put('/:id/members', auth, channelValidator.validAddMembers, function(req, res){
   // look for current user's account
@@ -85,6 +85,25 @@ router.put('/:id/members', auth, channelValidator.validAddMembers, function(req,
       return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
     }
     channelService.addMembersBulk(req.body.members, req.primaryParams.project_id, req.params.id, user, function(result){
+      return res.status(result.code).json(result.message);
+    });
+  });
+});
+
+/*
+* Allows a Private Channel's Member to remove another Member from the Channel.
+* @project_id
+* @id
+* @member_id
+*
+*/
+router.delete('/:id/members/:member_id', auth, channelValidator.validRemoveMember, function(req, res){
+  // look for current user's account
+  models.User.findById(parseInt(req.payload._id)).then(function(user) {
+    if (!user) {
+      return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
+    }
+    channelService.removeChannelMember(req.primaryParams.project_id, req.params.id, req.params.member_id, user, function(result){
       return res.status(result.code).json(result.message);
     });
   });

@@ -146,6 +146,39 @@ module.exports.validAddMembers = function(req, res, next) {
 };
 
 /*
+* Checks if provided parameters to remove a member from a Project's Private Channel are valid or returns an appropiate response.
+* @project_id
+* @id
+* @member_id
+*
+*/
+module.exports.validRemoveMember = function(req, res, next) {
+  var errors = {};
+  var hasErrors = false;
+
+  if (!req.primaryParams.project_id)  {
+    errors.project_id = 'Por favor ingrese el id de proyecto.';
+    hasErrors = true;
+  }
+
+  if (!req.params.id)  {
+    errors.id = 'Por favor ingrese el id de canal deseado.';
+    hasErrors = true;
+  }
+
+  if (!req.params.member_id)  {
+    errors.id = 'Por favor ingrese el id del miembro del canal que desea remover.';
+    hasErrors = true;
+  }
+
+  if (hasErrors) {
+    return res.status(400).json({ errors: errors });
+  }
+
+  next();
+};
+
+/*
 *
 * Checks if provided parameters to delete a Project's Channels are valid or returns an appropiate response.
 * @project_id
