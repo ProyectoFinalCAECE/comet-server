@@ -203,6 +203,51 @@ module.exports.addMembersBulk = function(members, project_id, channel_id, user, 
 };
 
 /*
+* Removes a member from a Private Channel.
+* @project_id
+* @channel_id
+* @member_id
+* @user
+* @callback
+*
+*/
+module.exports.removeChannelMember = function(project_id, channel_id, member_id, user, callback) {
+  var result = {};
+  models.Channel.findAll({ where: ['"Channel"."id" = ? AND "Channel"."ProjectId" = ? AND "Channel"."state" != ? AND "Channel"."type" = ?', channel_id , project_id, "B", "P"],
+                          include: [{ model: models.User}]}).then(function(channels){
+                            if (channels === undefined || channels.length === 0) {
+                              result.code = 404;
+                              result.message = { errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}};
+                              return callback(result);
+                            }
+
+                            var channel_members_ids = getActiveUsersIds(channels[0].Users);
+
+                            //checking that current logged user can perform this action.
+                            if(channel_members_ids.indexOf(user.id) === -1){
+                              result.code = 403;
+                              result.message = { errors: { all: 'El usuario no puede acceder al canal solicitado.'}};
+                              return callback(result);
+                            } else {
+                              var user_to_remove = findChannelUser(channels[0].Users, parseInt(member_id));
+                              if(user_to_remove && user_to_remove.ChannelUser.active === true) {
+                                user_to_remove.ChannelUser.active = false;
+                                user_to_remove.ChannelUser.severedAt = new Date().getTime();
+                                user_to_remove.ChannelUser.save().then(function(){
+                                  result.code = 200;
+                                  result.message = { all: 'El miembro ha sido eliminado exitosamente del canal.' };
+                                  return callback(result);
+                                });
+                              } else {
+                                result.code = 404;
+                                result.message = { errors: { all: 'El miembro que desea eliminar no forma parte del canal o ha sido eliminado previamente.'}};
+                                return callback(result);
+                              }
+                            }
+                          });
+};
+
+/*
 *
 * Deletes a Project's Channel
 * @project_id
