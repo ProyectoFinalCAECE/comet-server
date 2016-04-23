@@ -130,6 +130,14 @@ cd "$HOME/comet/comet-client"
 bower --allow-root install >/dev/null 2>&1
 printf "Modulos del cliente instalado satisfactoriamente"
 
+##comet-signalmaster
+printf "Instalando Signalmaster\n"
+cd "$HOME/comet"
+git clone https://github.com/ProyectoFinalCAECE/comet-signalmaster.git
+cd "$HOME/comet/comet-signalmaster"
+npm install >/dev/null 2>&1
+printf "Signalmaster instalado satisfactoriamente\n"
+
 ## Iniciando y parando el servidor para poblar los tipos de mensajes en la base de datos
 
 printf "Iniciando Servidor\n"
@@ -147,11 +155,4 @@ grunt fixtures:import_default_data
 chmod -R 777 "$HOME/.config/configstore/"
 
 
-##comet-signalmaster
-printf "Instalando Signalmaster\n"
-cd "$HOME/comet"
-git clone https://github.com/ProyectoFinalCAECE/comet-signalmaster.git
-cd "$HOME/comet/comet-signalmaster"
-npm install >/dev/null 2>&1
-node server.js & >/dev/null 2>&1
-printf "Signalmaster instalado satisfactoriamente\n"
+
