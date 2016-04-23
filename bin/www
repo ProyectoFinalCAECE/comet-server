@@ -37,4 +37,10 @@ models.sequelize.sync().then(function () {
     debug('Express server listening on port ' + server.address().port);
   });
   require('../lib/socket').listen(server);
+
+  var server_http = http.createServer(app);
+  server_http.listen(4001, function() {
+    debug('Express server listening on port 4001');
+  });
+  require('../lib/socket').listen(server_http);
 });
