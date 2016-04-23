@@ -6,7 +6,7 @@
 if [ "$(id -u)" != "0" ]
 then
 
-    	printf "El instalador debe ejecutarse como root"
+    	printf "El instalador debe ejecutarse como root\n"
     	exit 1
 
 fi
@@ -25,7 +25,7 @@ then
 	printf "No se encontro git instalado, se procede a su instalación\n"
 	printf "Instalando git...\n" 
 	apt-get install -y git >/dev/null 2>&1
-	printf "git instalado satisfactoriamente"
+	printf "git instalado satisfactoriamente\n"
 
 else
 	printf "git ya se encuentra instalado.\n"
@@ -81,7 +81,7 @@ then
 	ps axf | grep redis | grep -v grep | awk '{print "kill -9 " $1}' | sh > /dev/null 2>&1
 	printf "redis instalado satisfactoriamente\n"
 else
-	printf "redis ya se encuentra instalado"
+	printf "redis ya se encuentra instalado\n"
 fi
 
 
@@ -110,25 +110,25 @@ sudo -u postgres createdb comet
 
 printf "\n\nTodas las dependencias se encuentran instaladas, procediendo a la instalación del sistema comet\n"
 
-printf "Creando directorios"
+printf "Creando directorios\n"
 mkdir "$HOME/comet"
 cd "$HOME/comet"
 
 ##comet server
-printf "Instalando el servidor y sus modulos..."
+printf "Instalando el servidor y sus modulos...\n"
 git clone https://github.com/ProyectoFinalCAECE/comet-server.git 
 cd "$HOME/comet/comet-server"
 npm install >/dev/null 2>&1
 apt-get install -y imagemagick >/dev/null 2>&1
-printf "Servidor instalado satisfactoriamente"
+printf "Servidor instalado satisfactoriamente\n"
 
 ##comet-client
-printf "Instalando modulos del cliente"
+printf "Instalando modulos del cliente\n"
 cd "$HOME/comet"
 git clone https://github.com/ProyectoFinalCAECE/comet-client.git
 cd "$HOME/comet/comet-client"
 bower --allow-root install >/dev/null 2>&1
-printf "Modulos del cliente instalado satisfactoriamente"
+printf "Modulos del cliente instalado satisfactoriamente\n"
 
 ##comet-signalmaster
 printf "Instalando Signalmaster\n"
@@ -152,7 +152,7 @@ ps axf | grep start.sh | grep -v grep | awk '{print "kill -9 " $1}' | sh > /dev/
 ps axf | grep bin/www | grep -v grep | awk '{print "kill -9 " $1}' | sh > /dev/null 2>&1
 ps axf | grep redis | grep -v grep | awk '{print "kill -9 " $1}' | sh > /dev/null 2>&1
 grunt fixtures:import_default_data
-chmod -R 777 "$HOME/.config/configstore/"
+chmod -R 777 "$HOME/.config/configstore/" && exit 0
 
 
 
