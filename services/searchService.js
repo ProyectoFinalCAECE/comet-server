@@ -397,22 +397,6 @@ module.exports.searchUserInProject = function(project_id, user_text, user, callb
 function userBelongsToDirectChannel(user_id, channel_name){
   return (channel_name.split("_").indexOf(user_id.toString()) > -1);
 }
-/*
-*Given a set of Users, returns the one whose id is equal to the provided one
-*
-*/
-function findChannelUser(channel_users, current_user_id){
-  if(channel_users){
-    var y;
-    for(y in channel_users){
-      if(channel_users[y].id === current_user_id){
-        return channel_users[y];
-      }
-    }
-  }else{
-    return null;
-  }
-}
 
 /**
  * Given a set of Users, returns the one whose id is equal to the provided one
@@ -428,8 +412,9 @@ function findChannelUser(channel_users, current_user_id){
         return channel_users[y];
       }
     }
+  } else {
+    return null;
   }
-  return null;
 }
 
 /**
@@ -464,8 +449,7 @@ function getChannelsIdsToScan(project, user, callback, channel_id){
 
   //If request includes channelId parameter
   if(channel_id !== undefined){
-    models.Channel.findAll({ where: ['"Channel"."id" = ? AND "Channel"."ProjectId" = ? AND "Channel"."state" != ?', channel_id, project.id, "B"]}).then(function(channels){
-
+    models.Channel.findAll({ where: ['"Channel"."id" = ? AND "Channel"."ProjectId" = ? AND "Channel"."state" != ?', channel_id, project.id, "B"], include: [{ model: models.User}]}).then(function(channels){
       //Channel does not exist.
       if (channels === undefined || channels.length === 0) {
         return callback(channels_ids);
@@ -486,7 +470,7 @@ function getChannelsIdsToScan(project, user, callback, channel_id){
     });
   } else {
     //Must look for all Project's Channels.
-    project.getChannels().then(function(project_channels){
+    project.getChannels({include: [{ model: models.User}]}).then(function(project_channels){
 
       var x;
       for (x in project_channels) {
