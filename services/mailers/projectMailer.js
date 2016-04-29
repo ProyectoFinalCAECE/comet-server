@@ -8,7 +8,6 @@
 var path = require('path');
 var mailGateway = require('../mailers/mailGateway');
 var project_invitation_mailer_template_dir = path.join(__dirname, '../..', '/views/templates/project_invitation_email');
-var site_config = require('../../config/site_config.json');
 var EmailTemplate = require('email-templates').EmailTemplate;
 var winston = require('winston');
 
@@ -18,15 +17,11 @@ var winston = require('winston');
  * @receivers
  *
  */
- module.exports.sendInvitationEmail = function(receiver, projectName, projectOwner, token) {
+ module.exports.sendInvitationEmail = function(receiver, projectName, projectOwner, token, fullUrl) {
 
    var project_invitation_mailer_template = new EmailTemplate(project_invitation_mailer_template_dir);
 
-   var link = site_config.base + '/#/projects/invitations/accept?token=' + token;
-
-   var locals = {project:{name: projectName, owner: projectOwner, link: link}};
-
-   project_invitation_mailer_template.render(locals, function (err, results) {
+   project_invitation_mailer_template.render({project:{name: projectName, owner: projectOwner, link: fullUrl + '/#/projects/invitations/accept?token=' + token}}, function (err, results) {
      if (err) {
        winston.info(err);
        return err;
@@ -38,4 +33,4 @@ var winston = require('winston');
                    results.html
                  );
     });
- }
+ };

@@ -191,7 +191,7 @@ module.exports.sendInvitationsBulk = function(req, res, user){
               return res.status(403).json({ errors: { all: 'Sólo es posible invitar hasta ' + site_config.users_per_project_limit +' miembros al proyecto.'}});
             } else {
               //sending invitations
-              sendInvitations(new_members, projects[0].name, projects[0].id, user.alias);
+              sendInvitations(new_members, projects[0].name, projects[0].id, user.alias, req.protocol + '://' + req.get('host'));
               return res.status(200).json({});
             }
           });
@@ -594,7 +594,7 @@ function generateProjectInvitationToken(email_address, project_id){
 * @addresses
 *
 */
-function sendInvitations(addresses, project_name, project_id, owner_name){
+function sendInvitations(addresses, project_name, project_id, owner_name, fullUrl){
   if(addresses){
     var x;
     for (x in addresses) {
@@ -602,8 +602,7 @@ function sendInvitations(addresses, project_name, project_id, owner_name){
         projectMailerService.sendInvitationEmail(addresses[x].address,
                                                   project_name,
                                                   owner_name,
-                                                  generateProjectInvitationToken(addresses[x].address,
-                                                                                  project_id)
+                                                  generateProjectInvitationToken(addresses[x].address, project_id), fullUrl
                                                 );
       } else {
         winston.info('discarding: ' + addresses[x].address);
