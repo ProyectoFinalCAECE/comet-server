@@ -37,7 +37,7 @@ router.get('/', auth, function(req, res) {
  */
 router.get('/:id', auth, function(req, res) {
   messagingService.retrieveMessagesById(req.params.id, req.query.limit, req.query.direction,
-    req.primaryParams.channel_id, req.primaryParams.project_id, function(result){
+    req.primaryParams.channel_id, req.primaryParams.project_id, req.query.isDirect, req.payload._id, function(result){
     return res.status(result.code).json(result.message);
   });
 });

@@ -305,7 +305,7 @@ module.exports.storeStatusCakeMessage = function(message_content, channelId, int
 };
 
 module.exports.retrieveMessagesById = function(message_id, limit, direction,
-  channel_id, project_id, callback) {
+  channel_id, project_id, isDirect, requesterId, callback) {
 
   var result = {};
 
@@ -318,7 +318,12 @@ module.exports.retrieveMessagesById = function(message_id, limit, direction,
     direction = "forwards";
   }
 
-  if(isNaN(channel_id)){
+  if(isDirect){
+    var channel_identifier = 'Direct_' + requesterId + '_' + channel_id;
+
+    if(parseInt(channel_id) < parseInt(requesterId)){
+      channel_identifier = 'Direct_' + channel_id + '_' + requesterId;
+    }
 
     if(direction === "forwards"){
       sequelize.query(direct_channel_messages_forwards,
@@ -327,7 +332,7 @@ module.exports.retrieveMessagesById = function(message_id, limit, direction,
                         replacements: {
                           message_id: message_id,
                           limit: limit,
-                          channel_id: channel_id,
+                          channel_id: channel_identifier,
                           project_id: project_id
                         },
                           escapeValues: false
@@ -346,7 +351,7 @@ module.exports.retrieveMessagesById = function(message_id, limit, direction,
                         replacements: {
                           message_id: message_id,
                           limit: limit,
-                          channel_id: channel_id,
+                          channel_id: channel_identifier,
                           project_id: project_id
                         },
                           escapeValues: false
