@@ -28,10 +28,10 @@ var winston = require('winston');
 *
 */
 
-module.exports.sendWelcomeAndAccountConfirmationMail = function(receiver, token) {
+module.exports.sendWelcomeAndAccountConfirmationMail = function(receiver, token, fullUrl) {
   var welcome__and_account_confirmation_mailer_template = new EmailTemplate(welcome__and_account_confirmation_mailer_template_dir);
 
-  var locals = {message:{link: 'http://localhost:4000/#/account/confirm?token=' + token}};
+  var locals = {message:{link: fullUrl + '/#/account/confirm?token=' + token}};
 
   welcome__and_account_confirmation_mailer_template.render(locals, function (err, results) {
     if (err) {
@@ -45,7 +45,7 @@ module.exports.sendWelcomeAndAccountConfirmationMail = function(receiver, token)
                   results.html
                 );
     });
-}
+};
 
 /*
 * Sends goodbye mail to provided email account.
@@ -70,7 +70,7 @@ module.exports.sendGoodbyeMail = function(receiver) {
                   results.html
                 );
     });
-}
+};
 
 /*
 * Sends password recovery email with expirable token to provided email account.
@@ -79,10 +79,10 @@ module.exports.sendGoodbyeMail = function(receiver) {
 * @token
 *
 */
-module.exports.sendPasswordRecoveryMail = function(receiver, token) {
+module.exports.sendPasswordRecoveryMail = function(receiver, token, fullUrl) {
   var password_recovery_mailer_template = new EmailTemplate(password_recovery_mailer_template_dir);
 
-  var locals = {message:{link: 'http://localhost:4000/#/account/recover?token=' + token + '&email=' + receiver}};
+  var locals = {message:{link: fullUrl + '/#/account/recover?token=' + token + '&email=' + receiver}};
 
   password_recovery_mailer_template.render(locals, function (err, results) {
     if (err) {
@@ -96,7 +96,7 @@ module.exports.sendPasswordRecoveryMail = function(receiver, token) {
                   results.html
                 );
     });
-}
+};
 
 /*
 * Sends account confirmation email with expirable token to provided email account.
@@ -105,10 +105,10 @@ module.exports.sendPasswordRecoveryMail = function(receiver, token) {
 * @token
 *
 */
-module.exports.sendAccountConfirmationMail = function(receiver, token) {
+module.exports.sendAccountConfirmationMail = function(receiver, token, fullUrl) {
   var account_confirmation_mailer_template = new EmailTemplate(account_confirmation_mailer_template_dir);
 
-  var locals = {message:{link: 'http://localhost:4000/#/account/confirm?token=' + token}};
+  var locals = {message:{link: fullUrl + '/#/account/confirm?token=' + token}};
 
   account_confirmation_mailer_template.render(locals, function (err, results) {
     if (err) {
@@ -122,7 +122,7 @@ module.exports.sendAccountConfirmationMail = function(receiver, token) {
                   results.html
                 );
   });
-}
+};
 
 /*
 * Sends account recovery email with expirable token to provided email account.
@@ -131,10 +131,10 @@ module.exports.sendAccountConfirmationMail = function(receiver, token) {
 * @token
 *
 */
-module.exports.sendAccountRecoveryMail = function(receiver, token) {
+module.exports.sendAccountRecoveryMail = function(receiver, token, fullUrl) {
   var account_recovery_mailer_template = new EmailTemplate(account_recovery_mailer_template_dir);
 
-  var locals = {message:{link: 'http://localhost:4000/#/account/reopen-return?token=' + token + '&email=' + receiver}};
+  var locals = {message:{link: fullUrl + '/#/account/reopen-return?token=' + token + '&email=' + receiver}};
 
   account_recovery_mailer_template.render(locals, function (err, results) {
     if (err) {
@@ -148,7 +148,7 @@ module.exports.sendAccountRecoveryMail = function(receiver, token) {
                   results.html
                 );
   });
-}
+};
 
 /*
 * Sends mail basing on the options retrieved from the mailer_config file (config/mailer.json) and the provided parameters.

@@ -116,7 +116,7 @@ router.post('/reopen/token', function(req, res) {
         if(user.severedAt !== null){
           return res.status(403).json({ errors: { all: 'La cuenta solicitada fue cerrada por un Administrador. Por favor pongase en contacto con un Administrador del sistema.' }});
         } else {
-          mailerService.sendAccountRecoveryMail(user.email, accountService.generateAccountRecoveryToken(user.id));
+          mailerService.sendAccountRecoveryMail(user.email, accountService.generateAccountRecoveryToken(user.id),req.protocol + '://' + req.get('host'));
           return res.status(200).json({});
         }
       }
@@ -157,7 +157,7 @@ router.post('/confirm/token', auth, function(req, res, next) {
       return res.status(404).json({ message: 'No se encontro usuario asociado al token provisto.'});
     } else {
       if(!user.confirmed){
-        mailerService.sendAccountConfirmationMail(user.email, accountService.generateConfirmationToken(user.id));
+        mailerService.sendAccountConfirmationMail(user.email, accountService.generateConfirmationToken(user.id), req.protocol + '://' + req.get('host'));
         return res.status(200).json({});
       } else {
         return res.status(403).json({ errors: { all: 'La cuenta ya habia sido confirmada previamente.'}});
@@ -167,7 +167,7 @@ router.post('/confirm/token', auth, function(req, res, next) {
 });
 
 /*
-* Sends password recovery token to User's email account, if account exists and is confirmed.
+* Sends password recovery token to User's email account, if account exists.
 *
 * @email
 *
@@ -184,12 +184,9 @@ router.post('/password/token', function(req, res) {
           return res.status(404).json({ errors: { email: 'No se encontró ningún usuario con el correo indicado.' }});
       }
 
-      if(user.confirmed) {
-        mailerService.sendPasswordRecoveryMail(user.email, accountService.generatePasswordRecoveryToken(user.id));
-        return res.status(200).json({});
-      } else {
-        return res.status(403).json({ errors: { email: 'La contraseña no podrá actualizarse hasta que la cuenta no sea confirmada.' }});
-      }
+      mailerService.sendPasswordRecoveryMail(user.email,
+          accountService.generatePasswordRecoveryToken(user.id), req.protocol + '://' + req.get('host'));
+      return res.status(200).json({});
   });
 });
 
