@@ -7,6 +7,7 @@
 */
 
 var validator = require('validator');
+var XRegExp = require('xregexp').XRegExp;
 
 /**
  * validates if provided search parameters for a message in a project are valid.
@@ -26,6 +27,10 @@ module.exports.validSearchMessageInProject = function(req, res, next) {
       req.query.q.length === 0){
         errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
   } else {
+
+    if(!XRegExp.test(req.query.q, /^[a-z0-9]+$/i)){
+      errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
+    }
 
     req.query.q = validator.replaceWhiteSpaces(req.query.q);
     req.query.q = validator.trim(req.query.q);
@@ -65,6 +70,10 @@ module.exports.validSearchMessageInChannel = function(req, res, next) {
         errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
   } else {
 
+    if(!XRegExp.test(req.query.q, /^[a-z0-9]+$/i)){
+      errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
+    }
+
     req.query.q = validator.replaceWhiteSpaces(req.query.q);
     req.query.q = validator.trim(req.query.q);
     req.query.q = validator.escape(req.query.q);
@@ -98,6 +107,10 @@ module.exports.validSearchUserInProject = function(req, res, next){
       req.query.q.length === 0){
         errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
   } else {
+
+    if(!XRegExp.test(req.query.q, /^[a-z0-9]+$/i)){
+      errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
+    }
 
     req.query.q = validator.replaceWhiteSpaces(req.query.q);
     req.query.q = validator.trim(req.query.q);
