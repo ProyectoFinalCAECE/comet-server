@@ -12,7 +12,7 @@
   },
   "test": {
     "username": "postgres",
-    "password": "",
+    "password": "123456789",
     "database": "comet",
     "host": "127.0.0.1",
     "dialect": "postgres",
@@ -23,7 +23,7 @@
   },
   "production": {
     "username": "postgres",
-    "password": "",
+    "password": "123456789",
     "database": "comet",
     "host": "127.0.0.1",
     "dialect": "postgres",
