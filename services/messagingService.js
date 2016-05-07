@@ -215,9 +215,10 @@ module.exports.getProjectChannelsUpdates = function(projectId, userId, callback)
                       		' AND state = \'O\' ' +
                       	' ) ' +
                       ') ' +
+                      ' AND "UserId" != ? ' +
                       ' AND "sentDateTimeUTC" > ?;',
                     { type: sequelize.QueryTypes.SELECT,
-                      replacements: [userId, projectId, disconnectedAt]})
+                      replacements: [userId, projectId, userId, disconnectedAt]})
     .then(function(channel_with_updates) {
       winston.info("channel_with_updates is: " + JSON.stringify(channel_with_updates));
       var x;
