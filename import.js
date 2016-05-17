@@ -330,6 +330,7 @@ var models  = require('./models');
 
         //populating other user record fields
         user.setPassword('Test123');
+        user.profilePicture = '../../images/404.png';
         user.alias = user.firstName.toLowerCase() + user.lastName.toLowerCase();
         user.searchable_text =
             user.firstName+' '+
