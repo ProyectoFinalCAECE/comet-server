@@ -39,3 +39,4 @@ avatar_images/*
 !avatar_images/.keep
 dump.rdb
 ngrok
+.vscode

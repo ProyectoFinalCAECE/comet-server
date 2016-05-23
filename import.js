@@ -9,7 +9,7 @@ var models  = require('./models');
 (function () {
     
     var maxUsers = 100,
-        maxProjects = 100,
+        maxProjects = 110,
         channelsPerProject = 100,
         messagesPerChannel = 100;
     
@@ -205,7 +205,7 @@ var models  = require('./models');
     function addUsersToChannel(channel, projectUsers) {
         
         var query = '',
-            totalUsers = 1; //projectUsers.length;
+            totalUsers = getRandomInt(1, projectUsers.length);
         
         for (var i = 0; i < totalUsers; i++) {
             query += 'INSERT INTO "ChannelUsers"(active, "severedAt", "createdAt", "updatedAt", "UserId", "ChannelId") ' +  
@@ -231,31 +231,27 @@ var models  = require('./models');
             totalFinished = 0,
             query = '',
             totalMessages = messagesPerChannel;
-        
-        //TODO      
-        for (var i = 0; i < totalMessages; i++) {
-            query += createMessage(params.channel.id, i, params.projectUsers); 
-        }
-        
+                    
         return models.sequelize
-                    .query(query, { type: models.sequelize.QueryTypes.INSERT});
+            .query('select content from "messages_model" where random() < 0.01 limit ?',
+            { 
+                replacements: [totalMessages], 
+                type:  models.sequelize.QueryTypes.SELECT 
+            }
+        ).then(function(contenidos) {
             
-        // for (var i = 0; i < totalMessages; i++) {
-        //     createMessage(params.channel.id, i, params.projectUsers)
-        //         .finally(function () {
-        //             totalFinished++;
-        //             if (totalFinished === totalMessages) {
-        //                 deferred.resolve();
-        //             }
-        //         })
-        // }
+            for (var i = 0; i < totalMessages; i++) {
+                query += createMessage(params.channel.id, i, params.projectUsers, contenidos[i].content); 
+            }
         
-        // return deferred.promise;
+            return models.sequelize
+                    .query(query, { type: models.sequelize.QueryTypes.INSERT});      
+        })
     }
     
     //____________________________________________________________________________________
     
-    function createMessage(channelId, index, projectUsers) {
+    function createMessage(channelId, index, projectUsers, content) {
         
         // takes one random user from the project
         var userId = projectUsers[getRandomInt(0, projectUsers.length)];
@@ -264,14 +260,13 @@ var models  = require('./models');
             userId = 1;
         }
         
-        var content = '\'TEXTO - ' + channelId + ' - ' + (index + 1) + '\'',
-            link = '\'\'',
+        var link = '\'\'',
             sentDate = '\'2016-05-21 15:42:35.961 +00:00\'',
             createdAt = '\'2016-05-21 15:42:35.961 +00:00\'';
         
         return 'INSERT INTO "Messages" ("id","content","link","sentDateTimeUTC","ChannelId","UserId",' + 
                  '"MessageTypeId","updatedAt","createdAt")' +
-                 ' VALUES (DEFAULT,' + content + ',' + link + ',' + sentDate + ',' + channelId + ',' + 
+                 ' VALUES (DEFAULT,\'' + content + '\',' + link + ',' + sentDate + ',' + channelId + ',' + 
                   userId + ',1,' + createdAt + ',' + createdAt + ');';
         
         // var message = models.Message.build({
