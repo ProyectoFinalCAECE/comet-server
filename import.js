@@ -1,5 +1,5 @@
 "use strict";
-
+var async = require('async');
 var express = require('express');
 var logger = require('morgan');
 var Q = require('q');
@@ -9,9 +9,9 @@ var models  = require('./models');
 (function () {
     
     var maxUsers = 100,
-        maxProjects = 5,
-        channelsPerProject = 10,
-        messagesPerChannel = 20;
+        maxProjects = 100,
+        channelsPerProject = 100,
+        messagesPerChannel = 100;
     
     batchImport();
     
@@ -39,30 +39,7 @@ var models  = require('./models');
                                     ' TRUNCATE TABLE "Projects" RESTART IDENTITY CASCADE', 
                             { type: models.sequelize.QueryTypes.RAW});
     }
-
-    //____________________________________________________________________________________
-
-    function batchCreateProjects() {
-        
-        return asyncIterarion(function (i) {
-            return createProject(i);
-        }, maxProjects);
-        
-        // var deferred = Q.defer(),
-        //     totalFinished = 0;
-            
-        // for (var i = 1; i <= total; i++) {
-        //     createProject(i).finally(function (params) {
-        //         totalFinished++;
-        //         if (totalFinished === total) {
-        //             deferred.resolve();
-        //         }
-        //     });
-        // }
-        
-        // return deferred.promise;
-    }
-
+    
     //____________________________________________________________________________________
 
     function batchCreateUsers() {
@@ -71,25 +48,30 @@ var models  = require('./models');
             return createUser(i);
         }, maxUsers);
         
+    }
+    //____________________________________________________________________________________
+
+    function batchCreateProjects() {
         
-        // var deferred = Q.defer(),
-        //     totalFinished = 0;
+        var calls =  [];
         
-        // for (var i = 1; i <= total; i++) {
-        //     createUser(i).finally(function () {
-        //         totalFinished++;
-        //         if (totalFinished === total) {
-        //             deferred.resolve();
-        //         }
-        //     });
-        // }
+        for (var i = 0; i < maxProjects; i++) {
+            calls.push(i+1);
+        }
         
-        // return deferred.promise;
+        return calls.reduce(function (soFar, index) {
+            return soFar.then(function() {
+                console.log('------------------------------------------');
+                return createProject(index);
+            });
+        }, Q());
     }
 
     //____________________________________________________________________________________
 
     function createProject(index) {
+        
+        console.log('createProject', index);
         
         var project = models.Project.build({
             name: 'Proyecto ' + index,
@@ -99,7 +81,14 @@ var models  = require('./models');
         return project.save()
             .then(addProjectIntegrations)
             .then(addProjectUsers)
-            .then(addProjectChannels);
+            .then(addProjectChannels)
+            .then(function () {
+                return index;
+            })
+            .catch(function (err) {
+                console.log("createProject error", index, err)
+                return index;
+            });;
     }
     
     //____________________________________________________________________________________
@@ -129,13 +118,11 @@ var models  = require('./models');
     
     function addProjectUsers(project) {
         
-        var deferred = Q.defer(),
-            totalFinished = 0,
-            totalUsers = getRandomInt(1, 5),
+        var totalUsers = getRandomInt(1, 5),
             projectUsers = [],
-            query = 'INSERT INTO "ProjectUsers"' + 
-                    '("isOwner", active, "severedAt", "createdAt", "updatedAt", "UserId", "ProjectId", "disconnectedAt") ' +
-                    'VALUES (false, true, NULL, NOW(), NOW(), :userId, :projectId, NULL);';
+            query = '';
+            
+        console.log('addProjectUsers - project ', project.id, 'totalUsers', totalUsers);
         
         for (var i = 0; i < totalUsers; i++) {
             
@@ -146,25 +133,19 @@ var models  = require('./models');
             
             projectUsers.push(user);
             
-            models.sequelize.query(query, { 
-                replacements: { 
-                    userId: user, 
-                    projectId: project.id 
-                }, 
-                type: models.sequelize.QueryTypes.INSERT
-            })
-            .finally(function () {
-                totalFinished++;
-                if (totalFinished === totalUsers) {
-                    deferred.resolve( { 
-                        project: project, 
-                        projectUsers: projectUsers
-                    });
-                }
-            });
+            query += 'INSERT INTO "ProjectUsers"' + 
+                    '("isOwner", active, "severedAt", "createdAt", "updatedAt", "UserId", "ProjectId", "disconnectedAt") ' +
+                    'VALUES (false, true, NULL, NOW(), NOW(),' + user +  ',' + project.id + ', NULL);';
         }
         
-        return deferred.promise;
+        return models.sequelize
+                     .query(query, { type: models.sequelize.QueryTypes.INSERT})
+                     .then(function () {
+                         return { 
+                            project: project, 
+                            projectUsers: projectUsers
+                        }
+                     });
     }
     
     //____________________________________________________________________________________
@@ -191,25 +172,13 @@ var models  = require('./models');
     //____________________________________________________________________________________
     
     function addProjectChannels (params) {
-       
+        
+        console.log('addProjectChannels');
         
         return asyncIterarion(function (i) {
             return createChannel(params.project.id, i, params.projectUsers);
         }, channelsPerProject);
         
-        // var deferred = Q.defer(),
-        //     totalFinished = 0;
-        
-        // for (var i = 1; i <= channelsPerProject ; i++) {
-        //     createChannel(project.id, i).finally(function () {
-        //         totalFinished++;
-        //         if (totalFinished === channelsPerProject) {
-        //             deferred.resolve();
-        //         }
-        //     });
-        // }
-        
-        // return deferred.promise;
     }
     
     //____________________________________________________________________________________
@@ -225,6 +194,7 @@ var models  = require('./models');
 
          return channel.save()
          .then(function (createdChannel) {
+            //console.log('channel created', createdChannel.id);
             return addUsersToChannel(createdChannel, projectUsers)
          })
          .then(createMessagesForChannel);
@@ -234,33 +204,23 @@ var models  = require('./models');
     
     function addUsersToChannel(channel, projectUsers) {
         
-        var query = 'INSERT INTO "ChannelUsers"(active, "severedAt", "createdAt", "updatedAt", "UserId", "ChannelId") ' +  
-                    'VALUES (true, NULL, NOW(), NOW(), :userId, :channelId);';
-        
-        var deferred = Q.defer(),
-            totalFinished = 0,
-            totalUsers = projectUsers.length;
+        var query = '',
+            totalUsers = 1; //projectUsers.length;
         
         for (var i = 0; i < totalUsers; i++) {
-            models.sequelize.query(query,
-                    { replacements: { 
-                        userId: projectUsers[i], 
-                        channelId: channel.id 
-                    }, 
-                    type: models.sequelize.QueryTypes.INSERT
-                })
-                .finally(function () {
-                    totalFinished++;
-                    if (totalFinished === totalUsers) {
-                        deferred.resolve({
-                            channel: channel,
-                            projectUsers: projectUsers
-                        });
-                    }
-                })
+            query += 'INSERT INTO "ChannelUsers"(active, "severedAt", "createdAt", "updatedAt", "UserId", "ChannelId") ' +  
+                     'VALUES (true, NULL, NOW(), NOW(), ' + projectUsers[i] + ',' + channel.id + ');';
         }
         
-        return deferred.promise;
+        return models.sequelize
+                    .query(query, { type: models.sequelize.QueryTypes.INSERT})
+                    .then(function () {
+                        //console.log('addUsersToChannel:', channel.id, ' totalUsers', totalUsers, 'Ok');
+                        return {
+                            channel: channel,
+                            projectUsers: projectUsers
+                        }
+                    });
     }
     
     //____________________________________________________________________________________
@@ -269,28 +229,28 @@ var models  = require('./models');
         
         var deferred = Q.defer(),
             totalFinished = 0,
+            query = '',
             totalMessages = messagesPerChannel;
-            
+        
+        //TODO      
         for (var i = 0; i < totalMessages; i++) {
-            createMessage(params.channel.id, i, params.projectUsers)
-                .finally(function () {
-                    totalFinished++;
-                    if (totalFinished === totalMessages) {
-                        deferred.resolve();
-                    }
-                })
+            query += createMessage(params.channel.id, i, params.projectUsers); 
         }
         
-        return deferred.promise;
-    
-        // var bulk = [];
-                
-        // for (var i = 1; i <= totalMessages; i++) {
-        //     var msg = createMessage(channel.id, i);
-        //     //bulk.push(createMessage(channel.id, i));
+        return models.sequelize
+                    .query(query, { type: models.sequelize.QueryTypes.INSERT});
+            
+        // for (var i = 0; i < totalMessages; i++) {
+        //     createMessage(params.channel.id, i, params.projectUsers)
+        //         .finally(function () {
+        //             totalFinished++;
+        //             if (totalFinished === totalMessages) {
+        //                 deferred.resolve();
+        //             }
+        //         })
         // }
         
-        // return models.Message.bulkCreate(bulk);
+        // return deferred.promise;
     }
     
     //____________________________________________________________________________________
@@ -304,17 +264,26 @@ var models  = require('./models');
             userId = 1;
         }
         
-        var message = models.Message.build({
-          content: 'TEXTO - ' + channelId + ' - ' + (index + 1) ,
-          link: '',
-          ChannelId: channelId,
-          UserId: userId,
-          MessageTypeId: 1,
-          sentDateTimeUTC: new Date().getTime()
-        });
+        var content = '\'TEXTO - ' + channelId + ' - ' + (index + 1) + '\'',
+            link = '\'\'',
+            sentDate = '\'2016-05-21 15:42:35.961 +00:00\'',
+            createdAt = '\'2016-05-21 15:42:35.961 +00:00\'';
         
-        //return message;
-        return message.save();
+        return 'INSERT INTO "Messages" ("id","content","link","sentDateTimeUTC","ChannelId","UserId",' + 
+                 '"MessageTypeId","updatedAt","createdAt")' +
+                 ' VALUES (DEFAULT,' + content + ',' + link + ',' + sentDate + ',' + channelId + ',' + 
+                  userId + ',1,' + createdAt + ',' + createdAt + ');';
+        
+        // var message = models.Message.build({
+        //   content: 'TEXTO - ' + channelId + ' - ' + (index + 1) ,
+        //   link: '',
+        //   ChannelId: channelId,
+        //   UserId: userId,
+        //   MessageTypeId: 1,
+        //   sentDateTimeUTC: new Date().getTime()
+        // });
+
+        // return message.save();
     }
 
     //____________________________________________________________________________________
