@@ -11,7 +11,8 @@ var models  = require('./models');
     var maxUsers = 100,
         maxProjects = 110,
         channelsPerProject = 100,
-        messagesPerChannel = 100;
+        messagesPerChannel = 100,
+        startDate = new Date();
     
     batchImport();
     
@@ -231,7 +232,8 @@ var models  = require('./models');
             totalFinished = 0,
             query = '',
             totalMessages = messagesPerChannel;
-                    
+        
+        // query the message_model table looking for random content
         return models.sequelize
             .query('select content from "messages_model" where random() < 0.01 limit ?',
             { 
@@ -240,6 +242,7 @@ var models  = require('./models');
             }
         ).then(function(contenidos) {
             
+            // create a batch insert sql statement
             for (var i = 0; i < totalMessages; i++) {
                 query += createMessage(params.channel.id, i, params.projectUsers, contenidos[i].content); 
             }
@@ -260,25 +263,17 @@ var models  = require('./models');
             userId = 1;
         }
         
-        var link = '\'\'',
-            sentDate = '\'2016-05-21 15:42:35.961 +00:00\'',
-            createdAt = '\'2016-05-21 15:42:35.961 +00:00\'';
+        // add seconds
+        startDate.setSeconds(startDate.getSeconds() + getRandomInt(1, 20));
         
+        var link = '\'\'',
+            sentDate = startDate.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        
+        // build the SQL sentence
         return 'INSERT INTO "Messages" ("id","content","link","sentDateTimeUTC","ChannelId","UserId",' + 
                  '"MessageTypeId","updatedAt","createdAt")' +
-                 ' VALUES (DEFAULT,\'' + content + '\',' + link + ',' + sentDate + ',' + channelId + ',' + 
-                  userId + ',1,' + createdAt + ',' + createdAt + ');';
-        
-        // var message = models.Message.build({
-        //   content: 'TEXTO - ' + channelId + ' - ' + (index + 1) ,
-        //   link: '',
-        //   ChannelId: channelId,
-        //   UserId: userId,
-        //   MessageTypeId: 1,
-        //   sentDateTimeUTC: new Date().getTime()
-        // });
-
-        // return message.save();
+                 ' VALUES (DEFAULT,\'' + content + '\',' + link + ',\'' + sentDate + '\',' + channelId + ',' + 
+                  userId + ',1,\'' + sentDate + '\',\'' + sentDate + '\');';
     }
 
     //____________________________________________________________________________________
