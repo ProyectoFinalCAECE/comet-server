@@ -9,7 +9,9 @@ var models  = require('./models');
 (function () {
     
     var maxUsers = 100,
-        maxProjects = 110,
+        maxProjects = 110,              // para 1 millon de msj
+        //maxProjects = 310,              // para 3 millones de msj
+        //maxProjects = 510,              // para 5 millones de msj
         channelsPerProject = 100,
         messagesPerChannel = 100,
         startDate = new Date();
