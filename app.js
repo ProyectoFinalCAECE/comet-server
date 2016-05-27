@@ -125,12 +125,12 @@ if (app.get('env') === 'development') {
 if (app.get('env') === 'production') {
 
     // changes it to use the optimized version for production
-    app.use(express.static(path.join(__dirname, '/dist')));
+    app.use(express.static('/var/www/dist'));
 
     // Handle 404
     app.use(function(req, res) {
         res.status(404);
-        res.sendfile(path.join(__dirname, '/dist/') + '404.html');
+        res.sendfile('/var/www/dist/404.html');
     });
 
     // production error handler
