@@ -62,7 +62,8 @@ var messages_search_common_channel_query = 'SELECT "M".id, "M".content, "M"."sen
                             ' AND "M"."MessageTypeId" = 1 ' +
                             ' AND to_tsvector(\'spanish\', content) @@ to_tsquery(\'spanish\', :text) ' +
                             ' AND "M"."sentDateTimeUTC" <= (SELECT "ME"."sentDateTimeUTC" FROM "Messages" AS "ME" WHERE "ME".id = ' +
-                            ' (SELECT MAX("MES".ID) FROM "Messages" AS "MES" WHERE "MES"."ChannelId" IN (:channel_ids)))' +
+                            ' (SELECT MAX("MES".ID) FROM "Messages" AS "MES" WHERE "MES"."ChannelId" IN (:channel_ids) '+
+                            ' AND to_tsvector(\'spanish\', content) @@ to_tsquery(\'spanish\', :text)))' +
                             ' ORDER BY "M"."sentDateTimeUTC" DESC' +
                             ' LIMIT :limit;';
 
