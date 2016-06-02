@@ -34,11 +34,13 @@ var mailerService = require('../services/mailer');
 // saves the unencrypted token in the 'payload' field of request
 var auth = jwt({secret: 'mySecretPassword', userProperty: 'payload'});
 
-//User name, lastname and alias max lenght constants
+//User name, lastname, alias and password min/max lenght constants
 //should be constants, but they're not allowed with 'strict' mode
 var MAX_FNAME = 20;
 var MAX_LNAME = 30;
 var MAX_ALIAS = MAX_FNAME + MAX_LNAME;
+var MIN_PASS = 6;
+var MAX_PASS = 40;
 
 /*
 * Create new User Account.
@@ -87,7 +89,10 @@ router.post('/', function(req, res, next) {
     hasErrors = true;
   }
 
-  if (!models.User.isValidPassword(req.body.password)) {
+  if (!password || password.length < 6 || password.length > 40){
+    errors.password = 'Tu contraseña debe tener entre '+MIN_PASS+' y '+MAX_PASS+' caracteres.';
+    hasErrors = true;
+  } else if (!models.User.isValidPassword(password)) {
     errors.password = 'El formato de la contraseña provista no es válido.';
     hasErrors = true;
   }
