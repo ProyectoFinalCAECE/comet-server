@@ -96,7 +96,11 @@ if [ $PSQL_INSTALLED -ne 0 ]
 then
 	printf "No se encontro postgres instalado, se procede a su instalación\n"
 	printf "Instalando postgres...\n" 
-	apt-get install -y postgresql postgresql-contrib >/dev/null 2>&1
+	## apt-get install -y postgresql postgresql-contrib >/dev/null 2>&1
+	sudo add-apt-repository "deb https://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" 
+	wget --quiet -O - https://postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - 
+	sudo apt-get update >/dev/null 2>&1
+	sudo apt-get install -y postgresql-9.4 >/dev/null 2>&1
 	cd /tmp
 	sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '123456789';"
 	printf "postgres instalado satisfactoriamente\n"
