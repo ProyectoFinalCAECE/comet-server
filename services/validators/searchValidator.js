@@ -28,7 +28,7 @@ module.exports.validSearchMessageInProject = function(req, res, next) {
         errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
   } else {
 
-    if(!XRegExp.test(req.query.q, /^[a-z0-9]+$/i)){
+    if(!XRegExp.test(req.query.q, /^[a-z\u00E0-\u00FC0-9]+$/i)){
       errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
     }
 
@@ -70,7 +70,7 @@ module.exports.validSearchMessageInChannel = function(req, res, next) {
         errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
   } else {
 
-    if(!XRegExp.test(req.query.q, /^[a-z0-9]+$/i)){
+    if(!XRegExp.test(req.query.q, /^[a-z\u00E0-\u00FC0-9]+$/i)){
       errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
     }
 
@@ -108,7 +108,7 @@ module.exports.validSearchUserInProject = function(req, res, next){
         errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
   } else {
 
-    if(!XRegExp.test(req.query.q, /^[a-z0-9]+$/i)){
+    if(!XRegExp.test(req.query.q, /^[a-z\u00E0-\u00FC0-9]+$/i)){
       errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
     }
 
