@@ -17,6 +17,7 @@ module.exports = function(sequelize, DataTypes) {
     deletedBy: { type: DataTypes.INTEGER, allowNull: true },
     closedBy: { type: DataTypes.INTEGER, allowNull: true },
     severedAt:  {type: DataTypes.DATE, allowNull: true },
+    lastActivity:  {type: DataTypes.DATE, allowNull: true }
   }, {
     instanceMethods: {
       close: function(user_id)

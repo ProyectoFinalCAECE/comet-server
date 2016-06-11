@@ -25,11 +25,11 @@ module.exports.validSearchMessageInProject = function(req, res, next) {
   if(!req.query.q ||
       (typeof(req.query.q) !== "string") ||
       req.query.q.length === 0){
-        errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
+        errors.q = 'El texto ingresado no es válido.';
   } else {
 
     if(!XRegExp.test(req.query.q, /^[a-z\u00E0-\u00FC0-9 ]+$/i)){
-      errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
+      errors.q = 'El texto ingresado no es válido';
     }
 
     req.query.q = validator.replaceWhiteSpaces(req.query.q);
@@ -38,7 +38,7 @@ module.exports.validSearchMessageInProject = function(req, res, next) {
     req.query.q = req.query.q.toLowerCase();
 
     if(req.query.q.length === 0)
-      errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
+      errors.q = 'El texto ingresado no es válido';
 
   }
 
@@ -67,11 +67,11 @@ module.exports.validSearchMessageInChannel = function(req, res, next) {
   if(!req.query.q ||
       (typeof(req.query.q) !== "string") ||
       req.query.q.length === 0){
-        errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
+        errors.q = 'El texto ingresado no es válido';
   } else {
 
     if(!XRegExp.test(req.query.q, /^[a-z\u00E0-\u00FC0-9 ]+$/i)){
-      errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
+      errors.q = 'El texto ingresado no es válido';
     }
 
     req.query.q = validator.replaceWhiteSpaces(req.query.q);
@@ -80,7 +80,7 @@ module.exports.validSearchMessageInChannel = function(req, res, next) {
     req.query.q = req.query.q.toLowerCase();
 
     if(req.query.q.length === 0)
-      errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
+      errors.q = 'El texto ingresado no es válido';
   }
 
   if (Object.keys(errors).length > 0)
@@ -105,11 +105,11 @@ module.exports.validSearchUserInProject = function(req, res, next){
   if(!req.query.q ||
       (typeof(req.query.q) !== "string") ||
       req.query.q.length === 0){
-        errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
+        errors.q = 'El texto ingresado no es válido';
   } else {
 
     if(!XRegExp.test(req.query.q, /^[a-z\u00E0-\u00FC0-9 ]+$/i)){
-      errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
+      errors.q = 'El texto ingresado no es válido';
     }
 
     req.query.q = validator.replaceWhiteSpaces(req.query.q);
@@ -118,7 +118,7 @@ module.exports.validSearchUserInProject = function(req, res, next){
     req.query.q = req.query.q.toLowerCase();
 
     if(req.query.q.length === 0)
-      errors.q = 'Por favor ingrese una cadena de búsqueda válida.';
+      errors.q = 'El texto ingresado no es válido';
 
   }
 

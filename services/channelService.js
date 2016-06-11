@@ -44,7 +44,8 @@ module.exports.createChannel = function(user, req, res) {
             name: req.body.name,
             description: req.body.description,
             type: req.body.type,
-            ProjectId: req.primaryParams.project_id
+            ProjectId: req.primaryParams.project_id,
+            lastActivity: new Date()
           });
 
           channel.save().then(function(channelCreated) {
@@ -656,7 +657,8 @@ function getChannelFromHash(channel_hash, users){
                     type: channel_hash.type,
                     state: channel_hash.state,
                     members: getChannelMembers(users),
-                    integrations: []
+                    integrations: [],
+                    lastActivity: channel_hash.lastActivity
               };
   }
   return channel;
