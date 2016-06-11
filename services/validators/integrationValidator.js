@@ -8,6 +8,7 @@
 
 //Allowed integrations active states.
 var validActiveStates = ["true", "false"];
+var models  = require('../../models');
 
 /*
 *
@@ -70,6 +71,9 @@ module.exports.validUpdateInstanceOfProjectIntegration = function(req, res, next
   if (!req.body.name) {
     errors.name = 'Por favor ingresa el nombre con el cual van a figurar los mensajes de la integración.';
     hasErrors = true;
+  } else if (req.body.name.length > models.ProjectIntegration.nameLength()) {
+    errors.name = 'El nombre de tu integración no debe superar los '+ models.ProjectIntegration.nameLength() +' caracteres.';
+    hasErrors = true;
   }
 
   if (hasErrors) {
@@ -111,6 +115,9 @@ module.exports.validCreateProjectIntegration = function(req, res, next){
 
   if (!req.body.name) {
     errors.name = 'Por favor ingresa el nombre con el cual van a figurar los mensajes de la integración.';
+    hasErrors = true;
+  } else if (req.body.name.length > models.ProjectIntegration.nameLength()) {
+    errors.name = 'El nombre de tu integración no debe superar los '+ models.ProjectIntegration.nameLength() +' caracteres.';
     hasErrors = true;
   }
 
