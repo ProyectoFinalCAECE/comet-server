@@ -25,9 +25,9 @@ module.exports.generateConfirmationToken = function(user_id) {
                     _id: user_id,
                     action: 'confirm',
                     exp: parseInt(expiration.getTime() / 1000)
-                  }
-                  , 'mySecretPassword');
-}
+                  },
+                  'mySecretPassword');
+};
 
 /*
 * Confirms User account evaluating provided token
@@ -51,7 +51,7 @@ module.exports.confirmAccount = function(res, token){
     }
 
     //evaluating token action
-    if(decoded.action == 'confirm'){
+    if(decoded.action === 'confirm'){
       // look for current user's account
       models.User.findById(parseInt(decoded._id)).then(function(user) {
         if (!user) {
@@ -80,7 +80,7 @@ module.exports.confirmAccount = function(res, token){
       return res.status(403).json({ errors: { all: 'El token provisto no fue diseñado para este proposito.'}});
     }
   });
-}
+};
 
 /*
 * Generates an expirable password recovery token for provided user.
@@ -99,7 +99,7 @@ module.exports.generatePasswordRecoveryToken = function(user_id) {
                     exp: parseInt(now.getTime() / 1000)
                   },
                   'mySecretPassword');
-}
+};
 
 /*
 * Sets new password to account if provided token is valid.
@@ -123,7 +123,7 @@ module.exports.recoverPassword = function(res, token, newpassword){
     }
 
     //evaluating token action
-    if(decoded.action == 'recover'){
+    if(decoded.action === 'recover'){
       // look for current user's account
       models.User.findById(parseInt(decoded._id)).then(function(user) {
         if (!user) {
@@ -147,7 +147,7 @@ module.exports.recoverPassword = function(res, token, newpassword){
       return res.status(403).json({ errors: { all: 'El token provisto no fue diseñado para este proposito.'}});
     }
   });
-}
+};
 
 /*
 * Generates an expirable account recovery token for provided user.
@@ -166,7 +166,7 @@ module.exports.generateAccountRecoveryToken = function(user_id) {
                     exp: parseInt(now.getTime() / 1000)
                   },
                   'mySecretPassword');
-}
+};
 
 /*
 * Re-opens closed User Account and sets new password to it, if provided token is valid.
@@ -190,7 +190,7 @@ module.exports.reopenAccount = function(res, token, newpassword){
     }
 
     //evaluating token action
-    if(decoded.action == 'account'){
+    if(decoded.action === 'account'){
       // look for current user's account
       models.User.findById(parseInt(decoded._id)).then(function(user) {
         if (!user) {
@@ -214,4 +214,4 @@ module.exports.reopenAccount = function(res, token, newpassword){
       return res.status(403).json({ errors: { all: 'El token provisto no fue diseñado para este proposito.'}});
     }
   });
-}
+};

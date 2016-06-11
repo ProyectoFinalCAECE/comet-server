@@ -103,7 +103,7 @@ module.exports = function(sequelize, DataTypes) {
           User.belongsToMany(models.Channel, { through: models.ChannelUser });
         },
         isValidPassword: function(password){
-          return XRegExp.test(password, /(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z]).{6,40}/);
+          return XRegExp.test(password, /(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z]).{6,40}/) && password.length > 6 && password.length < 41;
         }
       },
       indexes:[{

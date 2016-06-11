@@ -257,7 +257,7 @@ router.put('/', auth, function(req, res, next) {
         user.firstName+' '+
         user.lastName+' '+
         user.alias+' '+
-        user.email.slice(0,user.email.indexOf('@'))
+        user.email.slice(0,user.email.indexOf('@'));
 
       if (hasErrors) {
         return res.status(400).json({errors: errors});
