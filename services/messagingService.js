@@ -201,7 +201,7 @@ module.exports.getProjectChannelsUpdates = function(projectId, userId, callback)
     }
 
     //looking for messages sent to project's channels after last connection date.
-    sequelize.query('SELECT DISTINCT "ChannelId" ' +
+    sequelize.query('SELECT "ChannelId" ' +
                       ' FROM "Messages" ' +
                       ' WHERE "ChannelId" IN ( ' +
                       	' SELECT "ChannelId" ' +
@@ -221,9 +221,20 @@ module.exports.getProjectChannelsUpdates = function(projectId, userId, callback)
                       replacements: [userId, projectId, userId, disconnectedAt]})
     .then(function(channel_with_updates) {
       winston.info("channel_with_updates is: " + JSON.stringify(channel_with_updates));
-      var x;
+      var x,
+          count;
+
       for(x in channel_with_updates){
-        result.channels_with_updates.push({'id':channel_with_updates[x].ChannelId});
+        var retrieved_channel = retrieve_channel_by_id(result.channels_with_updates, channel_with_updates[x].ChannelId);
+        count = 1;
+        if (retrieved_channel !== null){
+          count = retrieved_channel[0].count + 1;
+        }
+
+        result.channels_with_updates.push( { 'id' : channel_with_updates[x].ChannelId,
+                                              'count' : count
+                                            }
+                                          );
       }
       winston.info("result is: " + JSON.stringify(result));
 
@@ -486,4 +497,19 @@ function formatMessagesForRetrievalById(messages){
     messages_to_be_returned.push(message);
   }
   return messages_to_be_returned;
+}
+
+/*
+* Return the channel with provided id from the given list, if exists.
+*/
+function retrieve_channel_by_id(channels_with_updates, channel_id){
+  var response = null;
+  var id;
+  for(id in channels_with_updates){
+    if(channels_with_updates[id].id === channel_id){
+      response = channels_with_updates.splice(id, 1);
+      break;
+    }
+  }
+  return response;
 }
