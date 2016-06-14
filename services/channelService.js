@@ -214,7 +214,7 @@ module.exports.addMembersBulk = function(members, project_id, channel_id, user, 
 */
 module.exports.removeChannelMember = function(project_id, channel_id, member_id, user, callback) {
   var result = {};
-  models.Channel.findAll({ where: ['"Channel"."id" = ? AND "Channel"."ProjectId" = ? AND "Channel"."state" != ? AND "Channel"."type" = ?', channel_id , project_id, "B", "P"],
+  models.Channel.findAll({ where: ['"Channel"."id" = ? AND "Channel"."ProjectId" = ? AND "Channel"."state" != ?', channel_id , project_id, "B"],
                           include: [{ model: models.User}]}).then(function(channels){
                             if (channels === undefined || channels.length === 0) {
                               result.code = 404;
@@ -389,47 +389,6 @@ function deactivateIntegration(integration, callback){
     callback();
   });
 }
-
-/*
-*
-* Removes currently logged User from Project's channel
-* @project_id
-* @channel_id
-* @user
-* @callback
-*
-*/
-module.exports.removeMember = function(project_id, channel_id, user, member_id, callback) {
-  var result = {};
-  if(user.id !== parseInt(member_id)){
-    result.code = 403;
-    result.message = { errors: { all: 'No se puede eliminar el usuario con el id provisto.'}};
-    return callback(result);
-  }else{
-    user.getChannels({ where: ['"ChannelUser"."ChannelId" = ? AND "Channel"."state" != ? AND "Channel"."ProjectId" = ?', channel_id, "B", project_id] }).then(function(channels){
-      if (channels === undefined || channels.length === 0) {
-        result.code = 404;
-        result.message = { errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}};
-        return callback(result);
-      }
-
-      if(channels[0].ChannelUser.active === false){
-        result.code = 403;
-        result.message = { errors: { all: 'El usuario no puede acceder al canal solicitado.'}};
-        return callback(result);
-      } else {
-        //deleting user from channel
-        channels[0].ChannelUser.active = false;
-
-        channels[0].ChannelUser.save().then(function(){
-          result.code = 200;
-          result.message = {};
-          return callback(result);
-        });
-      }
-    });
-  }
-};
 
 /*
 * Allows Channel's Member to update Channel's properties.
