@@ -148,24 +148,6 @@ router.delete('/:id/close', auth, channelValidator.validClose, function(req, res
 });
 
 /*
-*
-* Allows currently logged User to remove himself from a Project's channel.
-* Requires authentication header.
-*
-*/
-router.delete('/:id/members/:member_id', auth, channelValidator.validRemoveMember, function(req, res){
-  //look for current user's account
-  models.User.findById(parseInt(req.payload._id)).then(function(user) {
-    if (!user) {
-      return res.status(401).json({ message: 'No se encontro usuario asociado al token provisto.' });
-    }
-    channelService.removeMember(req.primaryParams.project_id, req.params.id, user, req.params.member_id, function(result){
-      return res.status(result.code).json(result.message);
-    });
-  });
-});
-
-/*
 * Allows Channel's Member to update Channel's properties.
 * @project_id
 * @id
