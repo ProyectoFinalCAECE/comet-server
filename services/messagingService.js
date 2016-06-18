@@ -160,15 +160,30 @@ module.exports.retrieveMessages = function(channelId, offset, limit, isDirect, r
 *
 */
 module.exports.storeDisconnectionDate = function(data) {
-
-      //looking for last connection date to this project.
-      var last_seen_at = new Date();
-      sequelize.query('UPDATE "ProjectUsers" ' +
-                      ' SET "disconnectedAt" = ? ' +
-                      ' WHERE "UserId" = ? AND "ProjectId" = ?;',
-                      { type: sequelize.QueryTypes.UPDATE, replacements: [ last_seen_at, data.userId, data.projectId]});
+  sequelize.query('UPDATE "ProjectUsers" ' +
+                  ' SET "disconnectedAt" = ? ' +
+                  ' WHERE "UserId" = ? AND "ProjectId" = ?;',
+                  {
+                    type : sequelize.QueryTypes.UPDATE,
+                    replacements: [ new Date(), data.userId, data.projectId ]
+                  }
+                );
 };
 
+/*
+* Store disconnection date of an user from a channel
+*
+*/
+module.exports.storeChannelDisconnectionDate = function(data) {
+  sequelize.query('UPDATE "ChannelUsers" ' +
+                  ' SET "disconnectedAt" = ? ' +
+                  ' WHERE "UserId" = ? AND "ChannelId" = ?;',
+                  {
+                    type : sequelize.QueryTypes.UPDATE,
+                    replacements: [ new Date(), data.userId, data.channelId ]
+                  }
+                );
+};
 
 /*
 * Returns a hash containing the amount of 'unseen' messages for each channel of

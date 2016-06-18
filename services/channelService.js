@@ -110,7 +110,15 @@ module.exports.getChannel = function(req, res, user) {
 
         if(channels[0].type === 'S' || (channelUser && channelUser.ChannelUser.active === true)){
           var response = getChannelFromHash(channels[0], channels[0].Users);
-          response.disconnectedAt = channelUser.ChannelUser.disconnectedAt;
+
+          //default 'disconnectedAt'
+          response.disconnectedAt = null;
+
+          //in case of 'shared' channel, 'channelUser' could not exist.
+          if(channelUser !== undefined){
+            response.disconnectedAt = channelUser.ChannelUser.disconnectedAt;
+          }
+
           return res.json(response);
         } else {
           return res.status(403).json({ errors: { all: 'El usuario no puede acceder al canal solicitado.'}});
