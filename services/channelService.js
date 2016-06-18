@@ -105,14 +105,15 @@ module.exports.getChannel = function(req, res, user) {
         if (channels === undefined || channels.length === 0) {
           return res.status(404).json({ errors: { all: 'No se puede encontrar ningun canal con el id provisto.'}});
         }
-        if(channels[0].type === 'S'){
-          return res.json(getChannelFromHash(channels[0], channels[0].Users));
+
+        var channelUser = findChannelUser(channels[0].Users, user.id);
+
+        if(channels[0].type === 'S' || (channelUser && channelUser.ChannelUser.active === true)){
+          var response = getChannelFromHash(channels[0], channels[0].Users);
+          response.disconnectedAt = channelUser.ChannelUser.disconnectedAt;
+          return res.json(response);
         } else {
-          var channelUser = findChannelUser(channels[0].Users, user.id);
-          if(!channelUser || channelUser.active === false){
-            return res.status(403).json({ errors: { all: 'El usuario no puede acceder al canal solicitado.'}});
-          }
-            return res.json(getChannelFromHash(channels[0], channels[0].Users));
+          return res.status(403).json({ errors: { all: 'El usuario no puede acceder al canal solicitado.'}});
         }
       });
     }
