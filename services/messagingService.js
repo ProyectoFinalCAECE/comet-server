@@ -25,6 +25,7 @@ var sequelize = new Sequelize(config.database, config.username, config.password,
                                                                                     }
                                                                                 });
 var winston = require('winston');
+var async = require('async');
 
 /**
  * query to retrieve forwards messages from message with provided id on a common channel
@@ -170,90 +171,86 @@ module.exports.storeDisconnectionDate = function(data) {
 
 
 /*
-* Retrieve messages from db by channelId. Allows pagination.
-*
+* Returns a hash containing the amount of 'unseen' messages for each channel of
+* provided project to which provided user belongs.
 */
 module.exports.getProjectChannelsUpdates = function(projectId, userId, callback) {
-  var result = {
+
+  var response = {
                   channels_with_updates: [],
                   users_with_updates: []
                 };
 
   if(projectId === undefined || userId === undefined){
-      return callback(result);
+      return callback(response);
   }
 
-  //looking for last connection date to this project.
-  sequelize.query('SELECT "disconnectedAt" ' +
-                  'FROM "ProjectUsers" ' +
-                  'WHERE "ProjectId" = ? ' +
-                  'AND "UserId" = ? ' +
-                  'AND active = true;',
-                  { type: sequelize.QueryTypes.SELECT,
-                    replacements: [projectId, userId]})
-  .then(function(disconnectedAt) {
-    if(disconnectedAt[0].disconnectedAt === undefined || disconnectedAt[0].disconnectedAt === null){
-      var d = new Date();
-      d.setDate(d.getDate() - 365*100);
-      disconnectedAt = d;
-    } else {
-      disconnectedAt = disconnectedAt[0].disconnectedAt;
-    }
+  sequelize.query('SELECT CU."ChannelId", CU."disconnectedAt" ' +
+                  'FROM "ProjectUsers" PU ' +
+                  'JOIN "ChannelUsers" CU ' +
+                  'ON PU."UserId" = CU."UserId" ' +
+                  'WHERE PU."ProjectId" = ? ' +
+                  'AND PU."UserId" = ? ' +
+                  'AND PU.active = true ' +
+                  'AND CU."UserId" = ? ' +
+                  'AND CU.active = true ' +
+                  'AND CU."ChannelId" IN ( ' +
+                  'SELECT id FROM "Channels" WHERE "ProjectId" = ?); ',
+                  {
+                    type: sequelize.QueryTypes.SELECT,
+                    replacements: [projectId, userId, userId, projectId]
+                  }).
+  then(function(resultSet){
 
-    //looking for messages sent to project's channels after last connection date.
-    sequelize.query('SELECT "ChannelId" ' +
-                      ' FROM "Messages" ' +
-                      ' WHERE "ChannelId" IN ( ' +
-                      	' SELECT "ChannelId" ' +
-                      	' FROM "ChannelUsers" ' +
-                      	'WHERE "ChannelUsers"."UserId" = ? ' +
-                      	' AND "ChannelUsers".active = true ' +
-                      	' AND "ChannelUsers"."ChannelId" IN ( ' +
-                      		' SELECT id ' +
-                      		' FROM "Channels" ' +
-                      		' WHERE "ProjectId" = ? ' +
-                      		' AND state = \'O\' ' +
-                      	' ) ' +
-                      ') ' +
-                      ' AND "UserId" != ? ' +
-                      ' AND "sentDateTimeUTC" > ?;',
-                    { type: sequelize.QueryTypes.SELECT,
-                      replacements: [userId, projectId, userId, disconnectedAt]})
-    .then(function(channel_with_updates) {
-      winston.info("channel_with_updates is: " + JSON.stringify(channel_with_updates));
-      var x,
-          count;
+    //for each row in resultSet, call retrieveUpdatesForChannel function.
+    async.each(resultSet, retrieveUpdatesForChannel.bind(
+      null, userId, response), function(err){
 
-      for(x in channel_with_updates){
-        var retrieved_channel = retrieve_channel_by_id(result.channels_with_updates, channel_with_updates[x].ChannelId);
-        count = 1;
-        if (retrieved_channel !== null){
-          count = retrieved_channel[0].count + 1;
+      if(err){
+        winston.error(err);
+      }
+
+      //looking for last connection date to this project.
+      sequelize.query('SELECT "disconnectedAt" ' +
+                      'FROM "ProjectUsers" ' +
+                      'WHERE "ProjectId" = ? ' +
+                      'AND "UserId" = ? ' +
+                      'AND active = true;',
+                      { type: sequelize.QueryTypes.SELECT,
+                        replacements: [projectId, userId]})
+      .then(function(disconnectedAt) {
+
+        if(disconnectedAt[0].disconnectedAt === undefined || disconnectedAt[0].disconnectedAt === null){
+          var d = new Date();
+          d.setDate(d.getDate() - 365*100);
+          disconnectedAt = d;
+        } else {
+          disconnectedAt = disconnectedAt[0].disconnectedAt;
         }
 
-        result.channels_with_updates.push( { 'id' : channel_with_updates[x].ChannelId,
-                                              'count' : count
-                                            }
-                                          );
-      }
-      winston.info("result is: " + JSON.stringify(result));
-
-      //looking for direct messages sent to project's users after last connection date.
-      sequelize.query('SELECT DISTINCT "OriginUserId" ' +
+        //looking for direct messages sent to project's users after last connection date.
+        sequelize.query('SELECT DISTINCT "OriginUserId" ' +
                         ' FROM "PrivateMessages" ' +
                         ' WHERE "DestinationUserId" = ? ' +
                         ' AND "ProjectId" = ? ' +
                         ' AND "sentDateTimeUTC" > ?',
-                      { type: sequelize.QueryTypes.SELECT,
-                        replacements: [userId, projectId, disconnectedAt]})
-      .then(function(users_with_updates) {
-        winston.info("users_with_updates is: " + JSON.stringify(users_with_updates));
-        var x;
-        for(x in users_with_updates){
-          result.users_with_updates.push({'id':users_with_updates[x].OriginUserId});
-        }
-        winston.info("result is: " + JSON.stringify(result));
-        return callback(result);
+                        {
+                          type: sequelize.QueryTypes.SELECT,
+                          replacements: [userId, projectId, disconnectedAt]
+                        })
+        .then(function(users_with_updates) {
+          winston.info("users_with_updates is: " + JSON.stringify(users_with_updates));
+          var x;
+          for(x in users_with_updates){
+            response.users_with_updates.push(
+              {
+                'id' : users_with_updates[x].OriginUserId
+              }
+            );
+          }
+          winston.info("response finally is: " + JSON.stringify(response));
+          return callback(response);
+        });
       });
     });
   });
@@ -500,16 +497,36 @@ function formatMessagesForRetrievalById(messages){
 }
 
 /*
-* Return the channel with provided id from the given list, if exists.
+* Returns count of unseen messages for provided user at provided channel
 */
-function retrieve_channel_by_id(channels_with_updates, channel_id){
-  var response = null;
-  var id;
-  for(id in channels_with_updates){
-    if(channels_with_updates[id].id === channel_id){
-      response = channels_with_updates.splice(id, 1);
-      break;
-    }
+function retrieveUpdatesForChannel(user_id, response, channel_row, callback){
+
+  var disconnectedAt = channel_row.disconnectedAt;
+
+  if(disconnectedAt === undefined || disconnectedAt === null){
+    console.log('era undefined')
+    disconnectedAt = new Date().setDate(new Date().getDate() - 365 * 100);
   }
-  return response;
+
+  //looking for messages sent to channel after disconnectedAt.
+  sequelize.query('SELECT COUNT(M.*) ' +
+                  'FROM "Messages" M ' +
+                  'WHERE M."ChannelId" = ? ' +
+                  'AND M."sentDateTimeUTC" > ?;',
+                  {
+                    type: sequelize.QueryTypes.SELECT,
+                    replacements: [channel_row.ChannelId, disconnectedAt]
+                  }).
+  then(function(result) {
+    winston.info("count for channel " + channel_row.ChannelId + " is: " + JSON.stringify(result[0].count));
+    if(parseInt(result[0].count) > 0){
+      response.channels_with_updates.push(
+        {
+          'id' : channel_row.ChannelId,
+          'count' : parseInt(result[0].count)
+        }
+      );
+    }
+    callback();
+  });
 }
