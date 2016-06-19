@@ -48,7 +48,7 @@ module.exports.createProject = function(req, res) {
               // Project created successfully
 
               //sending invitations
-              sendInvitations(req.body.members, project.name, project.id, user.alias);
+              sendInvitations(req.body.members, project.name, project.id, user.alias, req.protocol + '://' + req.get('host'));
 
               //generating ProjectIntegrations records on creation (active = false)
               generateProjectIntegrationsRecords(project);
